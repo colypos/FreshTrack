@@ -264,13 +264,18 @@ export default function InventoryScreen() {
             
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>{t('expiryDate')}</Text>
-              <TextInput
-                style={styles.textInput}
-                value={newProduct.expiryDate}
-                onChangeText={(text) => setNewProduct({...newProduct, expiryDate: text})}
-                placeholder="YYYY-MM-DD"
-                placeholderTextColor="#6B7280"
-              />
+              <View style={styles.dateInputContainer}>
+                <TextInput
+                  style={[styles.textInput, styles.dateInput]}
+                  value={newProduct.expiryDate}
+                  onChangeText={(text) => setNewProduct({...newProduct, expiryDate: text})}
+                  placeholder="DD.MM.YYYY"
+                  placeholderTextColor="#6B7280"
+                />
+                <TouchableOpacity style={styles.calendarButton}>
+                  <Calendar size={20} color="#6b7280" />
+                </TouchableOpacity>
+              </View>
             </View>
             
             <View style={styles.inputGroup}>
@@ -521,5 +526,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
     backgroundColor: '#F5C9A4',
     color: '#000000',
+  },
+  dateInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  dateInput: {
+    flex: 1,
+  },
+  calendarButton: {
+    backgroundColor: '#F5C9A4',
+    borderWidth: 1,
+    borderColor: '#000000',
+    width: 44,
+    height: 44,
+    borderRadius: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
