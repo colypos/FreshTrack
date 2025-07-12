@@ -109,6 +109,24 @@ export const useStorage = () => {
     const updatedProducts = [...products, newProduct];
     await saveProducts(updatedProducts);
     
+    // Create initial movement if product has stock
+    if (newProduct.currentStock > 0) {
+      const initialMovement: Movement = {
+        id: `${newProduct.id}-initial`,
+        productId: newProduct.id,
+        productName: newProduct.name,
+        type: 'in',
+        quantity: newProduct.currentStock,
+        reason: 'Anfangsbestand',
+        user: 'System',
+        timestamp: new Date().toISOString(),
+        notes: 'Automatisch erstellt beim Anlegen des Produkts',
+      };
+      
+      const updatedMovements = [initialMovement, ...movements];
+      await saveMovements(updatedMovements);
+    }
+    
     // Check for alerts
     generateAlertsForProduct(newProduct);
   };

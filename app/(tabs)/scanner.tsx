@@ -122,6 +122,7 @@ export default function ScannerScreen() {
 
   const handleMovement = async () => {
     if (!selectedProduct || !movementData.quantity || !movementData.reason) {
+      Alert.alert('Fehler', 'Bitte füllen Sie alle Pflichtfelder aus.');
       return;
     }
 
