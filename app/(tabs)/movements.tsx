@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
   },
   filterContainer: {
     paddingHorizontal: 20,
-    marginBottom: 10,
+    marginBottom: 12,
   },
   filterChip: {
     backgroundColor: '#F5C9A4',
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
     borderColor: '#000000',
     flexDirection: 'row',
     marginHorizontal: 20,
-    marginBottom: 10,
+    marginBottom: 16,
     borderRadius: 0,
     padding: 16,
   },
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
   movementsList: {
     flex: 1,
     padding: 20,
-    paddingTop: 10,
+    paddingTop: 0,
   },
   movementCard: {
     backgroundColor: '#F5C9A4',
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#000000',
     padding: 16,
-    marginBottom: 12,
+    marginBottom: 4,
     flexDirection: 'row',
   },
   movementIcon: {
