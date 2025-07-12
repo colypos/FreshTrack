@@ -343,18 +343,17 @@ const styles = StyleSheet.create({
   },
   categoryFilter: {
     paddingHorizontal: 20,
-    marginBottom: 0,
-    paddingBottom: 8,
+    marginBottom: 10,
   },
   categoryChip: {
     backgroundColor: '#ffffff',
     paddingHorizontal: 16,
-    paddingVertical: 4,
+    paddingVertical: 6,
     borderRadius: 20,
     marginRight: 8,
     borderWidth: 1,
     borderColor: '#e5e7eb',
-    height: 28,
+    height: 32,
     justifyContent: 'center',
   },
   categoryChipActive: {
@@ -372,7 +371,7 @@ const styles = StyleSheet.create({
   productList: {
     flex: 1,
     padding: 20,
-    paddingTop: 8,
+    paddingTop: 10,
   },
   productCard: {
     backgroundColor: '#ffffff',

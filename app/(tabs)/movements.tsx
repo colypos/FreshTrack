@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
   },
   filterContainer: {
     paddingHorizontal: 20,
-    marginBottom: 12,
+    marginBottom: 10,
   },
   filterChip: {
     backgroundColor: '#ffffff',
