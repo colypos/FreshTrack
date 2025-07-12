@@ -31,7 +31,7 @@ export default function TabLayout() {
           title: 'Dashboard',
           tabBarIcon: ({ size, color, focused }) => (
             <div style={{
-              backgroundColor: focused ? '#F68528' : 'transparent',
+              backgroundColor: 'transparent',
               padding: '8px',
               width: '40px',
               height: '40px',
@@ -39,7 +39,7 @@ export default function TabLayout() {
               alignItems: 'center',
               justifyContent: 'center',
             }}>
-              <Menu size={24} color="#000000" />
+              <Menu size={24} color={focused ? '#FF9800' : '#000000'} />
             </div>
           ),
         }}
@@ -50,7 +50,7 @@ export default function TabLayout() {
           title: 'Inventar',
           tabBarIcon: ({ size, color, focused }) => (
             <div style={{
-              backgroundColor: focused ? '#F68528' : 'transparent',
+              backgroundColor: 'transparent',
               padding: '8px',
               width: '40px',
               height: '40px',
@@ -58,7 +58,7 @@ export default function TabLayout() {
               alignItems: 'center',
               justifyContent: 'center',
             }}>
-              <Package size={24} color="#000000" />
+              <Package size={24} color={focused ? '#FF9800' : '#000000'} />
             </div>
           ),
         }}
@@ -69,7 +69,7 @@ export default function TabLayout() {
           title: 'Scanner',
           tabBarIcon: ({ size, color, focused }) => (
             <div style={{
-              backgroundColor: focused ? '#F68528' : 'transparent',
+              backgroundColor: 'transparent',
               padding: '8px',
               width: '40px',
               height: '40px',
@@ -77,7 +77,7 @@ export default function TabLayout() {
               alignItems: 'center',
               justifyContent: 'center',
             }}>
-              <Camera size={24} color="#000000" />
+              <Camera size={24} color={focused ? '#FF9800' : '#000000'} />
             </div>
           ),
         }}
@@ -88,7 +88,7 @@ export default function TabLayout() {
           title: 'Bewegungen',
           tabBarIcon: ({ size, color, focused }) => (
             <div style={{
-              backgroundColor: focused ? '#F68528' : 'transparent',
+              backgroundColor: 'transparent',
               padding: '8px',
               width: '40px',
               height: '40px',
@@ -96,7 +96,7 @@ export default function TabLayout() {
               alignItems: 'center',
               justifyContent: 'center',
             }}>
-              <ScrollText size={24} color="#000000" />
+              <ScrollText size={24} color={focused ? '#FF9800' : '#000000'} />
             </div>
           ),
         }}
@@ -107,7 +107,7 @@ export default function TabLayout() {
           title: 'Einstellungen',
           tabBarIcon: ({ size, color, focused }) => (
             <div style={{
-              backgroundColor: focused ? '#F68528' : 'transparent',
+              backgroundColor: 'transparent',
               padding: '8px',
               width: '40px',
               height: '40px',
@@ -115,7 +115,7 @@ export default function TabLayout() {
               alignItems: 'center',
               justifyContent: 'center',
             }}>
-              <Settings size={24} color="#000000" />
+              <Settings size={24} color={focused ? '#FF9800' : '#000000'} />
             </div>
           ),
         }}
