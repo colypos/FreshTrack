@@ -9,15 +9,15 @@ const styles = StyleSheet.create({
     left: 0,
     top: 0,
     bottom: 0,
-    width: 200,
+    width: 60,
     backgroundColor: '#D0D0D0',
     paddingTop: 60,
   },
   tabItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
-    paddingRight: 16,
+    paddingVertical: 12,
+    paddingRight: 8,
   },
   tabItemActive: {
     // No additional background styling needed
@@ -31,12 +31,12 @@ const styles = StyleSheet.create({
   tabContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 16,
+    marginLeft: 8,
   },
   tabLabel: {
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: '600',
-    marginLeft: 12,
+    marginLeft: 0,
   },
 });
 
@@ -101,7 +101,6 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
               { backgroundColor: isFocused ? '#F68528' : '#000000' }
             ]} />
             <View style={styles.tabContent}>
-              {getIcon()}
               <Text style={[
                 styles.tabLabel,
                 { color: isFocused ? '#F68528' : '#000000' }

@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#D0D0D0',
-    paddingLeft: 200, // Space for vertical tabs
+    paddingLeft: 60, // Space for vertical tabs
   },
   header: {
     flexDirection: 'row',
