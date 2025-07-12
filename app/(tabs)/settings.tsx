@@ -1,8 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Globe, Bell, Download, Upload, Shield, CircleHelp as HelpCircle, ChevronRight, User, Building, Palette } from 'lucide-react-native';
+import { Globe, Bell, Download, Upload, Shield, CircleHelp as HelpCircle, ChevronRight, User, Building } from 'lucide-react-native';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useStorage } from '@/hooks/useStorage';
+import * as DocumentPicker from 'expo-document-picker';
 
 const languages = [
   { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
@@ -13,6 +15,47 @@ const languages = [
 
 export default function SettingsScreen() {
   const { t, currentLanguage, changeLanguage } = useLanguage();
+  const { products, addProduct } = useStorage();
+
+  const handleExportData = () => {
+    // Create CSV content
+    const csvHeader = 'Name,Kategorie,Aktueller Bestand,Mindestbestand,Einheit,Verfallsdatum,Standort,Lieferant,Barcode\n';
+    const csvContent = products.map(product => 
+      `"${product.name}","${product.category}",${product.currentStock},${product.minStock},"${product.unit}","${product.expiryDate}","${product.location}","${product.supplier || ''}","${product.barcode || ''}"`
+    ).join('\n');
+    
+    const fullCsv = csvHeader + csvContent;
+    
+    Alert.alert(
+      'Daten exportieren',
+      `${products.length} Produkte bereit zum Export.\n\nCSV-Inhalt wurde erstellt. In einer vollständigen App würde diese Datei heruntergeladen werden.`,
+      [
+        { text: 'OK' }
+      ]
+    );
+    
+    console.log('CSV Export:', fullCsv);
+  };
+
+  const handleImportData = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'text/csv',
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        // In a real app, you would read and parse the CSV file here
+        Alert.alert(
+          'Import-Funktion',
+          'CSV-Import ist in Entwicklung. Bitte verwenden Sie das folgende Format:\n\nName,Kategorie,Aktueller Bestand,Mindestbestand,Einheit,Verfallsdatum,Standort,Lieferant,Barcode\n"Tomaten","Gemüse",50,10,"kg","2025-02-15","Kühlschrank A1","Frische AG","1234567890"',
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error) {
+      Alert.alert('Fehler', 'Datei konnte nicht gelesen werden.');
+    }
+  };
 
   const SettingItem = ({ 
     icon, 
@@ -117,28 +160,19 @@ export default function SettingsScreen() {
             icon={<Download size={22} color="#6b7280" />}
             title="Daten exportieren"
             subtitle="Inventardaten als CSV herunterladen"
-            onPress={() => console.log('Export')}
+            onPress={handleExportData}
           />
           <SettingItem
             icon={<Upload size={22} color="#6b7280" />}
             title="Daten importieren"
             subtitle="Produktdaten aus CSV-Datei importieren"
-            onPress={() => console.log('Import')}
+            onPress={handleImportData}
           />
           <SettingItem
             icon={<Shield size={22} color="#6b7280" />}
             title="Automatisches Backup"
             subtitle="Tägliche Datensicherung"
             rightElement={<Switch value={false} onValueChange={() => {}} />}
-          />
-        </SettingSection>
-
-        <SettingSection title="Darstellung">
-          <SettingItem
-            icon={<Palette size={22} color="#6b7280" />}
-            title="Design"
-            subtitle="Hell, Dunkel oder Automatisch"
-            onPress={() => console.log('Theme')}
           />
         </SettingSection>
 
