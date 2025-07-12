@@ -953,20 +953,22 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   productListContent: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   
   // Product List View
   productListView: {
     gap: 4,
+    paddingHorizontal: 0,
   },
   productListCard: {
     backgroundColor: '#F5C9A4',
     borderRadius: 0,
     borderWidth: 1,
     borderColor: '#000000',
-    padding: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 8,
@@ -1090,7 +1092,8 @@ const styles = StyleSheet.create({
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 32,
+    paddingHorizontal: 16,
+    paddingVertical: 32,
     marginTop: 32,
   },
   emptyTitle: {
