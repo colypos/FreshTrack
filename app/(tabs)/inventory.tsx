@@ -750,7 +750,7 @@ const styles = StyleSheet.create({
   // Header Styles
   header: {
     backgroundColor: '#D0D0D0',
-    paddingHorizontal: 20,
+    padding: 20,
     paddingTop: 16,
     paddingBottom: 16,
     borderBottomWidth: 1,
@@ -785,7 +785,6 @@ const styles = StyleSheet.create({
   // Search Styles
   searchContainer: {
     flexDirection: 'row',
-    gap: 12,
   },
   searchBar: {
     flex: 1,
@@ -938,10 +937,9 @@ const styles = StyleSheet.create({
     width: '100%',
     alignSelf: 'center',
     backgroundColor: '#D0D0D0',
-    marginHorizontal: 20,
   },
   productHeader: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     paddingVertical: 12,
     borderBottomColor: 'rgba(0, 0, 0, 0.1)',
   },
@@ -954,21 +952,21 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   productListContent: {
-    paddingHorizontal: 24,
-    paddingVertical: 16,
+    padding: 20,
+    paddingTop: 10,
     paddingBottom: 24,
   },
   
   // Product List View
   productListView: {
-    gap: 8,
+    gap: 12,
   },
   productListCard: {
     backgroundColor: '#F5C9A4',
     borderRadius: 0,
     borderWidth: 1,
     borderColor: '#000000',
-    paddingHorizontal: 20,
+    padding: 16,
     paddingVertical: 16,
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -1096,10 +1094,9 @@ const styles = StyleSheet.create({
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     paddingVertical: 48,
     marginTop: 40,
-    marginHorizontal: 20,
   },
   emptyTitle: {
     fontSize: 18,
