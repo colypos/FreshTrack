@@ -514,8 +514,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     backgroundColor: '#F5C9A4',
     color: '#000000',
-    '::placeholder': {
-      color: '#808080',
-    },
   },
 });
