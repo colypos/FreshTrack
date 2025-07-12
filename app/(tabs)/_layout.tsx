@@ -3,6 +3,43 @@ import { Package, ChartBar as BarChart3, Camera, ScrollText, Settings } from 'lu
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 
+const styles = StyleSheet.create({
+  tabContainer: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 200,
+    backgroundColor: '#D0D0D0',
+    paddingTop: 60,
+  },
+  tabItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingRight: 16,
+  },
+  tabItemActive: {
+    // No additional background styling needed
+  },
+  tabIndicator: {
+    width: 4,
+    height: '100%',
+    position: 'absolute',
+    left: 0,
+  },
+  tabContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 16,
+  },
+  tabLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 12,
+  },
+});
+
 function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   return (
     <View style={styles.tabContainer}>
