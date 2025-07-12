@@ -116,7 +116,7 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#D0D0D0',
   },
   scrollView: {
     flex: 1,
@@ -128,12 +128,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: '#000000',
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 18,
-    color: '#6b7280',
+    color: '#000000',
   },
   statsGrid: {
     flexDirection: 'row',
@@ -142,18 +142,14 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   statCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
+    backgroundColor: '#F5C9A4',
+    borderRadius: 0,
+    borderWidth: 1,
+    borderColor: '#000000',
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
     width: '48%',
-    borderLeftWidth: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
   statIcon: {
     marginRight: 12,
@@ -164,11 +160,11 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: '#000000',
   },
   statTitle: {
     fontSize: 12,
-    color: '#6b7280',
+    color: '#000000',
     marginTop: 2,
   },
   section: {
@@ -184,31 +180,30 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: '#000000',
   },
   viewAllText: {
     fontSize: 14,
-    color: '#22C55E',
+    color: '#000000',
     fontWeight: '600',
   },
   movementCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
+    backgroundColor: '#F5C9A4',
+    borderRadius: 0,
+    borderWidth: 1,
+    borderColor: '#000000',
     padding: 16,
     marginBottom: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
   },
   movementIcon: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: '#f3f4f6',
+    borderRadius: 0,
+    backgroundColor: '#D0D0D0',
+    borderWidth: 1,
+    borderColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -216,7 +211,7 @@ const styles = StyleSheet.create({
   movementIndicator: {
     width: 12,
     height: 12,
-    borderRadius: 6,
+    borderRadius: 0,
   },
   movementContent: {
     flex: 1,
@@ -224,17 +219,17 @@ const styles = StyleSheet.create({
   movementProduct: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1f2937',
+    color: '#000000',
     marginBottom: 4,
   },
   movementDetails: {
     fontSize: 14,
-    color: '#6b7280',
+    color: '#000000',
     marginBottom: 2,
   },
   movementTime: {
     fontSize: 12,
-    color: '#9ca3af',
+    color: '#000000',
   },
   emptyState: {
     padding: 40,
@@ -242,7 +237,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#6b7280',
+    color: '#000000',
     textAlign: 'center',
   },
 });

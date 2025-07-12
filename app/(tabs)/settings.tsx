@@ -205,7 +205,7 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#D0D0D0',
   },
   header: {
     padding: 20,
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: '#000000',
   },
   content: {
     flex: 1,
@@ -225,32 +225,31 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#374151',
+    color: '#000000',
     marginBottom: 12,
     marginHorizontal: 20,
   },
   sectionContent: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#F5C9A4',
+    borderWidth: 1,
+    borderColor: '#000000',
     marginHorizontal: 20,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderRadius: 0,
   },
   settingItem: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    borderBottomColor: '#000000',
   },
   settingIcon: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: '#f3f4f6',
+    borderRadius: 0,
+    backgroundColor: '#D0D0D0',
+    borderWidth: 1,
+    borderColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -261,12 +260,12 @@ const styles = StyleSheet.create({
   settingTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1f2937',
+    color: '#000000',
     marginBottom: 2,
   },
   settingSubtitle: {
     fontSize: 14,
-    color: '#6b7280',
+    color: '#000000',
   },
   languageSelector: {
     flexDirection: 'row',
@@ -275,16 +274,16 @@ const styles = StyleSheet.create({
   languageButton: {
     width: 36,
     height: 36,
-    borderRadius: 18,
-    backgroundColor: '#f3f4f6',
+    borderRadius: 0,
+    backgroundColor: '#D0D0D0',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#000000',
   },
   languageButtonActive: {
-    borderColor: '#22C55E',
-    backgroundColor: '#f0fdf4',
+    backgroundColor: '#F68528',
+    borderColor: '#000000',
   },
   languageFlag: {
     fontSize: 18,
@@ -297,12 +296,12 @@ const styles = StyleSheet.create({
   versionText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6b7280',
+    color: '#000000',
     marginBottom: 4,
   },
   copyrightText: {
     fontSize: 12,
-    color: '#9ca3af',
+    color: '#000000',
     textAlign: 'center',
     lineHeight: 16,
   },

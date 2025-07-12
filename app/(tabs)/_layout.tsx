@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Package, ChartBar as BarChart3, Camera, ScrollText, Settings } from 'lucide-react-native';
+import { Package, Menu, Camera, ScrollText, Settings } from 'lucide-react-native';
 
 export default function TabLayout() {
   return (
@@ -7,19 +7,22 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#ffffff',
-          borderTopWidth: 1,
-          borderTopColor: '#e5e7eb',
-          paddingBottom: 8,
-          paddingTop: 8,
-          height: 80,
+          backgroundColor: '#D0D0D0',
+          borderTopWidth: 0,
+          paddingBottom: 12,
+          paddingTop: 12,
+          height: 70,
         },
-        tabBarActiveTintColor: '#22C55E',
-        tabBarInactiveTintColor: '#6b7280',
+        tabBarActiveTintColor: '#000000',
+        tabBarInactiveTintColor: '#000000',
         tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '600',
-          marginTop: 4,
+          display: 'none',
+        },
+        tabBarIconStyle: {
+          marginTop: 0,
+        },
+        tabBarItemStyle: {
+          borderRadius: 0,
         },
       }}>
       <Tabs.Screen
@@ -27,7 +30,17 @@ export default function TabLayout() {
         options={{
           title: 'Dashboard',
           tabBarIcon: ({ size, color }) => (
-            <BarChart3 size={size} color={color} />
+            <div style={{
+              backgroundColor: focused ? '#F68528' : 'transparent',
+              padding: '8px',
+              width: '40px',
+              height: '40px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <Menu size={24} color="#000000" />
+            </div>
           ),
         }}
       />
@@ -36,7 +49,17 @@ export default function TabLayout() {
         options={{
           title: 'Inventar',
           tabBarIcon: ({ size, color }) => (
-            <Package size={size} color={color} />
+            <div style={{
+              backgroundColor: focused ? '#F68528' : 'transparent',
+              padding: '8px',
+              width: '40px',
+              height: '40px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <Package size={24} color="#000000" />
+            </div>
           ),
         }}
       />
@@ -45,7 +68,17 @@ export default function TabLayout() {
         options={{
           title: 'Scanner',
           tabBarIcon: ({ size, color }) => (
-            <Camera size={size} color={color} />
+            <div style={{
+              backgroundColor: focused ? '#F68528' : 'transparent',
+              padding: '8px',
+              width: '40px',
+              height: '40px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <Camera size={24} color="#000000" />
+            </div>
           ),
         }}
       />
@@ -54,7 +87,17 @@ export default function TabLayout() {
         options={{
           title: 'Bewegungen',
           tabBarIcon: ({ size, color }) => (
-            <ScrollText size={size} color={color} />
+            <div style={{
+              backgroundColor: focused ? '#F68528' : 'transparent',
+              padding: '8px',
+              width: '40px',
+              height: '40px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <ScrollText size={24} color="#000000" />
+            </div>
           ),
         }}
       />
@@ -63,7 +106,17 @@ export default function TabLayout() {
         options={{
           title: 'Einstellungen',
           tabBarIcon: ({ size, color }) => (
-            <Settings size={size} color={color} />
+            <div style={{
+              backgroundColor: focused ? '#F68528' : 'transparent',
+              padding: '8px',
+              width: '40px',
+              height: '40px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <Settings size={24} color="#000000" />
+            </div>
           ),
         }}
       />
