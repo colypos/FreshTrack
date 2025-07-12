@@ -343,7 +343,8 @@ const styles = StyleSheet.create({
   },
   categoryFilter: {
     paddingHorizontal: 20,
-    marginBottom: 8,
+    marginBottom: 0,
+    paddingBottom: 8,
   },
   categoryChip: {
     backgroundColor: '#ffffff',
@@ -371,7 +372,7 @@ const styles = StyleSheet.create({
   productList: {
     flex: 1,
     padding: 20,
-    paddingTop: 10,
+    paddingTop: 8,
   },
   productCard: {
     backgroundColor: '#ffffff',
