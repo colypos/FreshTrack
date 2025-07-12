@@ -930,6 +930,7 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     backgroundColor: '#D0D0D0',
+    paddingHorizontal: 20,
   },
   productArea: {
     flex: 1,
@@ -939,7 +940,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#D0D0D0',
   },
   productHeader: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 0,
     paddingVertical: 12,
     borderBottomColor: 'rgba(0, 0, 0, 0.1)',
   },
@@ -952,7 +953,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   productListContent: {
-    padding: 20,
+    padding: 0,
     paddingTop: 10,
     paddingBottom: 24,
   },
