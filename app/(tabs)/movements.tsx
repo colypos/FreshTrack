@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
   filterChip: {
     backgroundColor: '#ffffff',
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 6,
     borderRadius: 20,
     marginRight: 8,
     flexDirection: 'row',
@@ -208,6 +208,8 @@ const styles = StyleSheet.create({
     gap: 6,
     borderWidth: 1,
     borderColor: '#e5e7eb',
+    height: 32,
+    justifyContent: 'center',
   },
   filterChipActive: {
     backgroundColor: '#f0f9ff',

@@ -348,11 +348,13 @@ const styles = StyleSheet.create({
   categoryChip: {
     backgroundColor: '#ffffff',
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 6,
     borderRadius: 20,
     marginRight: 8,
     borderWidth: 1,
     borderColor: '#e5e7eb',
+    height: 32,
+    justifyContent: 'center',
   },
   categoryChipActive: {
     backgroundColor: '#22C55E',
