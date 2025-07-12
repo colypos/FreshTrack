@@ -2,6 +2,32 @@ import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Product, Movement, Alert } from '@/types';
 
+// Event emitter for data changes
+class DataEventEmitter {
+  private listeners: { [key: string]: Function[] } = {};
+
+  on(event: string, callback: Function) {
+    if (!this.listeners[event]) {
+      this.listeners[event] = [];
+    }
+    this.listeners[event].push(callback);
+  }
+
+  off(event: string, callback: Function) {
+    if (this.listeners[event]) {
+      this.listeners[event] = this.listeners[event].filter(cb => cb !== callback);
+    }
+  }
+
+  emit(event: string, data?: any) {
+    if (this.listeners[event]) {
+      this.listeners[event].forEach(callback => callback(data));
+    }
+  }
+}
+
+const dataEmitter = new DataEventEmitter();
+
 export const useStorage = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [movements, setMovements] = useState<Movement[]>([]);
@@ -10,6 +36,17 @@ export const useStorage = () => {
 
   useEffect(() => {
     loadData();
+
+    // Listen for data changes
+    const handleDataChange = () => {
+      loadData();
+    };
+
+    dataEmitter.on('dataChanged', handleDataChange);
+
+    return () => {
+      dataEmitter.off('dataChanged', handleDataChange);
+    };
   }, []);
 
   const loadData = async () => {
@@ -35,6 +72,7 @@ export const useStorage = () => {
     try {
       await AsyncStorage.setItem('products', JSON.stringify(newProducts));
       setProducts(newProducts);
+      dataEmitter.emit('dataChanged');
     } catch (error) {
       console.error('Error saving products:', error);
     }
@@ -44,6 +82,7 @@ export const useStorage = () => {
     try {
       await AsyncStorage.setItem('movements', JSON.stringify(newMovements));
       setMovements(newMovements);
+      dataEmitter.emit('dataChanged');
     } catch (error) {
       console.error('Error saving movements:', error);
     }
@@ -53,6 +92,7 @@ export const useStorage = () => {
     try {
       await AsyncStorage.setItem('alerts', JSON.stringify(newAlerts));
       setAlerts(newAlerts);
+      dataEmitter.emit('dataChanged');
     } catch (error) {
       console.error('Error saving alerts:', error);
     }
