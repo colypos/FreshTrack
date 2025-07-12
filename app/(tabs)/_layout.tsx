@@ -29,7 +29,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Dashboard',
-          tabBarIcon: ({ size, color }) => (
+          tabBarIcon: ({ size, color, focused }) => (
             <div style={{
               backgroundColor: focused ? '#F68528' : 'transparent',
               padding: '8px',
@@ -48,7 +48,7 @@ export default function TabLayout() {
         name="inventory"
         options={{
           title: 'Inventar',
-          tabBarIcon: ({ size, color }) => (
+          tabBarIcon: ({ size, color, focused }) => (
             <div style={{
               backgroundColor: focused ? '#F68528' : 'transparent',
               padding: '8px',
@@ -67,7 +67,7 @@ export default function TabLayout() {
         name="scanner"
         options={{
           title: 'Scanner',
-          tabBarIcon: ({ size, color }) => (
+          tabBarIcon: ({ size, color, focused }) => (
             <div style={{
               backgroundColor: focused ? '#F68528' : 'transparent',
               padding: '8px',
@@ -86,7 +86,7 @@ export default function TabLayout() {
         name="movements"
         options={{
           title: 'Bewegungen',
-          tabBarIcon: ({ size, color }) => (
+          tabBarIcon: ({ size, color, focused }) => (
             <div style={{
               backgroundColor: focused ? '#F68528' : 'transparent',
               padding: '8px',
@@ -105,7 +105,7 @@ export default function TabLayout() {
         name="settings"
         options={{
           title: 'Einstellungen',
-          tabBarIcon: ({ size, color }) => (
+          tabBarIcon: ({ size, color, focused }) => (
             <div style={{
               backgroundColor: focused ? '#F68528' : 'transparent',
               padding: '8px',
