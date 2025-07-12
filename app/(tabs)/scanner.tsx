@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScrollView } from 'react-native';
 import { Camera, QrCode, Plus, Package } from 'lucide-react-native';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -8,19 +9,33 @@ import { useStorage } from '@/hooks/useStorage';
 
 export default function ScannerScreen() {
   const { t } = useLanguage();
-  const { products, addMovement } = useStorage();
+  const { products, addMovement, addProduct } = useStorage();
   const [permission, requestPermission] = useCameraPermissions();
   const [showCamera, setShowCamera] = useState(false);
   const [scannedData, setScannedData] = useState<string | null>(null);
   const [showManualEntry, setShowManualEntry] = useState(false);
   const [manualBarcode, setManualBarcode] = useState('');
   const [showMovementModal, setShowMovementModal] = useState(false);
+  const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [pendingBarcode, setPendingBarcode] = useState<string>('');
   const [movementData, setMovementData] = useState({
     type: 'in' as 'in' | 'out' | 'adjustment',
     quantity: 0,
     reason: '',
     notes: '',
+  });
+  
+  const [newProduct, setNewProduct] = useState({
+    name: '',
+    category: '',
+    currentStock: 0,
+    minStock: 0,
+    unit: '',
+    expiryDate: '',
+    location: '',
+    supplier: '',
+    barcode: '',
   });
 
   useEffect(() => {
@@ -44,10 +59,7 @@ export default function ScannerScreen() {
         `Barcode: ${data}\n\nMöchten Sie ein neues Produkt anlegen?`,
         [
           { text: t('cancel'), style: 'cancel' },
-          { text: 'Produkt anlegen', onPress: () => {
-            // Navigate to add product with barcode
-            console.log('Navigate to add product with barcode:', data);
-          }}
+          { text: 'Produkt anlegen', onPress: () => handleCreateProduct(data) }
         ]
       );
     }
@@ -55,6 +67,51 @@ export default function ScannerScreen() {
     setScannedData(null);
   };
 
+  const handleCreateProduct = (barcode: string) => {
+    setPendingBarcode(barcode);
+    setNewProduct({
+      name: '',
+      category: '',
+      currentStock: 0,
+      minStock: 0,
+      unit: '',
+      expiryDate: '',
+      location: '',
+      supplier: '',
+      barcode: barcode,
+    });
+    setShowAddProductModal(true);
+  };
+
+  const handleAddProduct = async () => {
+    if (!newProduct.name.trim()) {
+      Alert.alert('Fehler', 'Bitte geben Sie einen Produktnamen ein.');
+      return;
+    }
+    
+    try {
+      await addProduct(newProduct);
+      setShowAddProductModal(false);
+      
+      // Reset form
+      setNewProduct({
+        name: '',
+        category: '',
+        currentStock: 0,
+        minStock: 0,
+        unit: '',
+        expiryDate: '',
+        location: '',
+        supplier: '',
+        barcode: '',
+      });
+      setPendingBarcode('');
+      
+      Alert.alert('Erfolg', 'Produkt wurde erfolgreich angelegt!');
+    } catch (error) {
+      Alert.alert('Fehler', 'Produkt konnte nicht angelegt werden.');
+    }
+  };
   const handleManualEntry = () => {
     if (manualBarcode.trim()) {
       handleBarcodeScanned(manualBarcode.trim());
@@ -202,6 +259,114 @@ export default function ScannerScreen() {
         </SafeAreaView>
       </Modal>
 
+      {/* Add Product Modal */}
+      <Modal visible={showAddProductModal} animationType="slide" presentationStyle="pageSheet">
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setShowAddProductModal(false)}>
+              <Text style={styles.cancelButton}>{t('cancel')}</Text>
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>Neues Produkt</Text>
+            <TouchableOpacity onPress={handleAddProduct}>
+              <Text style={styles.saveButton}>{t('save')}</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <ScrollView style={styles.modalContent}>
+            {pendingBarcode && (
+              <View style={styles.barcodeInfo}>
+                <Text style={styles.barcodeLabel}>Gescannter Barcode:</Text>
+                <Text style={styles.barcodeValue}>{pendingBarcode}</Text>
+              </View>
+            )}
+            
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>{t('productName')} *</Text>
+              <TextInput
+                style={styles.textInput}
+                value={newProduct.name}
+                onChangeText={(text) => setNewProduct({...newProduct, name: text})}
+                placeholder="z.B. Tomaten"
+                autoFocus
+              />
+            </View>
+            
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>{t('category')}</Text>
+              <TextInput
+                style={styles.textInput}
+                value={newProduct.category}
+                onChangeText={(text) => setNewProduct({...newProduct, category: text})}
+                placeholder="z.B. Gemüse"
+              />
+            </View>
+            
+            <View style={styles.inputRow}>
+              <View style={styles.inputGroupHalf}>
+                <Text style={styles.inputLabel}>{t('quantity')}</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={newProduct.currentStock.toString()}
+                  onChangeText={(text) => setNewProduct({...newProduct, currentStock: parseInt(text) || 0})}
+                  keyboardType="numeric"
+                  placeholder="0"
+                />
+              </View>
+              
+              <View style={styles.inputGroupHalf}>
+                <Text style={styles.inputLabel}>{t('unit')}</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={newProduct.unit}
+                  onChangeText={(text) => setNewProduct({...newProduct, unit: text})}
+                  placeholder="kg, Stück, L"
+                />
+              </View>
+            </View>
+            
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Mindestbestand</Text>
+              <TextInput
+                style={styles.textInput}
+                value={newProduct.minStock.toString()}
+                onChangeText={(text) => setNewProduct({...newProduct, minStock: parseInt(text) || 0})}
+                keyboardType="numeric"
+                placeholder="0"
+              />
+            </View>
+            
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>{t('expiryDate')}</Text>
+              <TextInput
+                style={styles.textInput}
+                value={newProduct.expiryDate}
+                onChangeText={(text) => setNewProduct({...newProduct, expiryDate: text})}
+                placeholder="YYYY-MM-DD"
+              />
+            </View>
+            
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>{t('location')}</Text>
+              <TextInput
+                style={styles.textInput}
+                value={newProduct.location}
+                onChangeText={(text) => setNewProduct({...newProduct, location: text})}
+                placeholder="z.B. Kühlschrank A1"
+              />
+            </View>
+            
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Lieferant</Text>
+              <TextInput
+                style={styles.textInput}
+                value={newProduct.supplier}
+                onChangeText={(text) => setNewProduct({...newProduct, supplier: text})}
+                placeholder="z.B. Frische AG"
+              />
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
       {/* Movement Modal */}
       <Modal visible={showMovementModal} animationType="slide" presentationStyle="pageSheet">
         <SafeAreaView style={styles.modalContainer}>
@@ -526,5 +691,32 @@ const styles = StyleSheet.create({
   textArea: {
     height: 80,
     textAlignVertical: 'top',
+  },
+  barcodeInfo: {
+    backgroundColor: '#f0f9ff',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: '#22C55E',
+  },
+  barcodeLabel: {
+    fontSize: 12,
+    color: '#6b7280',
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  barcodeValue: {
+    fontSize: 16,
+    color: '#1f2937',
+    fontWeight: '600',
+    fontFamily: 'monospace',
+  },
+  inputRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  inputGroupHalf: {
+    flex: 1,
   },
 });
