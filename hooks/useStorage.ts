@@ -184,7 +184,26 @@ export const useStorage = () => {
   const generateAlertsForProduct = async (product: Product) => {
     const newAlerts: Alert[] = [];
     const now = new Date();
-    const expiryDate = new Date(product.expiryDate);
+    
+    // Parse German date format DD.MM.YYYY
+    const parseGermanDate = (dateString: string) => {
+      if (!dateString) return new Date();
+      
+      // Check if it's already in DD.MM.YYYY format
+      const germanDateRegex = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/;
+      const match = dateString.match(germanDateRegex);
+      
+      if (match) {
+        const [, day, month, year] = match;
+        // Create date with month-1 because JavaScript months are 0-indexed
+        return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      }
+      
+      // Fallback to standard Date parsing
+      return new Date(dateString);
+    };
+    
+    const expiryDate = parseGermanDate(product.expiryDate);
     const daysUntilExpiry = Math.ceil((expiryDate.getTime() - now.getTime()) / (1000 * 3600 * 24));
 
     // Expiry alerts

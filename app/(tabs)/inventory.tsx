@@ -35,7 +35,26 @@ export default function InventoryScreen() {
 
   const getStockStatus = (product: Product) => {
     const now = new Date();
-    const expiryDate = new Date(product.expiryDate);
+    
+    // Parse German date format DD.MM.YYYY
+    const parseGermanDate = (dateString: string) => {
+      if (!dateString) return new Date();
+      
+      // Check if it's already in DD.MM.YYYY format
+      const germanDateRegex = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/;
+      const match = dateString.match(germanDateRegex);
+      
+      if (match) {
+        const [, day, month, year] = match;
+        // Create date with month-1 because JavaScript months are 0-indexed
+        return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      }
+      
+      // Fallback to standard Date parsing
+      return new Date(dateString);
+    };
+    
+    const expiryDate = parseGermanDate(product.expiryDate);
     const daysUntilExpiry = Math.ceil((expiryDate.getTime() - now.getTime()) / (1000 * 3600 * 24));
 
     if (daysUntilExpiry < 0) return { status: 'expired', color: '#EF4444' };
@@ -45,8 +64,60 @@ export default function InventoryScreen() {
     return { status: 'inStock', color: '#22C55E' };
   };
 
+  // Format date for display in German format
+  const formatGermanDate = (dateString: string) => {
+    if (!dateString) return '';
+    
+    // If already in DD.MM.YYYY format, return as is
+    const germanDateRegex = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/;
+    if (germanDateRegex.test(dateString)) {
+      return dateString;
+    }
+    
+    // Try to parse and format
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString; // Return original if invalid
+    
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    
+    return `${day}.${month}.${year}`;
+  };
+
   const handleAddProduct = async () => {
     if (!newProduct.name.trim()) return;
+    
+    // Validate date format before saving
+    const validateGermanDate = (dateString: string) => {
+      if (!dateString) return true; // Allow empty dates
+      
+      const germanDateRegex = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/;
+      const match = dateString.match(germanDateRegex);
+      
+      if (!match) return false;
+      
+      const [, day, month, year] = match;
+      const dayNum = parseInt(day);
+      const monthNum = parseInt(month);
+      const yearNum = parseInt(year);
+      
+      // Basic validation
+      if (dayNum < 1 || dayNum > 31) return false;
+      if (monthNum < 1 || monthNum > 12) return false;
+      if (yearNum < 1900 || yearNum > 2100) return false;
+      
+      // Create date to check if it's valid
+      const testDate = new Date(yearNum, monthNum - 1, dayNum);
+      return testDate.getDate() === dayNum && 
+             testDate.getMonth() === monthNum - 1 && 
+             testDate.getFullYear() === yearNum;
+    };
+    
+    if (newProduct.expiryDate && !validateGermanDate(newProduct.expiryDate)) {
+      alert('Bitte geben Sie ein gültiges Datum im Format DD.MM.YYYY ein (z.B. 30.03.1973)');
+      return;
+    }
     
     await addProduct(newProduct);
     setNewProduct({
@@ -90,7 +161,7 @@ export default function InventoryScreen() {
             <View style={styles.detailItem}>
               <Calendar size={16} color="#6b7280" />
               <Text style={styles.detailValue}>
-                {new Date(product.expiryDate).toLocaleDateString()}
+                {formatGermanDate(product.expiryDate)}
               </Text>
             </View>
           </View>

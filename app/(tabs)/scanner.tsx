@@ -89,6 +89,37 @@ export default function ScannerScreen() {
       return;
     }
     
+    // Validate date format before saving
+    const validateGermanDate = (dateString: string) => {
+      if (!dateString) return true; // Allow empty dates
+      
+      const germanDateRegex = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/;
+      const match = dateString.match(germanDateRegex);
+      
+      if (!match) return false;
+      
+      const [, day, month, year] = match;
+      const dayNum = parseInt(day);
+      const monthNum = parseInt(month);
+      const yearNum = parseInt(year);
+      
+      // Basic validation
+      if (dayNum < 1 || dayNum > 31) return false;
+      if (monthNum < 1 || monthNum > 12) return false;
+      if (yearNum < 1900 || yearNum > 2100) return false;
+      
+      // Create date to check if it's valid
+      const testDate = new Date(yearNum, monthNum - 1, dayNum);
+      return testDate.getDate() === dayNum && 
+             testDate.getMonth() === monthNum - 1 && 
+             testDate.getFullYear() === yearNum;
+    };
+    
+    if (newProduct.expiryDate && !validateGermanDate(newProduct.expiryDate)) {
+      Alert.alert('Fehler', 'Bitte geben Sie ein gültiges Datum im Format DD.MM.YYYY ein (z.B. 30.03.1973)');
+      return;
+    }
+    
     try {
       await addProduct(newProduct);
       setShowAddProductModal(false);
