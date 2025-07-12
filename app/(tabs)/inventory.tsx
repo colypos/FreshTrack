@@ -15,7 +15,7 @@ export default function InventoryScreen() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showCategoryMenu, setShowCategoryMenu] = useState(false);
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   
@@ -172,83 +172,14 @@ export default function InventoryScreen() {
     return dates;
   };
 
-  // Category Navigation Component
-  const CategoryNavigation = ({ isCollapsed = false }) => (
-    <View style={[
-      styles.categoryNavigation,
-      isCollapsed && styles.categoryNavigationCollapsed,
-      isMobile && styles.categoryNavigationMobile
-    ]}>
-      <View style={styles.categoryHeader}>
-        <Text style={styles.categoryTitle}>Kategorien</Text>
-        {(isTablet || isMobile) && (
-          <TouchableOpacity 
-            onPress={() => setShowCategoryMenu(false)}
-            style={styles.closeButton}
-            accessibilityLabel="Kategorien schließen"
-            accessibilityRole="button"
-          >
-            <X size={20} color="#000000" />
-          </TouchableOpacity>
-        )}
-      </View>
-      
-      <ScrollView style={styles.categoryList} showsVerticalScrollIndicator={false}>
-        <TouchableOpacity
-          style={[
-            styles.categoryItem,
-            selectedCategory === 'all' && styles.categoryItemActive
-          ]}
-          onPress={() => {
-            setSelectedCategory('all');
-            if (isMobile) setShowCategoryMenu(false);
-          }}
-          accessibilityLabel="Alle Kategorien anzeigen"
-          accessibilityRole="button"
-          accessibilityState={{ selected: selectedCategory === 'all' }}
-        >
-          <Package size={18} color={selectedCategory === 'all' ? '#F68528' : '#6B7280'} />
-          <Text style={[
-            styles.categoryItemText,
-            selectedCategory === 'all' && styles.categoryItemTextActive
-          ]}>
-            Alle ({products.length})
-          </Text>
-        </TouchableOpacity>
-        
-        {categories.map(category => {
-          const count = products.filter(p => p.category === category).length;
-          return (
-            <TouchableOpacity
-              key={category}
-              style={[
-                styles.categoryItem,
-                selectedCategory === category && styles.categoryItemActive
-              ]}
-              onPress={() => {
-                setSelectedCategory(category);
-                if (isMobile) setShowCategoryMenu(false);
-              }}
-              accessibilityLabel={`Kategorie ${category} anzeigen, ${count} Produkte`}
-              accessibilityRole="button"
-              accessibilityState={{ selected: selectedCategory === category }}
-            >
-              <View style={[
-                styles.categoryDot,
-                { backgroundColor: selectedCategory === category ? '#F68528' : '#6B7280' }
-              ]} />
-              <Text style={[
-                styles.categoryItemText,
-                selectedCategory === category && styles.categoryItemTextActive
-              ]}>
-                {category} ({count})
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
-    </View>
-  );
+  // Get current category display info
+  const getCurrentCategoryInfo = () => {
+    if (selectedCategory === 'all') {
+      return { name: 'Alle Kategorien', count: products.length };
+    }
+    const count = products.filter(p => p.category === selectedCategory).length;
+    return { name: selectedCategory, count };
+  };
 
   // Product Card Components
   const ProductGridCard = ({ product }: { product: Product }) => {
@@ -387,152 +318,164 @@ export default function InventoryScreen() {
               </TouchableOpacity>
             )}
           </View>
-          
-          {isMobile && (
-            <TouchableOpacity 
-              style={styles.mobileFilterButton}
-              onPress={() => setShowCategoryMenu(true)}
-              accessibilityLabel="Kategorien anzeigen"
-              accessibilityRole="button"
-            >
+        </View>
+
+        {/* Category Dropdown */}
+        <View style={styles.categoryDropdownContainer}>
+          <TouchableOpacity 
+            style={styles.categoryDropdownButton}
+            onPress={() => setShowCategoryDropdown(!showCategoryDropdown)}
+            accessibilityLabel={`Kategorie auswählen, aktuell: ${getCurrentCategoryInfo().name}`}
+            accessibilityRole="button"
+            accessibilityState={{ expanded: showCategoryDropdown }}
+          >
+            <View style={styles.categoryDropdownContent}>
+              <Package size={20} color="#6B7280" />
+              <View style={styles.categoryDropdownText}>
+                <Text style={styles.categoryDropdownLabel}>Kategorie</Text>
+                <Text style={styles.categoryDropdownValue}>
+                  {getCurrentCategoryInfo().name} ({getCurrentCategoryInfo().count})
+                </Text>
+              </View>
+            </View>
+            <View style={[
+              styles.categoryDropdownArrow,
+              showCategoryDropdown && styles.categoryDropdownArrowOpen
+            ]}>
               <Menu size={20} color="#6B7280" />
-            </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+
+          {showCategoryDropdown && (
+            <View style={styles.categoryDropdownMenu}>
+              <TouchableOpacity
+                style={[
+                  styles.categoryDropdownItem,
+                  selectedCategory === 'all' && styles.categoryDropdownItemActive
+                ]}
+                onPress={() => {
+                  setSelectedCategory('all');
+                  setShowCategoryDropdown(false);
+                }}
+                accessibilityLabel="Alle Kategorien anzeigen"
+                accessibilityRole="button"
+                accessibilityState={{ selected: selectedCategory === 'all' }}
+              >
+                <Package size={18} color={selectedCategory === 'all' ? '#F68528' : '#6B7280'} />
+                <Text style={[
+                  styles.categoryDropdownItemText,
+                  selectedCategory === 'all' && styles.categoryDropdownItemTextActive
+                ]}>
+                  Alle Kategorien ({products.length})
+                </Text>
+                {selectedCategory === 'all' && (
+                  <View style={styles.categoryDropdownCheck}>
+                    <Text style={styles.categoryDropdownCheckmark}>✓</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+              
+              {categories.map(category => {
+                const count = products.filter(p => p.category === category).length;
+                const isSelected = selectedCategory === category;
+                return (
+                  <TouchableOpacity
+                    key={category}
+                    style={[
+                      styles.categoryDropdownItem,
+                      isSelected && styles.categoryDropdownItemActive
+                    ]}
+                    onPress={() => {
+                      setSelectedCategory(category);
+                      setShowCategoryDropdown(false);
+                    }}
+                    accessibilityLabel={`Kategorie ${category} anzeigen, ${count} Produkte`}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: isSelected }}
+                  >
+                    <View style={[
+                      styles.categoryDot,
+                      { backgroundColor: isSelected ? '#F68528' : '#6B7280' }
+                    ]} />
+                    <Text style={[
+                      styles.categoryDropdownItemText,
+                      isSelected && styles.categoryDropdownItemTextActive
+                    ]}>
+                      {category} ({count})
+                    </Text>
+                    {isSelected && (
+                      <View style={styles.categoryDropdownCheck}>
+                        <Text style={styles.categoryDropdownCheckmark}>✓</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
           )}
         </View>
       </View>
 
       {/* Main Content Area */}
-      <View style={styles.mainContent}>
-        {/* Desktop/Tablet Category Navigation */}
-        {!isMobile && (
-          <CategoryNavigation isCollapsed={isTablet} />
-        )}
-
-        {/* Product Grid/List */}
-        <View style={styles.productArea}>
-          <View style={styles.productHeader}>
-            <Text style={styles.resultCount}>
-              {filteredProducts.length} {filteredProducts.length === 1 ? 'Produkt' : 'Produkte'}
-              {selectedCategory !== 'all' && ` in "${selectedCategory}"`}
-            </Text>
-          </View>
-
-          <ScrollView 
-            style={styles.productList} 
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.productListContent}
-          >
-            {viewMode === 'grid' ? (
-              <View style={styles.productGrid}>
-                {filteredProducts.map(product => (
-                  <ProductGridCard key={product.id} product={product} />
-                ))}
-              </View>
-            ) : (
-              <View style={styles.productListView}>
-                {filteredProducts.map(product => (
-                  <ProductListCard key={product.id} product={product} />
-                ))}
-              </View>
-            )}
-            
-            {filteredProducts.length === 0 && (
-              <View style={styles.emptyState}>
-                <Package size={64} color="#D1D5DB" />
-                <Text style={styles.emptyTitle}>Keine Produkte gefunden</Text>
-                <Text style={styles.emptySubtitle}>
-                  {searchQuery ? 
-                    `Keine Ergebnisse für "${searchQuery}"` : 
-                    'Fügen Sie Ihr erstes Produkt hinzu'
-                  }
-                </Text>
-                <TouchableOpacity 
-                  style={styles.emptyAction}
-                  onPress={() => setShowAddModal(true)}
-                  accessibilityLabel="Erstes Produkt hinzufügen"
-                  accessibilityRole="button"
-                >
-                  <Plus size={20} color="#000000" />
-                  <Text style={styles.emptyActionText}>Produkt hinzufügen</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </ScrollView>
+      <View style={styles.productArea}>
+        <View style={styles.productHeader}>
+          <Text style={styles.resultCount}>
+            {filteredProducts.length} {filteredProducts.length === 1 ? 'Produkt' : 'Produkte'}
+            {selectedCategory !== 'all' && ` in "${selectedCategory}"`}
+          </Text>
         </View>
 
-        {/* Desktop Product Details Panel */}
-        {isDesktop && selectedProduct && (
-          <View style={styles.detailsPanel}>
-            <View style={styles.detailsHeader}>
-              <Text style={styles.detailsTitle}>Produktdetails</Text>
+        <ScrollView 
+          style={styles.productList} 
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.productListContent}
+        >
+          {viewMode === 'grid' ? (
+            <View style={styles.productGrid}>
+              {filteredProducts.map(product => (
+                <ProductGridCard key={product.id} product={product} />
+              ))}
+            </View>
+          ) : (
+            <View style={styles.productListView}>
+              {filteredProducts.map(product => (
+                <ProductListCard key={product.id} product={product} />
+              ))}
+            </View>
+          )}
+          
+          {filteredProducts.length === 0 && (
+            <View style={styles.emptyState}>
+              <Package size={64} color="#D1D5DB" />
+              <Text style={styles.emptyTitle}>Keine Produkte gefunden</Text>
+              <Text style={styles.emptySubtitle}>
+                {searchQuery ? 
+                  `Keine Ergebnisse für "${searchQuery}"` : 
+                  'Fügen Sie Ihr erstes Produkt hinzu'
+                }
+              </Text>
               <TouchableOpacity 
-                onPress={() => setSelectedProduct(null)}
-                accessibilityLabel="Details schließen"
+                style={styles.emptyAction}
+                onPress={() => setShowAddModal(true)}
+                accessibilityLabel="Erstes Produkt hinzufügen"
                 accessibilityRole="button"
               >
-                <X size={20} color="#6B7280" />
+                <Plus size={20} color="#000000" />
+                <Text style={styles.emptyActionText}>Produkt hinzufügen</Text>
               </TouchableOpacity>
             </View>
-            
-            <ScrollView style={styles.detailsContent}>
-              <View style={styles.detailsSection}>
-                <Text style={styles.detailsSectionTitle}>Grundinformationen</Text>
-                <View style={styles.detailsField}>
-                  <Text style={styles.detailsLabel}>Name:</Text>
-                  <Text style={styles.detailsValue}>{selectedProduct.name}</Text>
-                </View>
-                <View style={styles.detailsField}>
-                  <Text style={styles.detailsLabel}>Kategorie:</Text>
-                  <Text style={styles.detailsValue}>{selectedProduct.category}</Text>
-                </View>
-              </View>
-              
-              <View style={styles.detailsSection}>
-                <Text style={styles.detailsSectionTitle}>Bestand</Text>
-                <View style={styles.detailsField}>
-                  <Text style={styles.detailsLabel}>Aktueller Bestand:</Text>
-                  <Text style={styles.detailsValue}>{selectedProduct.currentStock} {selectedProduct.unit}</Text>
-                </View>
-                <View style={styles.detailsField}>
-                  <Text style={styles.detailsLabel}>Mindestbestand:</Text>
-                  <Text style={styles.detailsValue}>{selectedProduct.minStock} {selectedProduct.unit}</Text>
-                </View>
-              </View>
-              
-              <View style={styles.detailsSection}>
-                <Text style={styles.detailsSectionTitle}>Weitere Informationen</Text>
-                <View style={styles.detailsField}>
-                  <Text style={styles.detailsLabel}>Verfallsdatum:</Text>
-                  <Text style={styles.detailsValue}>{formatGermanDate(selectedProduct.expiryDate)}</Text>
-                </View>
-                <View style={styles.detailsField}>
-                  <Text style={styles.detailsLabel}>Standort:</Text>
-                  <Text style={styles.detailsValue}>{selectedProduct.location}</Text>
-                </View>
-                {selectedProduct.supplier && (
-                  <View style={styles.detailsField}>
-                    <Text style={styles.detailsLabel}>Lieferant:</Text>
-                    <Text style={styles.detailsValue}>{selectedProduct.supplier}</Text>
-                  </View>
-                )}
-              </View>
-            </ScrollView>
-          </View>
-        )}
+          )}
+        </ScrollView>
       </View>
 
-      {/* Mobile Category Menu Modal */}
-      {isMobile && (
-        <Modal
-          visible={showCategoryMenu}
-          animationType="slide"
-          presentationStyle="pageSheet"
-          onRequestClose={() => setShowCategoryMenu(false)}
-        >
-          <SafeAreaView style={styles.modalContainer}>
-            <CategoryNavigation />
-          </SafeAreaView>
-        </Modal>
+      {/* Overlay to close dropdown when clicking outside */}
+      {showCategoryDropdown && (
+        <TouchableOpacity 
+          style={styles.dropdownOverlay}
+          onPress={() => setShowCategoryDropdown(false)}
+          accessibilityLabel="Dropdown schließen"
+          accessibilityRole="button"
+        />
       )}
 
       {/* Add Product Modal */}
@@ -899,68 +842,109 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   
-  // Main Content Layout
-  mainContent: {
-    flex: 1,
-    flexDirection: 'row',
+  // Category Dropdown Styles
+  categoryDropdownContainer: {
+    position: 'relative',
+    marginTop: 12,
+    zIndex: 1000,
   },
-  
-  // Category Navigation
-  categoryNavigation: {
-    width: 280,
+  categoryDropdownButton: {
     backgroundColor: '#F5C9A4',
-    borderRightWidth: 1,
-    borderRightColor: '#000000',
-  },
-  categoryNavigationCollapsed: {
-    width: 240,
-  },
-  categoryNavigationMobile: {
-    width: '100%',
-    borderRightWidth: 0,
-  },
-  categoryHeader: {
+    borderWidth: 1,
+    borderColor: '#000000',
+    borderRadius: 0,
+    padding: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#000000',
+    minHeight: 56,
   },
-  categoryTitle: {
-    fontSize: 18,
+  categoryDropdownContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 12,
+  },
+  categoryDropdownText: {
+    flex: 1,
+  },
+  categoryDropdownLabel: {
+    fontSize: 12,
+    color: '#6B7280',
+    fontWeight: '500',
+    marginBottom: 2,
+  },
+  categoryDropdownValue: {
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#000000',
   },
-  closeButton: {
-    padding: 4,
+  categoryDropdownArrow: {
+    transform: [{ rotate: '0deg' }],
+    transition: 'transform 0.2s ease',
   },
-  categoryList: {
-    flex: 1,
-    padding: 16,
+  categoryDropdownArrowOpen: {
+    transform: [{ rotate: '180deg' }],
   },
-  categoryItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 0,
-    marginBottom: 4,
-    gap: 12,
-    minHeight: 48,
-  },
-  categoryItemActive: {
-    backgroundColor: '#F68528',
+  categoryDropdownMenu: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    backgroundColor: '#F5C9A4',
     borderWidth: 1,
     borderColor: '#000000',
+    borderTopWidth: 0,
+    borderRadius: 0,
+    maxHeight: 300,
+    zIndex: 1001,
   },
-  categoryItemText: {
+  categoryDropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
+    minHeight: 48,
+    gap: 12,
+  },
+  categoryDropdownItemActive: {
+    backgroundColor: '#F68528',
+  },
+  categoryDropdownItemText: {
     fontSize: 16,
     color: '#000000',
     fontWeight: '500',
+    flex: 1,
   },
-  categoryItemTextActive: {
+  categoryDropdownItemTextActive: {
     fontWeight: 'bold',
+  },
+  categoryDropdownCheck: {
+    width: 24,
+    height: 24,
+    borderRadius: 0,
+    backgroundColor: '#22C55E',
+    borderWidth: 1,
+    borderColor: '#000000',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  categoryDropdownCheckmark: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#000000',
+  },
+  dropdownOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'transparent',
+    zIndex: 999,
   },
   categoryDot: {
     width: 8,
@@ -968,7 +952,7 @@ const styles = StyleSheet.create({
     borderRadius: 0,
   },
   
-  // Product Area
+  // Product Area (now full width)
   productArea: {
     flex: 1,
     backgroundColor: '#D0D0D0',
@@ -976,7 +960,7 @@ const styles = StyleSheet.create({
   productHeader: {
     padding: 20,
     paddingBottom: 12,
-    borderBottomWidth: 1,
+    borderWidth: 1,
     borderBottomColor: 'rgba(0, 0, 0, 0.1)',
   },
   resultCount: {
@@ -991,7 +975,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   
-  // Product Grid
+  // Product Grid (now with more space)
   productGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -1001,11 +985,107 @@ const styles = StyleSheet.create({
   productGridCard: {
     backgroundColor: '#F5C9A4',
     borderRadius: 0,
+    borderBottomWidth: 1,
+    borderColor: '#000000',
+    padding: 16,
+    width: screenWidth < 768 ? '100%' : screenWidth < 1024 ? '48%' : '32%',
+    minHeight: 200,
+  },
+  productCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  productIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 0,
+    backgroundColor: '#D0D0D0',
+    borderWidth: 1,
+    borderColor: '#000000',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 0,
+    borderWidth: 1,
+    borderColor: '#000000',
+  },
+  statusText: {
+    fontSize: 10,
+    color: '#000000',
+    fontWeight: 'bold',
+  },
+  productCardContent: {
+    flex: 1,
+  },
+  productName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#000000',
+    marginBottom: 4,
+    lineHeight: 20,
+  },
+  productCategory: {
+    fontSize: 14,
+    color: '#000000',
+    marginBottom: 12,
+  },
+  productDetails: {
+    gap: 8,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  detailLabel: {
+    fontSize: 12,
+    color: '#000000',
+    fontWeight: '600',
+  },
+  detailValue: {
+    fontSize: 12,
+    color: '#000000',
+    flex: 1,
+  },
+  
+  // Product List View
+  productListView: {
+    gap: 8,
+  },
+  productListCard: {
+    backgroundColor: '#F5C9A4',
+    borderRadius: 0,
     borderWidth: 1,
     borderColor: '#000000',
     padding: 16,
-    width: screenWidth < 768 ? '100%' : screenWidth < 1024 ? '48%' : '31%',
-    minHeight: 200,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    minHeight: 80,
+  },
+  productListContent: {
+    flex: 1,
+  },
+  productListHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 4,
+  },
+  productListDetails: {
+    flexDirection: 'row',
+    gap: 16,
+    marginTop: 8,
+  },
+  detailItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   productCardHeader: {
     flexDirection: 'row',
