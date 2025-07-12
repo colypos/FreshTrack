@@ -1,0 +1,210 @@
+import { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Product, Movement, Alert } from '@/types';
+
+export const useStorage = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [movements, setMovements] = useState<Movement[]>([]);
+  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [productsData, movementsData, alertsData] = await Promise.all([
+        AsyncStorage.getItem('products'),
+        AsyncStorage.getItem('movements'),
+        AsyncStorage.getItem('alerts'),
+      ]);
+
+      setProducts(productsData ? JSON.parse(productsData) : []);
+      setMovements(movementsData ? JSON.parse(movementsData) : []);
+      setAlerts(alertsData ? JSON.parse(alertsData) : []);
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveProducts = async (newProducts: Product[]) => {
+    try {
+      await AsyncStorage.setItem('products', JSON.stringify(newProducts));
+      setProducts(newProducts);
+    } catch (error) {
+      console.error('Error saving products:', error);
+    }
+  };
+
+  const saveMovements = async (newMovements: Movement[]) => {
+    try {
+      await AsyncStorage.setItem('movements', JSON.stringify(newMovements));
+      setMovements(newMovements);
+    } catch (error) {
+      console.error('Error saving movements:', error);
+    }
+  };
+
+  const saveAlerts = async (newAlerts: Alert[]) => {
+    try {
+      await AsyncStorage.setItem('alerts', JSON.stringify(newAlerts));
+      setAlerts(newAlerts);
+    } catch (error) {
+      console.error('Error saving alerts:', error);
+    }
+  };
+
+  const addProduct = async (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const newProduct: Product = {
+      ...product,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    
+    const updatedProducts = [...products, newProduct];
+    await saveProducts(updatedProducts);
+    
+    // Check for alerts
+    generateAlertsForProduct(newProduct);
+  };
+
+  const updateProduct = async (id: string, updates: Partial<Product>) => {
+    const updatedProducts = products.map(product =>
+      product.id === id
+        ? { ...product, ...updates, updatedAt: new Date().toISOString() }
+        : product
+    );
+    await saveProducts(updatedProducts);
+    
+    // Check for alerts for updated product
+    const updatedProduct = updatedProducts.find(p => p.id === id);
+    if (updatedProduct) {
+      generateAlertsForProduct(updatedProduct);
+    }
+  };
+
+  const deleteProduct = async (id: string) => {
+    const updatedProducts = products.filter(product => product.id !== id);
+    await saveProducts(updatedProducts);
+    
+    // Remove related alerts
+    const updatedAlerts = alerts.filter(alert => alert.productId !== id);
+    await saveAlerts(updatedAlerts);
+  };
+
+  const addMovement = async (movement: Omit<Movement, 'id' | 'timestamp'>) => {
+    const newMovement: Movement = {
+      ...movement,
+      id: Date.now().toString(),
+      timestamp: new Date().toISOString(),
+    };
+    
+    const updatedMovements = [newMovement, ...movements];
+    await saveMovements(updatedMovements);
+    
+    // Update product stock
+    if (movement.type === 'in') {
+      await updateProduct(movement.productId, {
+        currentStock: products.find(p => p.id === movement.productId)!.currentStock + movement.quantity
+      });
+    } else if (movement.type === 'out') {
+      await updateProduct(movement.productId, {
+        currentStock: products.find(p => p.id === movement.productId)!.currentStock - movement.quantity
+      });
+    } else if (movement.type === 'adjustment') {
+      await updateProduct(movement.productId, {
+        currentStock: movement.quantity
+      });
+    }
+  };
+
+  const generateAlertsForProduct = async (product: Product) => {
+    const newAlerts: Alert[] = [];
+    const now = new Date();
+    const expiryDate = new Date(product.expiryDate);
+    const daysUntilExpiry = Math.ceil((expiryDate.getTime() - now.getTime()) / (1000 * 3600 * 24));
+
+    // Expiry alerts
+    if (daysUntilExpiry < 0) {
+      newAlerts.push({
+        id: `${product.id}-expired`,
+        type: 'expiry',
+        severity: 'high',
+        productId: product.id,
+        productName: product.name,
+        message: `Produkt ist abgelaufen`,
+        timestamp: new Date().toISOString(),
+        acknowledged: false,
+      });
+    } else if (daysUntilExpiry === 0) {
+      newAlerts.push({
+        id: `${product.id}-expires-today`,
+        type: 'expiry',
+        severity: 'high',
+        productId: product.id,
+        productName: product.name,
+        message: `Produkt läuft heute ab`,
+        timestamp: new Date().toISOString(),
+        acknowledged: false,
+      });
+    } else if (daysUntilExpiry <= 3) {
+      newAlerts.push({
+        id: `${product.id}-expires-soon`,
+        type: 'expiry',
+        severity: 'medium',
+        productId: product.id,
+        productName: product.name,
+        message: `Produkt läuft in ${daysUntilExpiry} Tagen ab`,
+        timestamp: new Date().toISOString(),
+        acknowledged: false,
+      });
+    }
+
+    // Low stock alerts
+    if (product.currentStock <= product.minStock) {
+      newAlerts.push({
+        id: `${product.id}-low-stock`,
+        type: 'low_stock',
+        severity: product.currentStock === 0 ? 'high' : 'medium',
+        productId: product.id,
+        productName: product.name,
+        message: `Niedriger Bestand: ${product.currentStock} ${product.unit}`,
+        timestamp: new Date().toISOString(),
+        acknowledged: false,
+      });
+    }
+
+    // Remove old alerts for this product and add new ones
+    const filteredAlerts = alerts.filter(alert => 
+      !alert.productId || alert.productId !== product.id
+    );
+    
+    const updatedAlerts = [...filteredAlerts, ...newAlerts];
+    await saveAlerts(updatedAlerts);
+  };
+
+  const acknowledgeAlert = async (alertId: string) => {
+    const updatedAlerts = alerts.map(alert =>
+      alert.id === alertId ? { ...alert, acknowledged: true } : alert
+    );
+    await saveAlerts(updatedAlerts);
+  };
+
+  return {
+    products,
+    movements,
+    alerts,
+    loading,
+    addProduct,
+    updateProduct,
+    deleteProduct,
+    addMovement,
+    acknowledgeAlert,
+    generateAlertsForProduct,
+  };
+};
