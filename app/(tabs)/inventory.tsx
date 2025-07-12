@@ -303,6 +303,171 @@ export default function InventoryScreen() {
           </View>
           
           <ScrollView style={styles.modalContent}>
+            {/* Grundinformationen */}
+            <View style={styles.fieldGroup}>
+              <Text style={styles.groupTitle}>Grundinformationen</Text>
+              
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>{t('productName')} *</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={newProduct.name}
+                  onChangeText={(text) => setNewProduct({...newProduct, name: text})}
+                  placeholder="z.B. Tomaten"
+                  placeholderTextColor="#6B7280"
+                  autoFocus
+                  returnKeyType="next"
+                  accessibilityLabel="Produktname eingeben"
+                  accessibilityHint="Pflichtfeld für den Namen des Produkts"
+                />
+              </View>
+              
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>{t('category')}</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={newProduct.category}
+                  onChangeText={(text) => setNewProduct({...newProduct, category: text})}
+                  placeholder="z.B. Gemüse"
+                  placeholderTextColor="#6B7280"
+                  returnKeyType="next"
+                  accessibilityLabel="Kategorie eingeben"
+                  accessibilityHint="Produktkategorie für bessere Organisation"
+                />
+              </View>
+            </View>
+
+            {/* Bestandsinformationen */}
+            <View style={styles.fieldGroup}>
+              <Text style={styles.groupTitle}>Bestandsinformationen</Text>
+              
+              <View style={styles.inputRow}>
+                <View style={styles.inputGroupHalf}>
+                  <Text style={styles.inputLabel}>{t('quantity')}</Text>
+                  <TextInput
+                    style={styles.textInput}
+                    value={newProduct.currentStock.toString()}
+                    onChangeText={(text) => setNewProduct({...newProduct, currentStock: parseInt(text) || 0})}
+                    keyboardType="numeric"
+                    placeholder="0"
+                    placeholderTextColor="#6B7280"
+                    returnKeyType="next"
+                    accessibilityLabel="Aktuelle Menge eingeben"
+                    accessibilityHint="Anzahl der verfügbaren Einheiten"
+                  />
+                </View>
+                
+                <View style={styles.inputGroupHalf}>
+                  <Text style={styles.inputLabel}>{t('unit')}</Text>
+                  <TextInput
+                    style={styles.textInput}
+                    value={newProduct.unit}
+                    onChangeText={(text) => setNewProduct({...newProduct, unit: text})}
+                    placeholder="kg, Stück, L"
+                    placeholderTextColor="#6B7280"
+                    returnKeyType="next"
+                    accessibilityLabel="Einheit eingeben"
+                    accessibilityHint="Maßeinheit für das Produkt"
+                  />
+                </View>
+              </View>
+              
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Mindestbestand</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={newProduct.minStock.toString()}
+                  onChangeText={(text) => setNewProduct({...newProduct, minStock: parseInt(text) || 0})}
+                  keyboardType="numeric"
+                  placeholder="0"
+                  placeholderTextColor="#6B7280"
+                  returnKeyType="next"
+                  accessibilityLabel="Mindestbestand eingeben"
+                  accessibilityHint="Warnschwelle für niedrigen Bestand"
+                />
+              </View>
+            </View>
+
+            {/* Verfallsdatum */}
+            <View style={styles.fieldGroup}>
+              <Text style={styles.groupTitle}>Verfallsdatum</Text>
+              
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>{t('expiryDate')}</Text>
+                <View style={styles.dateInputContainer}>
+                  <TextInput
+                    style={[styles.textInput, styles.dateInput]}
+                    value={newProduct.expiryDate}
+                    onChangeText={(text) => setNewProduct({...newProduct, expiryDate: text})}
+                    placeholder="DD.MM.YYYY"
+                    placeholderTextColor="#6B7280"
+                    returnKeyType="next"
+                    accessibilityLabel="Verfallsdatum eingeben"
+                    accessibilityHint="Datum im Format Tag.Monat.Jahr"
+                  />
+                  <TouchableOpacity 
+                    style={styles.calendarButton}
+                    onPress={() => setShowDatePicker(true)}
+                    accessibilityLabel="Kalender öffnen"
+                    accessibilityHint="Datum aus Kalender auswählen"
+                    accessibilityRole="button"
+                  >
+                    <Calendar size={20} color="#6b7280" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+
+            {/* Standort und Lieferant */}
+            <View style={styles.fieldGroup}>
+              <Text style={styles.groupTitle}>Zusätzliche Informationen</Text>
+              
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>{t('location')}</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={newProduct.location}
+                  onChangeText={(text) => setNewProduct({...newProduct, location: text})}
+                  placeholder="z.B. Kühlschrank A1"
+                  placeholderTextColor="#6B7280"
+                  returnKeyType="next"
+                  accessibilityLabel="Lagerort eingeben"
+                  accessibilityHint="Wo das Produkt gelagert wird"
+                />
+              </View>
+              
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Lieferant</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={newProduct.supplier}
+                  onChangeText={(text) => setNewProduct({...newProduct, supplier: text})}
+                  placeholder="z.B. Frische AG"
+                  placeholderTextColor="#6B7280"
+                  returnKeyType="done"
+                  accessibilityLabel="Lieferant eingeben"
+                  accessibilityHint="Name des Produktlieferanten"
+                />
+              </View>
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+
+      {/* Date Picker Modal */}
+      <Modal visible={showDatePicker} animationType="slide" presentationStyle="pageSheet">
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+              <Text style={styles.cancelButton}>{t('cancel')}</Text>
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>Datum auswählen</Text>
+            <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+              <Text style={styles.saveButton}>Fertig</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <ScrollView style={styles.datePickerContent}>
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>{t('productName')}</Text>
               <TextInput
@@ -689,34 +854,53 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   inputGroup: {
+    marginBottom: 16,
+  },
+  fieldGroup: {
+    marginBottom: 32,
+    paddingBottom: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  groupTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000000',
     marginBottom: 20,
+    paddingBottom: 8,
+    borderBottomWidth: 2,
+    borderBottomColor: '#F68528',
   },
   inputRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 16,
+    marginBottom: 16,
   },
   inputGroupHalf: {
     flex: 1,
   },
   inputLabel: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
     color: '#000000',
-    marginBottom: 8,
+    marginBottom: 10,
+    lineHeight: 20,
   },
   textInput: {
     borderWidth: 1,
     borderColor: '#000000',
     borderRadius: 0,
-    padding: 12,
+    padding: 14,
     fontSize: 16,
     backgroundColor: '#F5C9A4',
     color: '#000000',
+    minHeight: 48,
+    lineHeight: 20,
   },
   dateInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 12,
   },
   dateInput: {
     flex: 1,
@@ -725,8 +909,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5C9A4',
     borderWidth: 1,
     borderColor: '#000000',
-    width: 44,
-    height: 44,
+    width: 48,
+    height: 48,
     borderRadius: 0,
     justifyContent: 'center',
     alignItems: 'center',
