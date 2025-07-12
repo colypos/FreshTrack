@@ -463,7 +463,8 @@ export default function ScannerScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#D0D0D0',
+    paddingLeft: 200, // Space for vertical tabs
   },
   header: {
     padding: 20,
@@ -483,8 +484,10 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   scanButton: {
-    backgroundColor: '#22C55E',
-    borderRadius: 16,
+    backgroundColor: '#F5C9A4',
+    borderWidth: 1,
+    borderColor: '#000000',
+    borderRadius: 0,
     padding: 24,
     alignItems: 'center',
     justifyContent: 'center',
@@ -501,18 +504,18 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   manualButton: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
+    backgroundColor: '#F5C9A4',
+    borderWidth: 1,
+    borderColor: '#000000',
+    borderRadius: 0,
     padding: 20,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#22C55E',
     gap: 8,
   },
   manualButtonText: {
-    color: '#22C55E',
+    color: '#000000',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -554,13 +557,16 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   permissionButton: {
-    backgroundColor: '#22C55E',
+    backgroundColor: '#F5C9A4',
+    borderWidth: 1,
+    borderColor: '#000000',
+    borderRadius: 0,
     paddingHorizontal: 24,
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: 0,
   },
   permissionButtonText: {
-    color: '#ffffff',
+    color: '#000000',
     fontSize: 16,
     fontWeight: '600',
   },

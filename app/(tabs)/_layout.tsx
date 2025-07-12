@@ -1,72 +1,121 @@
 import { Tabs } from 'expo-router';
 import { Package, ChartBar as BarChart3, Camera, ScrollText, Settings } from 'lucide-react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+
+function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+  return (
+    <View style={styles.tabContainer}>
+      {state.routes.map((route, index) => {
+        const { options } = descriptors[route.key];
+        const label = options.tabBarLabel !== undefined 
+          ? options.tabBarLabel 
+          : options.title !== undefined 
+          ? options.title 
+          : route.name;
+
+        const isFocused = state.index === index;
+
+        const onPress = () => {
+          const event = navigation.emit({
+            type: 'tabPress',
+            target: route.key,
+            canPreventDefault: true,
+          });
+
+          if (!isFocused && !event.defaultPrevented) {
+            navigation.navigate(route.name);
+          }
+        };
+
+        const getIcon = () => {
+          const iconProps = {
+            size: 20,
+            color: isFocused ? '#F68528' : '#000000'
+          };
+
+          switch (route.name) {
+            case 'index':
+              return <BarChart3 {...iconProps} />;
+            case 'inventory':
+              return <Package {...iconProps} />;
+            case 'scanner':
+              return <Camera {...iconProps} />;
+            case 'movements':
+              return <ScrollText {...iconProps} />;
+            case 'settings':
+              return <Settings {...iconProps} />;
+            default:
+              return null;
+          }
+        };
+
+        return (
+          <TouchableOpacity
+            key={route.key}
+            onPress={onPress}
+            style={[
+              styles.tabItem,
+              isFocused && styles.tabItemActive
+            ]}
+          >
+            <View style={[
+              styles.tabIndicator,
+              { backgroundColor: isFocused ? '#F68528' : '#000000' }
+            ]} />
+            <View style={styles.tabContent}>
+              {getIcon()}
+              <Text style={[
+                styles.tabLabel,
+                { color: isFocused ? '#F68528' : '#000000' }
+              ]}>
+                {label}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+}
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarStyle: {
-          backgroundColor: '#ffffff',
-          borderTopWidth: 1,
-          borderTopColor: '#e5e7eb',
-          paddingBottom: 8,
-          paddingTop: 8,
-          height: 80,
-        },
-        tabBarActiveTintColor: '#22C55E',
-        tabBarInactiveTintColor: '#6b7280',
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '600',
-          marginTop: 4,
-        },
-      }}>
+      }}
+      tabBar={(props) => <CustomTabBar {...props} />}
+    >
       <Tabs.Screen
         name="index"
         options={{
           title: 'Dashboard',
-          tabBarIcon: ({ size, color }) => (
-            <BarChart3 size={size} color={color} />
-          ),
         }}
       />
       <Tabs.Screen
         name="inventory"
         options={{
           title: 'Inventar',
-          tabBarIcon: ({ size, color }) => (
-            <Package size={size} color={color} />
-          ),
         }}
       />
       <Tabs.Screen
         name="scanner"
         options={{
           title: 'Scanner',
-          tabBarIcon: ({ size, color }) => (
-            <Camera size={size} color={color} />
-          ),
         }}
       />
       <Tabs.Screen
         name="movements"
         options={{
           title: 'Bewegungen',
-          tabBarIcon: ({ size, color }) => (
-            <ScrollText size={size} color={color} />
-          ),
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
           title: 'Einstellungen',
-          tabBarIcon: ({ size, color }) => (
-            <Settings size={size} color={color} />
-          ),
         }}
       />
     </Tabs>
   );
-}
