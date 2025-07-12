@@ -7,10 +7,10 @@ import { useStorage } from '@/hooks/useStorage';
 import * as DocumentPicker from 'expo-document-picker';
 
 const languages = [
-  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-  { code: 'en', name: 'English', flag: '🇬🇧' },
-  { code: 'fr', name: 'Français', flag: '🇫🇷' },
-  { code: 'it', name: 'Italiano', flag: '🇮🇹' },
+  { code: 'de', name: 'Deutsch' },
+  { code: 'fr', name: 'Français' },
+  { code: 'it', name: 'Italiano' },
+  { code: 'en', name: 'English' },
 ];
 
 export default function SettingsScreen() {
@@ -132,7 +132,7 @@ export default function SettingsScreen() {
                     ]}
                     onPress={() => changeLanguage(lang.code)}
                   >
-                    <Text style={styles.languageFlag}>{lang.flag}</Text>
+                    <Text style={styles.languageText}>{lang.name}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -285,8 +285,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#F68528',
     borderColor: '#000000',
   },
-  languageFlag: {
-    fontSize: 18,
+  languageText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#000000',
+    textAlign: 'center',
   },
   footer: {
     padding: 20,
