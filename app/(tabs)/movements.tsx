@@ -166,8 +166,7 @@ export default function MovementsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#D0D0D0',
-    paddingLeft: 200, // Space for vertical tabs
+    backgroundColor: '#f8fafc',
   },
   header: {
     flexDirection: 'row',
@@ -182,13 +181,10 @@ const styles = StyleSheet.create({
     color: '#1f2937',
   },
   filterButton: {
-    backgroundColor: '#F5C9A4',
-    borderWidth: 1,
-    borderColor: '#000000',
-    borderRadius: 0,
+    backgroundColor: '#ffffff',
     width: 48,
     height: 48,
-    borderRadius: 0,
+    borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -202,31 +198,30 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   filterChip: {
-    backgroundColor: '#F5C9A4',
-    borderWidth: 1,
-    borderColor: '#000000',
-    borderRadius: 0,
+    backgroundColor: '#ffffff',
     paddingHorizontal: 16,
     paddingVertical: 6,
-    borderRadius: 0,
+    borderRadius: 20,
     marginRight: 8,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
     height: 32,
     justifyContent: 'center',
   },
   filterChipActive: {
-    backgroundColor: '#F68528',
-    borderColor: '#000000',
+    backgroundColor: '#f0f9ff',
+    borderColor: '#3b82f6',
   },
   filterText: {
     fontSize: 14,
-    color: '#000000',
+    color: '#6b7280',
     fontWeight: '500',
   },
   filterTextActive: {
-    color: '#000000',
+    color: '#3b82f6',
     fontWeight: '600',
   },
   statsBar: {
