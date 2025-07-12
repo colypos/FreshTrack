@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Modal, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Modal, Alert, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Search, Plus, Filter, Package, Calendar, MapPin } from 'lucide-react-native';
+import { Search, Plus, Filter, Package, Calendar, MapPin, Menu, X, Grid, List } from 'lucide-react-native';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useStorage } from '@/hooks/useStorage';
 import { Product } from '@/types';
+
+const { width: screenWidth } = Dimensions.get('window');
 
 export default function InventoryScreen() {
   const { t } = useLanguage();
@@ -13,6 +15,9 @@ export default function InventoryScreen() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showCategoryMenu, setShowCategoryMenu] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   
   const [newProduct, setNewProduct] = useState({
     name: '',
@@ -26,10 +31,17 @@ export default function InventoryScreen() {
     barcode: '',
   });
 
+  // Responsive breakpoints
+  const isDesktop = screenWidth >= 1024;
+  const isTablet = screenWidth >= 768 && screenWidth < 1024;
+  const isMobile = screenWidth < 768;
+
   const categories = Array.from(new Set(products.map(p => p.category))).filter(Boolean);
 
   const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         product.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         product.location.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -37,47 +49,40 @@ export default function InventoryScreen() {
   const getStockStatus = (product: Product) => {
     const now = new Date();
     
-    // Parse German date format DD.MM.YYYY
     const parseGermanDate = (dateString: string) => {
       if (!dateString) return new Date();
       
-      // Check if it's already in DD.MM.YYYY format
       const germanDateRegex = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/;
       const match = dateString.match(germanDateRegex);
       
       if (match) {
         const [, day, month, year] = match;
-        // Create date with month-1 because JavaScript months are 0-indexed
         return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
       }
       
-      // Fallback to standard Date parsing
       return new Date(dateString);
     };
     
     const expiryDate = parseGermanDate(product.expiryDate);
     const daysUntilExpiry = Math.ceil((expiryDate.getTime() - now.getTime()) / (1000 * 3600 * 24));
 
-    if (daysUntilExpiry < 0) return { status: 'expired', color: '#EF4444' };
-    if (daysUntilExpiry === 0) return { status: 'expiresToday', color: '#EF4444' };
-    if (daysUntilExpiry <= 7) return { status: 'expiresThisWeek', color: '#EAB308' };
-    if (product.currentStock <= product.minStock) return { status: 'lowStockWarning', color: '#F97316' };
-    return { status: 'inStock', color: '#22C55E' };
+    if (daysUntilExpiry < 0) return { status: 'expired', color: '#EF4444', label: 'Abgelaufen' };
+    if (daysUntilExpiry === 0) return { status: 'expiresToday', color: '#EF4444', label: 'Läuft heute ab' };
+    if (daysUntilExpiry <= 7) return { status: 'expiresThisWeek', color: '#EAB308', label: 'Läuft bald ab' };
+    if (product.currentStock <= product.minStock) return { status: 'lowStockWarning', color: '#F97316', label: 'Niedriger Bestand' };
+    return { status: 'inStock', color: '#22C55E', label: 'Auf Lager' };
   };
 
-  // Format date for display in German format
   const formatGermanDate = (dateString: string) => {
     if (!dateString) return '';
     
-    // If already in DD.MM.YYYY format, return as is
     const germanDateRegex = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/;
     if (germanDateRegex.test(dateString)) {
       return dateString;
     }
     
-    // Try to parse and format
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) return dateString; // Return original if invalid
+    if (isNaN(date.getTime())) return dateString;
     
     const day = date.getDate().toString().padStart(2, '0');
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -87,11 +92,13 @@ export default function InventoryScreen() {
   };
 
   const handleAddProduct = async () => {
-    if (!newProduct.name.trim()) return;
+    if (!newProduct.name.trim()) {
+      Alert.alert('Fehler', 'Bitte geben Sie einen Produktnamen ein.');
+      return;
+    }
     
-    // Validate date format before saving
     const validateGermanDate = (dateString: string) => {
-      if (!dateString) return true; // Allow empty dates
+      if (!dateString) return true;
       
       const germanDateRegex = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/;
       const match = dateString.match(germanDateRegex);
@@ -103,12 +110,10 @@ export default function InventoryScreen() {
       const monthNum = parseInt(month);
       const yearNum = parseInt(year);
       
-      // Basic validation
       if (dayNum < 1 || dayNum > 31) return false;
       if (monthNum < 1 || monthNum > 12) return false;
       if (yearNum < 1900 || yearNum > 2100) return false;
       
-      // Create date to check if it's valid
       const testDate = new Date(yearNum, monthNum - 1, dayNum);
       return testDate.getDate() === dayNum && 
              testDate.getMonth() === monthNum - 1 && 
@@ -116,23 +121,28 @@ export default function InventoryScreen() {
     };
     
     if (newProduct.expiryDate && !validateGermanDate(newProduct.expiryDate)) {
-      alert('Bitte geben Sie ein gültiges Datum im Format DD.MM.YYYY ein (z.B. 30.03.1973)');
+      Alert.alert('Fehler', 'Bitte geben Sie ein gültiges Datum im Format DD.MM.YYYY ein (z.B. 30.03.1973)');
       return;
     }
     
-    await addProduct(newProduct);
-    setNewProduct({
-      name: '',
-      category: '',
-      currentStock: 0,
-      minStock: 0,
-      unit: '',
-      expiryDate: '',
-      location: '',
-      supplier: '',
-      barcode: '',
-    });
-    setShowAddModal(false);
+    try {
+      await addProduct(newProduct);
+      setNewProduct({
+        name: '',
+        category: '',
+        currentStock: 0,
+        minStock: 0,
+        unit: '',
+        expiryDate: '',
+        location: '',
+        supplier: '',
+        barcode: '',
+      });
+      setShowAddModal(false);
+      Alert.alert('Erfolg', 'Produkt wurde erfolgreich hinzugefügt!');
+    } catch (error) {
+      Alert.alert('Fehler', 'Produkt konnte nicht hinzugefügt werden.');
+    }
   };
 
   const handleDateSelect = (selectedDate: string) => {
@@ -144,7 +154,6 @@ export default function InventoryScreen() {
     const dates = [];
     const today = new Date();
     
-    // Generate dates for next 2 years
     for (let i = 0; i < 730; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
@@ -163,41 +172,164 @@ export default function InventoryScreen() {
     return dates;
   };
 
-  const ProductCard = ({ product }: { product: Product }) => {
+  // Category Navigation Component
+  const CategoryNavigation = ({ isCollapsed = false }) => (
+    <View style={[
+      styles.categoryNavigation,
+      isCollapsed && styles.categoryNavigationCollapsed,
+      isMobile && styles.categoryNavigationMobile
+    ]}>
+      <View style={styles.categoryHeader}>
+        <Text style={styles.categoryTitle}>Kategorien</Text>
+        {(isTablet || isMobile) && (
+          <TouchableOpacity 
+            onPress={() => setShowCategoryMenu(false)}
+            style={styles.closeButton}
+            accessibilityLabel="Kategorien schließen"
+            accessibilityRole="button"
+          >
+            <X size={20} color="#000000" />
+          </TouchableOpacity>
+        )}
+      </View>
+      
+      <ScrollView style={styles.categoryList} showsVerticalScrollIndicator={false}>
+        <TouchableOpacity
+          style={[
+            styles.categoryItem,
+            selectedCategory === 'all' && styles.categoryItemActive
+          ]}
+          onPress={() => {
+            setSelectedCategory('all');
+            if (isMobile) setShowCategoryMenu(false);
+          }}
+          accessibilityLabel="Alle Kategorien anzeigen"
+          accessibilityRole="button"
+          accessibilityState={{ selected: selectedCategory === 'all' }}
+        >
+          <Package size={18} color={selectedCategory === 'all' ? '#F68528' : '#6B7280'} />
+          <Text style={[
+            styles.categoryItemText,
+            selectedCategory === 'all' && styles.categoryItemTextActive
+          ]}>
+            Alle ({products.length})
+          </Text>
+        </TouchableOpacity>
+        
+        {categories.map(category => {
+          const count = products.filter(p => p.category === category).length;
+          return (
+            <TouchableOpacity
+              key={category}
+              style={[
+                styles.categoryItem,
+                selectedCategory === category && styles.categoryItemActive
+              ]}
+              onPress={() => {
+                setSelectedCategory(category);
+                if (isMobile) setShowCategoryMenu(false);
+              }}
+              accessibilityLabel={`Kategorie ${category} anzeigen, ${count} Produkte`}
+              accessibilityRole="button"
+              accessibilityState={{ selected: selectedCategory === category }}
+            >
+              <View style={[
+                styles.categoryDot,
+                { backgroundColor: selectedCategory === category ? '#F68528' : '#6B7280' }
+              ]} />
+              <Text style={[
+                styles.categoryItemText,
+                selectedCategory === category && styles.categoryItemTextActive
+              ]}>
+                {category} ({count})
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+    </View>
+  );
+
+  // Product Card Components
+  const ProductGridCard = ({ product }: { product: Product }) => {
     const stockStatus = getStockStatus(product);
     
     return (
-      <TouchableOpacity style={styles.productCard}>
-        <View style={styles.productHeader}>
+      <TouchableOpacity 
+        style={styles.productGridCard}
+        onPress={() => setSelectedProduct(product)}
+        accessibilityLabel={`Produkt ${product.name}, ${stockStatus.label}, ${product.currentStock} ${product.unit}`}
+        accessibilityRole="button"
+        accessibilityHint="Tippen für Details"
+      >
+        <View style={styles.productCardHeader}>
           <View style={styles.productIcon}>
-            <Package size={20} color="#6b7280" />
-          </View>
-          <View style={styles.productInfo}>
-            <Text style={styles.productName}>{product.name}</Text>
-            <Text style={styles.productCategory}>{product.category}</Text>
+            <Package size={20} color="#6B7280" />
           </View>
           <View style={[styles.statusBadge, { backgroundColor: stockStatus.color }]}>
-            <Text style={styles.statusText}>{t(stockStatus.status)}</Text>
+            <Text style={styles.statusText}>{stockStatus.label}</Text>
           </View>
         </View>
         
-        <View style={styles.productDetails}>
-          <View style={styles.detailRow}>
-            <View style={styles.detailItem}>
-              <Text style={styles.detailLabel}>{t('stock')}</Text>
+        <View style={styles.productCardContent}>
+          <Text style={styles.productName} numberOfLines={2}>{product.name}</Text>
+          <Text style={styles.productCategory}>{product.category}</Text>
+          
+          <View style={styles.productDetails}>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Bestand:</Text>
               <Text style={styles.detailValue}>{product.currentStock} {product.unit}</Text>
             </View>
-            <View style={styles.detailItem}>
-              <Calendar size={16} color="#6b7280" />
-              <Text style={styles.detailValue}>
-                {formatGermanDate(product.expiryDate)}
-              </Text>
+            <View style={styles.detailRow}>
+              <Calendar size={14} color="#6B7280" />
+              <Text style={styles.detailValue}>{formatGermanDate(product.expiryDate)}</Text>
+            </View>
+            <View style={styles.detailRow}>
+              <MapPin size={14} color="#6B7280" />
+              <Text style={styles.detailValue} numberOfLines={1}>{product.location}</Text>
+            </View>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const ProductListCard = ({ product }: { product: Product }) => {
+    const stockStatus = getStockStatus(product);
+    
+    return (
+      <TouchableOpacity 
+        style={styles.productListCard}
+        onPress={() => setSelectedProduct(product)}
+        accessibilityLabel={`Produkt ${product.name}, ${stockStatus.label}, ${product.currentStock} ${product.unit}`}
+        accessibilityRole="button"
+        accessibilityHint="Tippen für Details"
+      >
+        <View style={styles.productIcon}>
+          <Package size={20} color="#6B7280" />
+        </View>
+        
+        <View style={styles.productListContent}>
+          <View style={styles.productListHeader}>
+            <Text style={styles.productName}>{product.name}</Text>
+            <View style={[styles.statusBadge, { backgroundColor: stockStatus.color }]}>
+              <Text style={styles.statusText}>{stockStatus.label}</Text>
             </View>
           </View>
           
-          <View style={styles.detailRow}>
+          <Text style={styles.productCategory}>{product.category}</Text>
+          
+          <View style={styles.productListDetails}>
             <View style={styles.detailItem}>
-              <MapPin size={16} color="#6b7280" />
+              <Text style={styles.detailLabel}>Bestand:</Text>
+              <Text style={styles.detailValue}>{product.currentStock} {product.unit}</Text>
+            </View>
+            <View style={styles.detailItem}>
+              <Calendar size={14} color="#6B7280" />
+              <Text style={styles.detailValue}>{formatGermanDate(product.expiryDate)}</Text>
+            </View>
+            <View style={styles.detailItem}>
+              <MapPin size={14} color="#6B7280" />
               <Text style={styles.detailValue}>{product.location}</Text>
             </View>
           </View>
@@ -208,102 +340,228 @@ export default function InventoryScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Header with Search */}
       <View style={styles.header}>
-        <Text style={styles.title}>{t('inventory')}</Text>
-        <TouchableOpacity 
-          style={styles.addButton}
-          onPress={() => setShowAddModal(true)}
-        >
-          <Plus size={24} color="#ffffff" />
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
-          <Search size={20} color="#6b7280" />
-          <TextInput
-            style={styles.searchInput}
-            placeholder={t('searchProducts')}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
+        <View style={styles.headerTop}>
+          <Text style={styles.title}>{t('inventory')}</Text>
+          <View style={styles.headerActions}>
+            <TouchableOpacity 
+              style={styles.viewToggle}
+              onPress={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+              accessibilityLabel={`Zur ${viewMode === 'grid' ? 'Listen' : 'Raster'}ansicht wechseln`}
+              accessibilityRole="button"
+            >
+              {viewMode === 'grid' ? <List size={20} color="#6B7280" /> : <Grid size={20} color="#6B7280" />}
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.addButton}
+              onPress={() => setShowAddModal(true)}
+              accessibilityLabel="Neues Produkt hinzufügen"
+              accessibilityRole="button"
+            >
+              <Plus size={24} color="#000000" />
+            </TouchableOpacity>
+          </View>
         </View>
-        
-        <TouchableOpacity style={styles.filterButton}>
-          <Filter size={20} color="#6b7280" />
-        </TouchableOpacity>
+
+        <View style={styles.searchContainer}>
+          <View style={styles.searchBar}>
+            <Search size={20} color="#6B7280" />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Produkte, Kategorien oder Standorte suchen..."
+              placeholderTextColor="#6B7280"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              accessibilityLabel="Suchfeld für Produkte"
+              accessibilityHint="Geben Sie Text ein um Produkte zu filtern"
+              returnKeyType="search"
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity 
+                onPress={() => setSearchQuery('')}
+                accessibilityLabel="Suche löschen"
+                accessibilityRole="button"
+              >
+                <X size={20} color="#6B7280" />
+              </TouchableOpacity>
+            )}
+          </View>
+          
+          {isMobile && (
+            <TouchableOpacity 
+              style={styles.mobileFilterButton}
+              onPress={() => setShowCategoryMenu(true)}
+              accessibilityLabel="Kategorien anzeigen"
+              accessibilityRole="button"
+            >
+              <Menu size={20} color="#6B7280" />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false}
-        style={styles.categoryFilter}
-      >
-        <TouchableOpacity
-          style={[
-            styles.categoryChip,
-            selectedCategory === 'all' && styles.categoryChipActive
-          ]}
-          onPress={() => setSelectedCategory('all')}
-        >
-          <Text style={[
-            styles.categoryText,
-            selectedCategory === 'all' && styles.categoryTextActive
-          ]}>
-            {t('allCategories')}
-          </Text>
-        </TouchableOpacity>
-        
-        {categories.map(category => (
-          <TouchableOpacity
-            key={category}
-            style={[
-              styles.categoryChip,
-              selectedCategory === category && styles.categoryChipActive
-            ]}
-            onPress={() => setSelectedCategory(category)}
-          >
-            <Text style={[
-              styles.categoryText,
-              selectedCategory === category && styles.categoryTextActive
-            ]}>
-              {category}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+      {/* Main Content Area */}
+      <View style={styles.mainContent}>
+        {/* Desktop/Tablet Category Navigation */}
+        {!isMobile && (
+          <CategoryNavigation isCollapsed={isTablet} />
+        )}
 
-      <ScrollView style={styles.productList} showsVerticalScrollIndicator={false} contentContainerStyle={styles.productListContent}>
-        {filteredProducts.map(product => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-        
-        {filteredProducts.length === 0 && (
-          <View style={styles.emptyState}>
-            <Package size={48} color="#d1d5db" />
-            <Text style={styles.emptyText}>Keine Produkte gefunden</Text>
+        {/* Product Grid/List */}
+        <View style={styles.productArea}>
+          <View style={styles.productHeader}>
+            <Text style={styles.resultCount}>
+              {filteredProducts.length} {filteredProducts.length === 1 ? 'Produkt' : 'Produkte'}
+              {selectedCategory !== 'all' && ` in "${selectedCategory}"`}
+            </Text>
+          </View>
+
+          <ScrollView 
+            style={styles.productList} 
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.productListContent}
+          >
+            {viewMode === 'grid' ? (
+              <View style={styles.productGrid}>
+                {filteredProducts.map(product => (
+                  <ProductGridCard key={product.id} product={product} />
+                ))}
+              </View>
+            ) : (
+              <View style={styles.productListView}>
+                {filteredProducts.map(product => (
+                  <ProductListCard key={product.id} product={product} />
+                ))}
+              </View>
+            )}
+            
+            {filteredProducts.length === 0 && (
+              <View style={styles.emptyState}>
+                <Package size={64} color="#D1D5DB" />
+                <Text style={styles.emptyTitle}>Keine Produkte gefunden</Text>
+                <Text style={styles.emptySubtitle}>
+                  {searchQuery ? 
+                    `Keine Ergebnisse für "${searchQuery}"` : 
+                    'Fügen Sie Ihr erstes Produkt hinzu'
+                  }
+                </Text>
+                <TouchableOpacity 
+                  style={styles.emptyAction}
+                  onPress={() => setShowAddModal(true)}
+                  accessibilityLabel="Erstes Produkt hinzufügen"
+                  accessibilityRole="button"
+                >
+                  <Plus size={20} color="#000000" />
+                  <Text style={styles.emptyActionText}>Produkt hinzufügen</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </ScrollView>
+        </View>
+
+        {/* Desktop Product Details Panel */}
+        {isDesktop && selectedProduct && (
+          <View style={styles.detailsPanel}>
+            <View style={styles.detailsHeader}>
+              <Text style={styles.detailsTitle}>Produktdetails</Text>
+              <TouchableOpacity 
+                onPress={() => setSelectedProduct(null)}
+                accessibilityLabel="Details schließen"
+                accessibilityRole="button"
+              >
+                <X size={20} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+            
+            <ScrollView style={styles.detailsContent}>
+              <View style={styles.detailsSection}>
+                <Text style={styles.detailsSectionTitle}>Grundinformationen</Text>
+                <View style={styles.detailsField}>
+                  <Text style={styles.detailsLabel}>Name:</Text>
+                  <Text style={styles.detailsValue}>{selectedProduct.name}</Text>
+                </View>
+                <View style={styles.detailsField}>
+                  <Text style={styles.detailsLabel}>Kategorie:</Text>
+                  <Text style={styles.detailsValue}>{selectedProduct.category}</Text>
+                </View>
+              </View>
+              
+              <View style={styles.detailsSection}>
+                <Text style={styles.detailsSectionTitle}>Bestand</Text>
+                <View style={styles.detailsField}>
+                  <Text style={styles.detailsLabel}>Aktueller Bestand:</Text>
+                  <Text style={styles.detailsValue}>{selectedProduct.currentStock} {selectedProduct.unit}</Text>
+                </View>
+                <View style={styles.detailsField}>
+                  <Text style={styles.detailsLabel}>Mindestbestand:</Text>
+                  <Text style={styles.detailsValue}>{selectedProduct.minStock} {selectedProduct.unit}</Text>
+                </View>
+              </View>
+              
+              <View style={styles.detailsSection}>
+                <Text style={styles.detailsSectionTitle}>Weitere Informationen</Text>
+                <View style={styles.detailsField}>
+                  <Text style={styles.detailsLabel}>Verfallsdatum:</Text>
+                  <Text style={styles.detailsValue}>{formatGermanDate(selectedProduct.expiryDate)}</Text>
+                </View>
+                <View style={styles.detailsField}>
+                  <Text style={styles.detailsLabel}>Standort:</Text>
+                  <Text style={styles.detailsValue}>{selectedProduct.location}</Text>
+                </View>
+                {selectedProduct.supplier && (
+                  <View style={styles.detailsField}>
+                    <Text style={styles.detailsLabel}>Lieferant:</Text>
+                    <Text style={styles.detailsValue}>{selectedProduct.supplier}</Text>
+                  </View>
+                )}
+              </View>
+            </ScrollView>
           </View>
         )}
-      </ScrollView>
+      </View>
 
+      {/* Mobile Category Menu Modal */}
+      {isMobile && (
+        <Modal
+          visible={showCategoryMenu}
+          animationType="slide"
+          presentationStyle="pageSheet"
+          onRequestClose={() => setShowCategoryMenu(false)}
+        >
+          <SafeAreaView style={styles.modalContainer}>
+            <CategoryNavigation />
+          </SafeAreaView>
+        </Modal>
+      )}
+
+      {/* Add Product Modal */}
       <Modal
         visible={showAddModal}
         animationType="slide"
         presentationStyle="pageSheet"
+        onRequestClose={() => setShowAddModal(false)}
       >
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalHeader}>
-            <TouchableOpacity onPress={() => setShowAddModal(false)}>
+            <TouchableOpacity 
+              onPress={() => setShowAddModal(false)}
+              accessibilityLabel="Abbrechen"
+              accessibilityRole="button"
+            >
               <Text style={styles.cancelButton}>{t('cancel')}</Text>
             </TouchableOpacity>
             <Text style={styles.modalTitle}>{t('addProduct')}</Text>
-            <TouchableOpacity onPress={handleAddProduct}>
+            <TouchableOpacity 
+              onPress={handleAddProduct}
+              accessibilityLabel="Produkt speichern"
+              accessibilityRole="button"
+            >
               <Text style={styles.saveButton}>{t('save')}</Text>
             </TouchableOpacity>
           </View>
           
-          <ScrollView style={styles.modalContent}>
-            {/* Grundinformationen */}
+          <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
             <View style={styles.fieldGroup}>
               <Text style={styles.groupTitle}>Grundinformationen</Text>
               
@@ -337,7 +595,6 @@ export default function InventoryScreen() {
               </View>
             </View>
 
-            {/* Bestandsinformationen */}
             <View style={styles.fieldGroup}>
               <Text style={styles.groupTitle}>Bestandsinformationen</Text>
               
@@ -388,7 +645,6 @@ export default function InventoryScreen() {
               </View>
             </View>
 
-            {/* Verfallsdatum */}
             <View style={styles.fieldGroup}>
               <Text style={styles.groupTitle}>Verfallsdatum</Text>
               
@@ -418,7 +674,6 @@ export default function InventoryScreen() {
               </View>
             </View>
 
-            {/* Standort und Lieferant */}
             <View style={styles.fieldGroup}>
               <Text style={styles.groupTitle}>Zusätzliche Informationen</Text>
               
@@ -455,125 +710,32 @@ export default function InventoryScreen() {
       </Modal>
 
       {/* Date Picker Modal */}
-      <Modal visible={showDatePicker} animationType="slide" presentationStyle="pageSheet">
+      <Modal 
+        visible={showDatePicker} 
+        animationType="slide" 
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowDatePicker(false)}
+      >
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalHeader}>
-            <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+            <TouchableOpacity 
+              onPress={() => setShowDatePicker(false)}
+              accessibilityLabel="Abbrechen"
+              accessibilityRole="button"
+            >
               <Text style={styles.cancelButton}>{t('cancel')}</Text>
             </TouchableOpacity>
             <Text style={styles.modalTitle}>Datum auswählen</Text>
-            <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+            <TouchableOpacity 
+              onPress={() => setShowDatePicker(false)}
+              accessibilityLabel="Fertig"
+              accessibilityRole="button"
+            >
               <Text style={styles.saveButton}>Fertig</Text>
             </TouchableOpacity>
           </View>
           
-          <ScrollView style={styles.datePickerContent}>
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>{t('productName')}</Text>
-              <TextInput
-                style={styles.textInput}
-                value={newProduct.name}
-                onChangeText={(text) => setNewProduct({...newProduct, name: text})}
-                placeholder="z.B. Tomaten"
-                placeholderTextColor="#6B7280"
-              />
-            </View>
-            
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>{t('category')}</Text>
-              <TextInput
-                style={styles.textInput}
-                value={newProduct.category}
-                onChangeText={(text) => setNewProduct({...newProduct, category: text})}
-                placeholder="z.B. Gemüse"
-                placeholderTextColor="#6B7280"
-              />
-            </View>
-            
-            <View style={styles.inputRow}>
-              <View style={styles.inputGroupHalf}>
-                <Text style={styles.inputLabel}>{t('quantity')}</Text>
-                <TextInput
-                  style={styles.textInput}
-                  value={newProduct.currentStock.toString()}
-                  onChangeText={(text) => setNewProduct({...newProduct, currentStock: parseInt(text) || 0})}
-                  keyboardType="numeric"
-                  placeholder="0"
-                  placeholderTextColor="#6B7280"
-                />
-              </View>
-              
-              <View style={styles.inputGroupHalf}>
-                <Text style={styles.inputLabel}>{t('unit')}</Text>
-                <TextInput
-                  style={styles.textInput}
-                  value={newProduct.unit}
-                  onChangeText={(text) => setNewProduct({...newProduct, unit: text})}
-                  placeholder="kg, Stück, L"
-                  placeholderTextColor="#6B7280"
-                />
-              </View>
-            </View>
-            
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Mindestbestand</Text>
-              <TextInput
-                style={styles.textInput}
-                value={newProduct.minStock.toString()}
-                onChangeText={(text) => setNewProduct({...newProduct, minStock: parseInt(text) || 0})}
-                keyboardType="numeric"
-                placeholder="0"
-                placeholderTextColor="#6B7280"
-              />
-            </View>
-            
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>{t('expiryDate')}</Text>
-              <View style={styles.dateInputContainer}>
-                <TextInput
-                  style={[styles.textInput, styles.dateInput]}
-                  value={newProduct.expiryDate}
-                  onChangeText={(text) => setNewProduct({...newProduct, expiryDate: text})}
-                  placeholder="DD.MM.YYYY"
-                  placeholderTextColor="#6B7280"
-                />
-                <TouchableOpacity 
-                  style={styles.calendarButton}
-                  onPress={() => setShowDatePicker(true)}
-                >
-                  <Calendar size={20} color="#6b7280" />
-                </TouchableOpacity>
-              </View>
-            </View>
-            
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>{t('location')}</Text>
-              <TextInput
-                style={styles.textInput}
-                value={newProduct.location}
-                onChangeText={(text) => setNewProduct({...newProduct, location: text})}
-                placeholder="z.B. Kühlschrank A1"
-                placeholderTextColor="#6B7280"
-              />
-            </View>
-          </ScrollView>
-        </SafeAreaView>
-      </Modal>
-
-      {/* Date Picker Modal */}
-      <Modal visible={showDatePicker} animationType="slide" presentationStyle="pageSheet">
-        <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <TouchableOpacity onPress={() => setShowDatePicker(false)}>
-              <Text style={styles.cancelButton}>{t('cancel')}</Text>
-            </TouchableOpacity>
-            <Text style={styles.modalTitle}>Datum auswählen</Text>
-            <TouchableOpacity onPress={() => setShowDatePicker(false)}>
-              <Text style={styles.saveButton}>Fertig</Text>
-            </TouchableOpacity>
-          </View>
-          
-          <ScrollView style={styles.datePickerContent}>
+          <ScrollView style={styles.datePickerContent} showsVerticalScrollIndicator={false}>
             <View style={styles.dateGrid}>
               {generateDateOptions().slice(0, 60).map((dateOption, index) => {
                 const isSelected = newProduct.expiryDate === dateOption.formatted;
@@ -590,6 +752,9 @@ export default function InventoryScreen() {
                       isThisWeek && !isToday && styles.dateOptionThisWeek
                     ]}
                     onPress={() => handleDateSelect(dateOption.formatted)}
+                    accessibilityLabel={`Datum ${dateOption.display} auswählen`}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: isSelected }}
                   >
                     <Text style={[
                       styles.dateOptionText,
@@ -631,6 +796,8 @@ export default function InventoryScreen() {
                       key={option.label}
                       style={styles.quickDateButton}
                       onPress={() => handleDateSelect(formatted)}
+                      accessibilityLabel={`${option.label} auswählen: ${formatted}`}
+                      accessibilityRole="button"
                     >
                       <Text style={styles.quickDateButtonText}>{option.label}</Text>
                       <Text style={styles.quickDateButtonDate}>{formatted}</Text>
@@ -651,32 +818,55 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#D0D0D0',
   },
+  
+  // Header Styles
   header: {
+    backgroundColor: '#D0D0D0',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
-    paddingBottom: 10,
+    marginBottom: 16,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#000000',
   },
-  addButton: {
+  headerActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  viewToggle: {
     backgroundColor: '#F5C9A4',
     borderWidth: 1,
     borderColor: '#000000',
-    width: 48,
-    height: 48,
+    width: 44,
+    height: 44,
     borderRadius: 0,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  addButton: {
+    backgroundColor: '#F68528',
+    borderWidth: 1,
+    borderColor: '#000000',
+    width: 44,
+    height: 44,
+    borderRadius: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
+  // Search Styles
   searchContainer: {
     flexDirection: 'row',
-    padding: 20,
-    paddingTop: 10,
     gap: 12,
   },
   searchBar: {
@@ -687,15 +877,18 @@ const styles = StyleSheet.create({
     borderRadius: 0,
     borderWidth: 1,
     borderColor: '#000000',
-    padding: 12,
-    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 12,
+    minHeight: 48,
   },
   searchInput: {
     flex: 1,
     fontSize: 16,
     color: '#000000',
+    lineHeight: 20,
   },
-  filterButton: {
+  mobileFilterButton: {
     backgroundColor: '#F5C9A4',
     borderWidth: 1,
     borderColor: '#000000',
@@ -705,53 +898,119 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  categoryFilter: {
-    paddingHorizontal: 20,
-    marginBottom: 8,
+  
+  // Main Content Layout
+  mainContent: {
+    flex: 1,
+    flexDirection: 'row',
   },
-  categoryChip: {
+  
+  // Category Navigation
+  categoryNavigation: {
+    width: 280,
     backgroundColor: '#F5C9A4',
+    borderRightWidth: 1,
+    borderRightColor: '#000000',
+  },
+  categoryNavigationCollapsed: {
+    width: 240,
+  },
+  categoryNavigationMobile: {
+    width: '100%',
+    borderRightWidth: 0,
+  },
+  categoryHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#000000',
+  },
+  categoryTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000000',
+  },
+  closeButton: {
+    padding: 4,
+  },
+  categoryList: {
+    flex: 1,
+    padding: 16,
+  },
+  categoryItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
     paddingHorizontal: 16,
-    paddingVertical: 6,
     borderRadius: 0,
-    marginRight: 8,
+    marginBottom: 4,
+    gap: 12,
+    minHeight: 48,
+  },
+  categoryItemActive: {
+    backgroundColor: '#F68528',
     borderWidth: 1,
     borderColor: '#000000',
-    height: 32,
-    justifyContent: 'center',
   },
-  categoryChipActive: {
-    backgroundColor: '#F68528',
-    borderColor: '#000000',
-  },
-  categoryText: {
-    fontSize: 14,
+  categoryItemText: {
+    fontSize: 16,
     color: '#000000',
     fontWeight: '500',
   },
-  categoryTextActive: {
+  categoryItemTextActive: {
+    fontWeight: 'bold',
+  },
+  categoryDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 0,
+  },
+  
+  // Product Area
+  productArea: {
+    flex: 1,
+    backgroundColor: '#D0D0D0',
+  },
+  productHeader: {
+    padding: 20,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  resultCount: {
+    fontSize: 16,
     color: '#000000',
+    fontWeight: '600',
   },
   productList: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 0,
-    paddingBottom: 20,
   },
   productListContent: {
-    paddingTop: 0,
+    padding: 20,
   },
-  productCard: {
+  
+  // Product Grid
+  productGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 16,
+    justifyContent: 'space-between',
+  },
+  productGridCard: {
     backgroundColor: '#F5C9A4',
     borderRadius: 0,
     borderWidth: 1,
     borderColor: '#000000',
     padding: 16,
-    marginBottom: 4,
+    width: screenWidth < 768 ? '100%' : screenWidth < 1024 ? '48%' : '31%',
+    minHeight: 200,
   },
-  productHeader: {
+  productCardHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
     marginBottom: 12,
   },
   productIcon: {
@@ -763,20 +1022,6 @@ const styles = StyleSheet.create({
     borderColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
-  },
-  productInfo: {
-    flex: 1,
-  },
-  productName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000000',
-    marginBottom: 2,
-  },
-  productCategory: {
-    fontSize: 14,
-    color: '#000000',
   },
   statusBadge: {
     paddingHorizontal: 8,
@@ -786,43 +1031,168 @@ const styles = StyleSheet.create({
     borderColor: '#000000',
   },
   statusText: {
-    fontSize: 12,
+    fontSize: 10,
     color: '#000000',
-    fontWeight: '600',
+    fontWeight: 'bold',
+  },
+  productCardContent: {
+    flex: 1,
+  },
+  productName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#000000',
+    marginBottom: 4,
+    lineHeight: 20,
+  },
+  productCategory: {
+    fontSize: 14,
+    color: '#000000',
+    marginBottom: 12,
   },
   productDetails: {
     gap: 8,
   },
   detailRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 6,
+  },
+  detailLabel: {
+    fontSize: 12,
+    color: '#000000',
+    fontWeight: '600',
+  },
+  detailValue: {
+    fontSize: 12,
+    color: '#000000',
+    flex: 1,
+  },
+  
+  // Product List View
+  productListView: {
+    gap: 8,
+  },
+  productListCard: {
+    backgroundColor: '#F5C9A4',
+    borderRadius: 0,
+    borderWidth: 1,
+    borderColor: '#000000',
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    minHeight: 80,
+  },
+  productListContent: {
+    flex: 1,
+  },
+  productListHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 4,
+  },
+  productListDetails: {
+    flexDirection: 'row',
+    gap: 16,
+    marginTop: 8,
   },
   detailItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
   },
-  detailLabel: {
-    fontSize: 12,
-    color: '#000000',
-    fontWeight: '500',
+  
+  // Details Panel (Desktop)
+  detailsPanel: {
+    width: 320,
+    backgroundColor: '#F5C9A4',
+    borderLeftWidth: 1,
+    borderLeftColor: '#000000',
   },
-  detailValue: {
+  detailsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#000000',
+  },
+  detailsTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000000',
+  },
+  detailsContent: {
+    flex: 1,
+    padding: 20,
+  },
+  detailsSection: {
+    marginBottom: 24,
+  },
+  detailsSectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#000000',
+    marginBottom: 12,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#000000',
+  },
+  detailsField: {
+    marginBottom: 12,
+  },
+  detailsLabel: {
     fontSize: 14,
+    fontWeight: '600',
     color: '#000000',
-    fontWeight: '500',
+    marginBottom: 4,
   },
+  detailsValue: {
+    fontSize: 16,
+    color: '#000000',
+  },
+  
+  // Empty State
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
     padding: 40,
+    marginTop: 40,
   },
-  emptyText: {
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#000000',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptySubtitle: {
     fontSize: 16,
     color: '#000000',
-    marginTop: 12,
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 22,
   },
+  emptyAction: {
+    backgroundColor: '#F68528',
+    borderWidth: 1,
+    borderColor: '#000000',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  emptyActionText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000000',
+  },
+  
+  // Modal Styles
   modalContainer: {
     flex: 1,
     backgroundColor: '#D0D0D0',
@@ -834,28 +1204,29 @@ const styles = StyleSheet.create({
     padding: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#000000',
+    backgroundColor: '#F5C9A4',
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: 'bold',
     color: '#000000',
   },
   cancelButton: {
     fontSize: 16,
     color: '#000000',
+    fontWeight: '600',
   },
   saveButton: {
     fontSize: 16,
     color: '#000000',
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
   modalContent: {
     flex: 1,
     padding: 20,
   },
-  inputGroup: {
-    marginBottom: 16,
-  },
+  
+  // Form Styles
   fieldGroup: {
     marginBottom: 32,
     paddingBottom: 24,
@@ -871,10 +1242,13 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     borderBottomColor: '#F68528',
   },
+  inputGroup: {
+    marginBottom: 20,
+  },
   inputRow: {
     flexDirection: 'row',
     gap: 16,
-    marginBottom: 16,
+    marginBottom: 20,
   },
   inputGroupHalf: {
     flex: 1,
@@ -883,7 +1257,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#000000',
-    marginBottom: 10,
+    marginBottom: 8,
     lineHeight: 20,
   },
   textInput: {
@@ -915,6 +1289,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  
+  // Date Picker Styles
   datePickerContent: {
     flex: 1,
     padding: 20,
@@ -971,7 +1347,7 @@ const styles = StyleSheet.create({
   },
   quickDateTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: 'bold',
     color: '#000000',
     marginBottom: 16,
   },
@@ -987,6 +1363,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    minHeight: 56,
   },
   quickDateButtonText: {
     fontSize: 16,
