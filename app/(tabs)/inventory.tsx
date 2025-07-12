@@ -343,18 +343,18 @@ const styles = StyleSheet.create({
   },
   categoryFilter: {
     paddingHorizontal: 20,
-    marginBottom: 8,
-    height: 44,
+    marginBottom: 4,
+    height: 36,
   },
   categoryChip: {
     backgroundColor: '#ffffff',
     paddingHorizontal: 16,
-    paddingVertical: 6,
+    paddingVertical: 4,
     borderRadius: 20,
     marginRight: 8,
     borderWidth: 1,
     borderColor: '#e5e7eb',
-    height: 32,
+    height: 28,
     justifyContent: 'center',
   },
   categoryChipActive: {
