@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Modal, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, Plus, Filter, Package, Calendar, MapPin } from 'lucide-react-native';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -12,6 +12,7 @@ export default function InventoryScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   
   const [newProduct, setNewProduct] = useState({
     name: '',
@@ -132,6 +133,34 @@ export default function InventoryScreen() {
       barcode: '',
     });
     setShowAddModal(false);
+  };
+
+  const handleDateSelect = (selectedDate: string) => {
+    setNewProduct({...newProduct, expiryDate: selectedDate});
+    setShowDatePicker(false);
+  };
+
+  const generateDateOptions = () => {
+    const dates = [];
+    const today = new Date();
+    
+    // Generate dates for next 2 years
+    for (let i = 0; i < 730; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear();
+      
+      dates.push({
+        formatted: `${day}.${month}.${year}`,
+        display: `${day}.${month}.${year}`,
+        date: date
+      });
+    }
+    
+    return dates;
   };
 
   const ProductCard = ({ product }: { product: Product }) => {
@@ -346,6 +375,12 @@ export default function InventoryScreen() {
                 <TouchableOpacity style={styles.calendarButton}>
                   <Calendar size={20} color="#6b7280" />
                 </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.calendarButton}
+                  onPress={() => setShowDatePicker(true)}
+                >
+                  <Calendar size={20} color="#6b7280" />
+                </TouchableOpacity>
               </View>
             </View>
             
@@ -358,6 +393,89 @@ export default function InventoryScreen() {
                 placeholder="z.B. Kühlschrank A1"
                 placeholderTextColor="#6B7280"
               />
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+
+      {/* Date Picker Modal */}
+      <Modal visible={showDatePicker} animationType="slide" presentationStyle="pageSheet">
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+              <Text style={styles.cancelButton}>{t('cancel')}</Text>
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>Datum auswählen</Text>
+            <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+              <Text style={styles.saveButton}>Fertig</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <ScrollView style={styles.datePickerContent}>
+            <View style={styles.dateGrid}>
+              {generateDateOptions().slice(0, 60).map((dateOption, index) => {
+                const isSelected = newProduct.expiryDate === dateOption.formatted;
+                const isToday = index === 0;
+                const isThisWeek = index < 7;
+                
+                return (
+                  <TouchableOpacity
+                    key={dateOption.formatted}
+                    style={[
+                      styles.dateOption,
+                      isSelected && styles.dateOptionSelected,
+                      isToday && styles.dateOptionToday,
+                      isThisWeek && !isToday && styles.dateOptionThisWeek
+                    ]}
+                    onPress={() => handleDateSelect(dateOption.formatted)}
+                  >
+                    <Text style={[
+                      styles.dateOptionText,
+                      isSelected && styles.dateOptionTextSelected,
+                      isToday && styles.dateOptionTextToday
+                    ]}>
+                      {dateOption.display}
+                    </Text>
+                    {isToday && (
+                      <Text style={styles.dateOptionLabel}>Heute</Text>
+                    )}
+                    {isThisWeek && !isToday && (
+                      <Text style={styles.dateOptionLabel}>
+                        {['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'][dateOption.date.getDay()]}
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+            
+            <View style={styles.quickDateSection}>
+              <Text style={styles.quickDateTitle}>Schnellauswahl</Text>
+              <View style={styles.quickDateButtons}>
+                {[
+                  { label: 'Heute', days: 0 },
+                  { label: 'Morgen', days: 1 },
+                  { label: 'In 1 Woche', days: 7 },
+                  { label: 'In 2 Wochen', days: 14 },
+                  { label: 'In 1 Monat', days: 30 },
+                  { label: 'In 3 Monaten', days: 90 },
+                ].map(option => {
+                  const date = new Date();
+                  date.setDate(date.getDate() + option.days);
+                  const formatted = `${date.getDate().toString().padStart(2, '0')}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getFullYear()}`;
+                  
+                  return (
+                    <TouchableOpacity
+                      key={option.label}
+                      style={styles.quickDateButton}
+                      onPress={() => handleDateSelect(formatted)}
+                    >
+                      <Text style={styles.quickDateButtonText}>{option.label}</Text>
+                      <Text style={styles.quickDateButtonDate}>{formatted}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
             </View>
           </ScrollView>
         </SafeAreaView>
@@ -615,5 +733,88 @@ const styles = StyleSheet.create({
     borderRadius: 0,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  datePickerContent: {
+    flex: 1,
+    padding: 20,
+  },
+  dateGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 32,
+  },
+  dateOption: {
+    backgroundColor: '#F5C9A4',
+    borderWidth: 1,
+    borderColor: '#000000',
+    borderRadius: 0,
+    padding: 12,
+    width: '31%',
+    alignItems: 'center',
+    minHeight: 60,
+    justifyContent: 'center',
+  },
+  dateOptionSelected: {
+    backgroundColor: '#F68528',
+    borderColor: '#000000',
+  },
+  dateOptionToday: {
+    backgroundColor: '#22C55E',
+    borderColor: '#000000',
+  },
+  dateOptionThisWeek: {
+    backgroundColor: '#EAB308',
+    borderColor: '#000000',
+  },
+  dateOptionText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#000000',
+    textAlign: 'center',
+  },
+  dateOptionTextSelected: {
+    color: '#000000',
+  },
+  dateOptionTextToday: {
+    color: '#000000',
+  },
+  dateOptionLabel: {
+    fontSize: 10,
+    color: '#000000',
+    marginTop: 2,
+    fontWeight: '500',
+  },
+  quickDateSection: {
+    marginTop: 20,
+  },
+  quickDateTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000000',
+    marginBottom: 16,
+  },
+  quickDateButtons: {
+    gap: 8,
+  },
+  quickDateButton: {
+    backgroundColor: '#F5C9A4',
+    borderWidth: 1,
+    borderColor: '#000000',
+    borderRadius: 0,
+    padding: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  quickDateButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000000',
+  },
+  quickDateButtonDate: {
+    fontSize: 14,
+    color: '#000000',
+    fontWeight: '500',
   },
 });
