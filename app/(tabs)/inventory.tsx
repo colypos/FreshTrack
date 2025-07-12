@@ -343,8 +343,7 @@ const styles = StyleSheet.create({
   },
   categoryFilter: {
     paddingHorizontal: 20,
-    marginBottom: 4,
-    height: 36,
+    marginBottom: 8,
   },
   categoryChip: {
     backgroundColor: '#ffffff',
