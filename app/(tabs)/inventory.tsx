@@ -820,7 +820,7 @@ const styles = StyleSheet.create({
   categoryDropdownContainer: {
     position: 'relative',
     marginTop: 12,
-    zIndex: 1000,
+    zIndex: 9999,
   },
   categoryDropdownButton: {
     backgroundColor: '#F5C9A4',
@@ -832,6 +832,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     minHeight: 56,
+    zIndex: 10000,
   },
   categoryDropdownContent: {
     flexDirection: 'row',
@@ -871,7 +872,15 @@ const styles = StyleSheet.create({
     borderTopWidth: 0,
     borderRadius: 0,
     maxHeight: 300,
-    zIndex: 1001,
+    zIndex: 10001,
+    elevation: 10,
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
   },
   categoryDropdownItem: {
     flexDirection: 'row',
@@ -918,7 +927,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     backgroundColor: 'transparent',
-    zIndex: 999,
+    zIndex: 9998,
   },
   categoryDot: {
     width: 8,
@@ -931,6 +940,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#D0D0D0',
     paddingHorizontal: 20,
+    zIndex: 1,
   },
   productArea: {
     flex: 1,
@@ -938,6 +948,7 @@ const styles = StyleSheet.create({
     width: '100%',
     alignSelf: 'center',
     backgroundColor: '#D0D0D0',
+    zIndex: 1,
   },
   productHeader: {
     paddingHorizontal: 0,
@@ -951,6 +962,7 @@ const styles = StyleSheet.create({
   },
   productList: {
     flex: 1,
+    zIndex: 1,
   },
   productListContent: {
     padding: 0,
