@@ -372,9 +372,6 @@ export default function InventoryScreen() {
                   placeholder="DD.MM.YYYY"
                   placeholderTextColor="#6B7280"
                 />
-                <TouchableOpacity style={styles.calendarButton}>
-                  <Calendar size={20} color="#6b7280" />
-                </TouchableOpacity>
                 <TouchableOpacity 
                   style={styles.calendarButton}
                   onPress={() => setShowDatePicker(true)}
