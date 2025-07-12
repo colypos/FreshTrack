@@ -16,7 +16,6 @@ export default function InventoryScreen() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   
   const [newProduct, setNewProduct] = useState({
@@ -277,14 +276,6 @@ export default function InventoryScreen() {
           <Text style={styles.title}>{t('inventory')}</Text>
           <View style={styles.headerActions}>
             <TouchableOpacity 
-              style={styles.viewToggle}
-              onPress={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-              accessibilityLabel={`Zur ${viewMode === 'grid' ? 'Listen' : 'Raster'}ansicht wechseln`}
-              accessibilityRole="button"
-            >
-              {viewMode === 'grid' ? <List size={20} color="#6B7280" /> : <Grid size={20} color="#6B7280" />}
-            </TouchableOpacity>
-            <TouchableOpacity 
               style={styles.addButton}
               onPress={() => setShowAddModal(true)}
               accessibilityLabel="Neues Produkt hinzufügen"
@@ -417,55 +408,49 @@ export default function InventoryScreen() {
       </View>
 
       {/* Main Content Area */}
-      <View style={styles.productArea}>
-        <View style={styles.productHeader}>
-          <Text style={styles.resultCount}>
-            {filteredProducts.length} {filteredProducts.length === 1 ? 'Produkt' : 'Produkte'}
-            {selectedCategory !== 'all' && ` in "${selectedCategory}"`}
-          </Text>
-        </View>
+      <View style={styles.contentContainer}>
+        <View style={styles.productArea}>
+          <View style={styles.productHeader}>
+            <Text style={styles.resultCount}>
+              {filteredProducts.length} {filteredProducts.length === 1 ? 'Produkt' : 'Produkte'}
+              {selectedCategory !== 'all' && ` in "${selectedCategory}"`}
+            </Text>
+          </View>
 
-        <ScrollView 
-          style={styles.productList} 
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.productListContent}
-        >
-          {viewMode === 'grid' ? (
-            <View style={styles.productGrid}>
-              {filteredProducts.map(product => (
-                <ProductGridCard key={product.id} product={product} />
-              ))}
-            </View>
-          ) : (
+          <ScrollView 
+            style={styles.productList} 
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.productListContent}
+          >
             <View style={styles.productListView}>
               {filteredProducts.map(product => (
                 <ProductListCard key={product.id} product={product} />
               ))}
             </View>
-          )}
-          
-          {filteredProducts.length === 0 && (
-            <View style={styles.emptyState}>
-              <Package size={64} color="#D1D5DB" />
-              <Text style={styles.emptyTitle}>Keine Produkte gefunden</Text>
-              <Text style={styles.emptySubtitle}>
-                {searchQuery ? 
-                  `Keine Ergebnisse für "${searchQuery}"` : 
-                  'Fügen Sie Ihr erstes Produkt hinzu'
-                }
-              </Text>
-              <TouchableOpacity 
-                style={styles.emptyAction}
-                onPress={() => setShowAddModal(true)}
-                accessibilityLabel="Erstes Produkt hinzufügen"
-                accessibilityRole="button"
-              >
-                <Plus size={20} color="#000000" />
-                <Text style={styles.emptyActionText}>Produkt hinzufügen</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        </ScrollView>
+            
+            {filteredProducts.length === 0 && (
+              <View style={styles.emptyState}>
+                <Package size={64} color="#D1D5DB" />
+                <Text style={styles.emptyTitle}>Keine Produkte gefunden</Text>
+                <Text style={styles.emptySubtitle}>
+                  {searchQuery ? 
+                    `Keine Ergebnisse für "${searchQuery}"` : 
+                    'Fügen Sie Ihr erstes Produkt hinzu'
+                  }
+                </Text>
+                <TouchableOpacity 
+                  style={styles.emptyAction}
+                  onPress={() => setShowAddModal(true)}
+                  accessibilityLabel="Erstes Produkt hinzufügen"
+                  accessibilityRole="button"
+                >
+                  <Plus size={20} color="#000000" />
+                  <Text style={styles.emptyActionText}>Produkt hinzufügen</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </ScrollView>
+        </View>
       </View>
 
       {/* Overlay to close dropdown when clicking outside */}
@@ -784,17 +769,7 @@ const styles = StyleSheet.create({
   },
   headerActions: {
     flexDirection: 'row',
-    gap: 12,
-  },
-  viewToggle: {
-    backgroundColor: '#F5C9A4',
-    borderWidth: 1,
-    borderColor: '#000000',
-    width: 44,
-    height: 44,
-    borderRadius: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
+    gap: 0,
   },
   addButton: {
     backgroundColor: '#F68528',
@@ -953,8 +928,15 @@ const styles = StyleSheet.create({
   },
   
   // Product Area (now full width)
+  contentContainer: {
+    flex: 1,
+    alignItems: 'center',
+    backgroundColor: '#D0D0D0',
+  },
   productArea: {
     flex: 1,
+    width: '100%',
+    maxWidth: 1200,
     backgroundColor: '#D0D0D0',
   },
   productHeader: {
@@ -975,27 +957,24 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   
-  // Product Grid (now with more space)
-  productGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
+  // Product List View
+  productListView: {
+    gap: 4,
   },
-  productGridCard: {
+  productListCard: {
     backgroundColor: '#F5C9A4',
     borderRadius: 0,
     borderWidth: 1,
     borderColor: '#000000',
     padding: 12,
-    width: screenWidth < 768 ? '100%' : screenWidth < 1024 ? 'calc(50% - 6px)' : 'calc(33.333% - 8px)',
-    minHeight: 140,
-    marginBottom: 12,
-  },
-  productCardHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 8,
+    gap: 8,
+    minHeight: 64,
+    marginBottom: 4,
+  },
+  productListContent: {
+    flex: 1,
   },
   productIcon: {
     width: 32,
@@ -1019,57 +998,10 @@ const styles = StyleSheet.create({
     color: '#000000',
     fontWeight: 'bold',
   },
-  productCardContent: {
-    flex: 1,
-  },
   productName: {
     fontSize: 14,
     fontWeight: 'bold',
     color: '#000000',
-    marginBottom: 2,
-    lineHeight: 16,
-  },
-  productCategory: {
-    fontSize: 12,
-    color: '#000000',
-    marginBottom: 8,
-  },
-  productDetails: {
-    gap: 4,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  detailLabel: {
-    fontSize: 10,
-    color: '#000000',
-    fontWeight: '600',
-  },
-  detailValue: {
-    fontSize: 10,
-    color: '#000000',
-    flex: 1,
-  },
-  
-  // Product List View
-  productListView: {
-    gap: 4,
-  },
-  productListCard: {
-    backgroundColor: '#F5C9A4',
-    borderRadius: 0,
-    borderWidth: 1,
-    borderColor: '#000000',
-    padding: 12,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 8,
-    minHeight: 64,
-    marginBottom: 4,
-  },
-  productListContent: {
     flex: 1,
   },
   productListHeader: {
@@ -1077,6 +1009,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: 2,
+  },
+  productCategory: {
+    fontSize: 12,
+    color: '#000000',
+    marginBottom: 8,
   },
   productListDetails: {
     flexDirection: 'row',
@@ -1087,6 +1024,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 2,
+  },
+  detailLabel: {
+    fontSize: 10,
+    color: '#000000',
+    fontWeight: '600',
+  },
+  detailValue: {
+    fontSize: 10,
+    color: '#000000',
+    flex: 1,
   },
   
   // Details Panel (Desktop)
