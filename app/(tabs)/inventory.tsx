@@ -515,7 +515,4 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5C9A4',
     color: '#000000',
   },
-  'textInput::placeholder': {
-    color: '#808080',
-  },
 });

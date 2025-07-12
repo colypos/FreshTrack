@@ -288,6 +288,7 @@ export default function ScannerScreen() {
                 value={newProduct.name}
                 onChangeText={(text) => setNewProduct({...newProduct, name: text})}
                 placeholder="z.B. Tomaten"
+                placeholderTextColor="#6B7280"
                 autoFocus
               />
             </View>
@@ -299,6 +300,7 @@ export default function ScannerScreen() {
                 value={newProduct.category}
                 onChangeText={(text) => setNewProduct({...newProduct, category: text})}
                 placeholder="z.B. Gemüse"
+                placeholderTextColor="#6B7280"
               />
             </View>
             
@@ -311,6 +313,7 @@ export default function ScannerScreen() {
                   onChangeText={(text) => setNewProduct({...newProduct, currentStock: parseInt(text) || 0})}
                   keyboardType="numeric"
                   placeholder="0"
+                  placeholderTextColor="#6B7280"
                 />
               </View>
               
@@ -321,6 +324,7 @@ export default function ScannerScreen() {
                   value={newProduct.unit}
                   onChangeText={(text) => setNewProduct({...newProduct, unit: text})}
                   placeholder="kg, Stück, L"
+                  placeholderTextColor="#6B7280"
                 />
               </View>
             </View>
@@ -333,6 +337,7 @@ export default function ScannerScreen() {
                 onChangeText={(text) => setNewProduct({...newProduct, minStock: parseInt(text) || 0})}
                 keyboardType="numeric"
                 placeholder="0"
+                placeholderTextColor="#6B7280"
               />
             </View>
             
@@ -343,6 +348,7 @@ export default function ScannerScreen() {
                 value={newProduct.expiryDate}
                 onChangeText={(text) => setNewProduct({...newProduct, expiryDate: text})}
                 placeholder="YYYY-MM-DD"
+                placeholderTextColor="#6B7280"
               />
             </View>
             
@@ -353,6 +359,7 @@ export default function ScannerScreen() {
                 value={newProduct.location}
                 onChangeText={(text) => setNewProduct({...newProduct, location: text})}
                 placeholder="z.B. Kühlschrank A1"
+                placeholderTextColor="#6B7280"
               />
             </View>
             
@@ -363,6 +370,7 @@ export default function ScannerScreen() {
                 value={newProduct.supplier}
                 onChangeText={(text) => setNewProduct({...newProduct, supplier: text})}
                 placeholder="z.B. Frische AG"
+                placeholderTextColor="#6B7280"
               />
             </View>
           </ScrollView>
