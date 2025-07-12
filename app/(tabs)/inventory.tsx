@@ -173,7 +173,7 @@ export default function InventoryScreen() {
         ))}
       </ScrollView>
 
-      <ScrollView style={styles.productList} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.productList} showsVerticalScrollIndicator={false} contentContainerStyle={styles.productListContent}>
         {filteredProducts.map(product => (
           <ProductCard key={product.id} product={product} />
         ))}
@@ -371,7 +371,11 @@ const styles = StyleSheet.create({
   },
   productList: {
     flex: 1,
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 0,
+    paddingBottom: 20,
+  },
+  productListContent: {
     paddingTop: 0,
   },
   productCard: {
