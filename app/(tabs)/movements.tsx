@@ -217,13 +217,12 @@ export default function MovementsScreen() {
                   accessibilityLabel={`Filter ${filter.label}, ${filter.count} Bewegungen`}
                   accessibilityState={{ selected: isSelected }}
                 >
-                  {filter.icon}<Text style={[
+                  {filter.icon && <View style={{ marginRight: 4 }}>{filter.icon}</View>}<Text style={[
                     styles.categoryFilterButtonText,
                     isSelected && styles.categoryFilterButtonTextActive
                   ]} numberOfLines={1} ellipsizeMode="tail">
                     {filter.label} ({filter.count})
-                  </Text>
-                  {isSelected && (
+                  </Text>{isSelected && (
                     <View style={styles.categoryFilterCheck}>
                       <Text style={styles.categoryFilterCheckmark}>✓</Text>
                     </View>
