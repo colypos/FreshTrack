@@ -156,7 +156,6 @@ export default function MovementsScreen() {
             </TouchableOpacity>
           ))}
         </View>
-      </View>
 
       <View style={styles.statsBar}>
         <View style={styles.statItem}>
