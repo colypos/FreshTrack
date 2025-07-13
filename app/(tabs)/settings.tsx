@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Globe, Bell, Download, Upload, Shield, CircleHelp as HelpCircle, ChevronRight, User, Building } from 'lucide-react-native';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useStorage } from '@/hooks/useStorage';
+import { handleDataExport, ExportError, getErrorMessage } from '@/utils/dataExport';
 import * as DocumentPicker from 'expo-document-picker';
 import designSystem from '@/styles/designSystem';
 
@@ -16,26 +17,59 @@ const languages = [
 
 export default function SettingsScreen() {
   const { t, currentLanguage, changeLanguage } = useLanguage();
-  const { products, addProduct } = useStorage();
+  const { products, movements, alerts, addProduct } = useStorage();
+  const [isExporting, setIsExporting] = useState(false);
 
-  const handleExportData = () => {
-    // Create CSV content
-    const csvHeader = 'Name,Kategorie,Aktueller Bestand,Mindestbestand,Einheit,Verfallsdatum,Standort,Lieferant,Barcode\n';
-    const csvContent = products.map(product => 
-      `"${product.name}","${product.category}",${product.currentStock},${product.minStock},"${product.unit}","${product.expiryDate}","${product.location}","${product.supplier || ''}","${product.barcode || ''}"`
-    ).join('\n');
-    
-    const fullCsv = csvHeader + csvContent;
-    
-    Alert.alert(
-      'Daten exportieren',
-      `${products.length} Produkte bereit zum Export.\n\nCSV-Inhalt wurde erstellt. In einer vollständigen App würde diese Datei heruntergeladen werden.`,
-      [
-        { text: 'OK' }
-      ]
-    );
-    
-    console.log('CSV Export:', fullCsv);
+  /**
+   * Handles the data export process with comprehensive error handling
+   * Implements loading states and user feedback
+   */
+  const handleExportData = async () => {
+    try {
+      setIsExporting(true);
+      
+      // Call the comprehensive export function
+      await handleDataExport(products, movements, alerts);
+      
+      // Show success message
+      Alert.alert(
+        'Export erfolgreich',
+        `Daten wurden erfolgreich exportiert!\n\n` +
+        `Exportierte Datensätze:\n` +
+        `• ${products.length} Produkte\n` +
+        `• ${movements.length} Bewegungen\n` +
+        `• ${alerts.length} Warnungen\n` +
+        `• Benutzereinstellungen\n` +
+        `• Verlaufsdaten`,
+        [{ text: 'OK' }]
+      );
+      
+    } catch (error) {
+      // Handle different types of export errors
+      let errorMessage = 'Ein unerwarteter Fehler ist aufgetreten.';
+      
+      if (error instanceof ExportError) {
+        errorMessage = getErrorMessage(error);
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
+      Alert.alert(
+        'Export fehlgeschlagen',
+        errorMessage,
+        [
+          { text: 'OK' },
+          { 
+            text: 'Erneut versuchen', 
+            onPress: () => handleExportData() 
+          }
+        ]
+      );
+      
+      console.error('Export error:', error);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const handleImportData = async () => {
@@ -188,8 +222,13 @@ export default function SettingsScreen() {
           <SettingItem
             icon={<Download size={22} color={designSystem.colors.text.secondary} />}
             title="Daten exportieren"
-            subtitle="Inventardaten als CSV herunterladen"
+            subtitle={isExporting ? "Export läuft..." : "Alle Daten als JSON herunterladen"}
             onPress={handleExportData}
+            rightElement={isExporting ? (
+              <View style={styles.loadingIndicator}>
+                <Text style={styles.loadingText}>⏳</Text>
+              </View>
+            ) : undefined}
           />
           <SettingItem
             icon={<Upload size={22} color={designSystem.colors.text.secondary} />}
@@ -347,5 +386,13 @@ const styles = StyleSheet.create({
     ...designSystem.componentStyles.textCaption,
     textAlign: 'center',
     lineHeight: 16,
+  },
+  loadingIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: designSystem.spacing.sm,
+  },
+  loadingText: {
+    fontSize: 16,
   },
 });
