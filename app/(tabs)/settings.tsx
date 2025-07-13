@@ -172,7 +172,7 @@ export default function SettingsScreen() {
             icon={<Shield size={22} color="#6b7280" />}
             title="Automatisches Backup"
             subtitle="Tägliche Datensicherung"
-            rightElement={<Switch value={true} onValueChange={() => {}} />}
+            rightElement={<Switch value={false} onValueChange={() => {}} />}
           />
         </SettingSection>
 
