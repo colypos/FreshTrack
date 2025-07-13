@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, TextInput, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowUp, ArrowDown, RotateCcw, Filter, Calendar, Plus } from 'lucide-react-native';
+import { ArrowUp, ArrowDown, RotateCcw, Filter, Calendar, Plus, Package, X } from 'lucide-react-native';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useStorage } from '@/hooks/useStorage';
 import { Movement } from '@/types';
@@ -9,8 +9,18 @@ import designSystem from '@/styles/designSystem';
 
 export default function MovementsScreen() {
   const { t } = useLanguage();
-  const { movements } = useStorage();
+  const { movements, products, addMovement } = useStorage();
   const [filterType, setFilterType] = useState<'all' | 'in' | 'out' | 'adjustment'>('all');
+  const [showMovementModal, setShowMovementModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [showProductSelector, setShowProductSelector] = useState(false);
+  const [productSearchQuery, setProductSearchQuery] = useState('');
+  const [movementData, setMovementData] = useState({
+    type: 'in' as 'in' | 'out' | 'adjustment',
+    quantity: 0,
+    reason: '',
+    notes: '',
+  });
 
   const filteredMovements = movements.filter(movement => 
     filterType === 'all' || movement.type === filterType
@@ -58,6 +68,49 @@ export default function MovementsScreen() {
   const clearAllFilters = () => {
     setFilterType('all');
   };
+
+  const handleCreateMovement = () => {
+    setShowProductSelector(true);
+  };
+
+  const handleProductSelect = (product: any) => {
+    setSelectedProduct(product);
+    setShowProductSelector(false);
+    setShowMovementModal(true);
+  };
+
+  const handleMovement = async () => {
+    if (!selectedProduct || !movementData.quantity || !movementData.reason) {
+      Alert.alert('Fehler', 'Bitte füllen Sie alle Pflichtfelder aus.');
+      return;
+    }
+
+    await addMovement({
+      productId: selectedProduct.id,
+      productName: selectedProduct.name,
+      type: movementData.type,
+      quantity: movementData.quantity,
+      reason: movementData.reason,
+      user: 'Current User',
+      notes: movementData.notes,
+    });
+
+    setShowMovementModal(false);
+    setSelectedProduct(null);
+    setMovementData({
+      type: 'in',
+      quantity: 0,
+      reason: '',
+      notes: '',
+    });
+
+    Alert.alert('Erfolg', 'Bewegung wurde erfasst');
+  };
+
+  const filteredProducts = products.filter(product =>
+    product.name.toLowerCase().includes(productSearchQuery.toLowerCase()) ||
+    product.category.toLowerCase().includes(productSearchQuery.toLowerCase())
+  );
 
   const MovementCard = ({ movement }: { movement: Movement }) => (
     <TouchableOpacity 
@@ -117,6 +170,7 @@ export default function MovementsScreen() {
           <View style={styles.headerActions}>
             <TouchableOpacity 
               style={styles.addButton}
+              onPress={handleCreateMovement}
               activeOpacity={designSystem.interactive.states.active.opacity}
               accessibilityLabel="Neue Bewegung hinzufügen"
               accessibilityRole="button"
@@ -215,6 +269,7 @@ export default function MovementsScreen() {
                 </Text>
                 <TouchableOpacity 
                   style={styles.emptyAction}
+                  onPress={handleCreateMovement}
                   activeOpacity={designSystem.interactive.states.active.opacity}
                   accessibilityLabel="Neue Bewegung hinzufügen"
                   accessibilityRole="button"
@@ -227,6 +282,189 @@ export default function MovementsScreen() {
           </ScrollView>
         </View>
       </View>
+
+      {/* Product Selector Modal */}
+      <Modal visible={showProductSelector} animationType="slide" presentationStyle="pageSheet">
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity 
+              onPress={() => setShowProductSelector(false)}
+              accessibilityLabel={t('cancel')}
+              accessibilityRole="button"
+            >
+              <Text style={styles.cancelButton}>{t('cancel')}</Text>
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>Produkt auswählen</Text>
+            <View style={{ width: 80 }} />
+          </View>
+          
+          <View style={styles.modalContent}>
+            <View style={styles.searchContainer}>
+              <View style={styles.searchBar}>
+                <Text style={styles.searchIcon}>🔍</Text>
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Produkt suchen..."
+                  placeholderTextColor={designSystem.colors.text.disabled}
+                  value={productSearchQuery}
+                  onChangeText={setProductSearchQuery}
+                  accessibilityLabel="Produkt suchen"
+                  returnKeyType="search"
+                />
+                {productSearchQuery.length > 0 && (
+                  <TouchableOpacity 
+                    onPress={() => setProductSearchQuery('')}
+                    activeOpacity={designSystem.interactive.states.active.opacity}
+                    accessibilityLabel="Suche löschen"
+                    accessibilityRole="button"
+                  >
+                    <X size={20} color={designSystem.colors.text.secondary} />
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+            
+            <ScrollView style={styles.productList} showsVerticalScrollIndicator={false}>
+              {filteredProducts.map(product => (
+                <TouchableOpacity
+                  key={product.id}
+                  style={styles.productItem}
+                  onPress={() => handleProductSelect(product)}
+                  activeOpacity={designSystem.interactive.states.active.opacity}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Produkt ${product.name} auswählen`}
+                >
+                  <View style={styles.productIcon}>
+                    <Package size={20} color={designSystem.colors.text.secondary} />
+                  </View>
+                  <View style={styles.productInfo}>
+                    <Text style={styles.productName}>{product.name}</Text>
+                    <Text style={styles.productDetails}>
+                      {product.category} • {product.currentStock} {product.unit}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+              
+              {filteredProducts.length === 0 && (
+                <View style={styles.emptyProductState}>
+                  <Text style={styles.emptyText}>
+                    {productSearchQuery ? 
+                      `Keine Produkte für "${productSearchQuery}" gefunden` : 
+                      'Keine Produkte verfügbar'
+                    }
+                  </Text>
+                </View>
+              )}
+            </ScrollView>
+          </View>
+        </SafeAreaView>
+      </Modal>
+
+      {/* Movement Modal */}
+      <Modal visible={showMovementModal} animationType="slide" presentationStyle="pageSheet">
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setShowMovementModal(false)}>
+              <Text style={styles.cancelButton}>{t('cancel')}</Text>
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>Lagerbewegung</Text>
+            <TouchableOpacity onPress={handleMovement}>
+              <Text style={styles.saveButton}>{t('save')}</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+            {selectedProduct && (
+              <View style={styles.selectedProductInfo}>
+                <Package size={24} color={designSystem.colors.success[500]} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.selectedProductName}>{selectedProduct.name}</Text>
+                  <Text style={styles.selectedProductDetails}>
+                    Aktueller Bestand: {selectedProduct.currentStock} {selectedProduct.unit}
+                  </Text>
+                </View>
+              </View>
+            )}
+
+            <View style={styles.movementTypeContainer}>
+              <Text style={styles.inputLabel}>Bewegungstyp</Text>
+              <View style={styles.buttonGroup}>
+                {[
+                  { key: 'in', label: 'Wareneingang', color: designSystem.colors.success[500] },
+                  { key: 'out', label: 'Warenausgang', color: designSystem.colors.error[500] },
+                  { key: 'adjustment', label: 'Anpassung', color: designSystem.colors.neutral[500] },
+                ].map(type => (
+                  <TouchableOpacity
+                    key={type.key}
+                    style={[
+                      styles.typeButton,
+                      movementData.type === type.key && { backgroundColor: type.color }
+                    ]}
+                    onPress={() => setMovementData({...movementData, type: type.key as any})}
+                    activeOpacity={designSystem.interactive.states.active.opacity}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${type.label} auswählen`}
+                    accessibilityState={{ selected: movementData.type === type.key }}
+                  >
+                    <Text style={[
+                      styles.typeButtonText,
+                      movementData.type === type.key && { color: designSystem.colors.text.inverse }
+                    ]}>
+                      {type.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>{t('quantity')} *</Text>
+              <TextInput
+                style={styles.textInput}
+                value={movementData.quantity.toString()}
+                onChangeText={(text) => setMovementData({...movementData, quantity: parseInt(text) || 0})}
+                keyboardType="numeric"
+                placeholder="0"
+                placeholderTextColor={designSystem.colors.text.disabled}
+                accessibilityLabel="Menge eingeben"
+                accessibilityHint="Anzahl der Einheiten für diese Bewegung"
+                returnKeyType="next"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>{t('reason')} *</Text>
+              <TextInput
+                style={styles.textInput}
+                value={movementData.reason}
+                onChangeText={(text) => setMovementData({...movementData, reason: text})}
+                placeholder="z.B. Lieferung, Verkauf, Korrektur"
+                placeholderTextColor={designSystem.colors.text.disabled}
+                accessibilityLabel="Grund eingeben"
+                accessibilityHint="Grund für diese Lagerbewegung"
+                returnKeyType="next"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>{t('notes')}</Text>
+              <TextInput
+                style={[styles.textInput, styles.textArea]}
+                value={movementData.notes}
+                onChangeText={(text) => setMovementData({...movementData, notes: text})}
+                placeholder="Zusätzliche Notizen..."
+                placeholderTextColor={designSystem.colors.text.disabled}
+                multiline
+                numberOfLines={3}
+                accessibilityLabel="Notizen eingeben"
+                accessibilityHint="Optionale zusätzliche Informationen"
+                returnKeyType="done"
+              />
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -509,5 +747,175 @@ const styles = StyleSheet.create({
     ...designSystem.componentStyles.textPrimary,
     fontSize: 15,
     fontWeight: '600',
+  },
+  
+  // Modal Styles
+  modalContainer: {
+    flex: 1,
+    backgroundColor: designSystem.colors.background.primary,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: designSystem.spacing.xl,
+    borderBottomWidth: 1,
+    borderBottomColor: designSystem.interactive.border.color,
+    backgroundColor: designSystem.colors.background.secondary,
+  },
+  modalTitle: {
+    ...designSystem.componentStyles.textSubtitle,
+  },
+  cancelButton: {
+    ...designSystem.componentStyles.textPrimary,
+    fontWeight: '600',
+  },
+  saveButton: {
+    ...designSystem.componentStyles.textPrimary,
+    fontWeight: 'bold',
+  },
+  modalContent: {
+    flex: 1,
+    padding: designSystem.spacing.xl,
+  },
+  
+  // Product Selector Styles
+  searchContainer: {
+    marginBottom: designSystem.spacing.xl,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: designSystem.colors.background.secondary,
+    borderRadius: designSystem.interactive.border.radius,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+    paddingHorizontal: designSystem.spacing.lg,
+    paddingVertical: designSystem.spacing.md,
+    gap: designSystem.spacing.md,
+    minHeight: 48,
+    ...designSystem.shadows.low,
+  },
+  searchIcon: {
+    fontSize: 16,
+  },
+  searchInput: {
+    flex: 1,
+    ...designSystem.componentStyles.textPrimary,
+    lineHeight: 20,
+  },
+  productList: {
+    flex: 1,
+  },
+  productItem: {
+    ...designSystem.componentStyles.interactiveBase,
+    backgroundColor: designSystem.colors.background.secondary,
+    borderRadius: designSystem.interactive.border.radius,
+    padding: designSystem.spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: designSystem.spacing.md,
+    marginBottom: designSystem.spacing.md,
+    minHeight: 64,
+    ...designSystem.accessibility.minTouchTarget,
+    ...designSystem.shadows.low,
+  },
+  productIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: designSystem.interactive.border.radius,
+    backgroundColor: designSystem.colors.background.primary,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  productInfo: {
+    flex: 1,
+  },
+  productName: {
+    ...designSystem.componentStyles.textPrimary,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  productDetails: {
+    ...designSystem.componentStyles.textSecondary,
+  },
+  emptyProductState: {
+    padding: 40,
+    alignItems: 'center',
+  },
+  emptyText: {
+    ...designSystem.componentStyles.textSecondary,
+    textAlign: 'center',
+  },
+  
+  // Movement Form Styles
+  selectedProductInfo: {
+    ...designSystem.componentStyles.interactiveBase,
+    backgroundColor: designSystem.colors.background.secondary,
+    borderRadius: designSystem.interactive.border.radius,
+    padding: designSystem.spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: designSystem.spacing.md,
+    marginBottom: designSystem.spacing.xxl,
+    ...designSystem.shadows.low,
+  },
+  selectedProductName: {
+    ...designSystem.componentStyles.textPrimary,
+    fontWeight: '600',
+  },
+  selectedProductDetails: {
+    ...designSystem.componentStyles.textSecondary,
+    marginTop: 2,
+  },
+  movementTypeContainer: {
+    marginBottom: designSystem.spacing.xl,
+  },
+  buttonGroup: {
+    flexDirection: 'row',
+    gap: designSystem.spacing.sm,
+  },
+  typeButton: {
+    flex: 1,
+    backgroundColor: designSystem.colors.background.secondary,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+    paddingVertical: designSystem.spacing.md,
+    borderRadius: designSystem.interactive.border.radius,
+    alignItems: 'center',
+    minHeight: 44,
+    justifyContent: 'center',
+    ...designSystem.accessibility.minTouchTarget,
+    ...designSystem.shadows.low,
+  },
+  typeButtonText: {
+    ...designSystem.componentStyles.textSecondary,
+    fontWeight: '600',
+  },
+  inputGroup: {
+    marginBottom: designSystem.spacing.xl,
+  },
+  inputLabel: {
+    ...designSystem.componentStyles.textPrimary,
+    fontWeight: '600',
+    marginBottom: designSystem.spacing.sm,
+    lineHeight: 20,
+  },
+  textInput: {
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+    borderRadius: designSystem.interactive.border.radius,
+    padding: 14,
+    ...designSystem.componentStyles.textPrimary,
+    backgroundColor: designSystem.colors.background.secondary,
+    minHeight: 48,
+    lineHeight: 20,
+    ...designSystem.shadows.low,
+  },
+  textArea: {
+    height: 80,
+    textAlignVertical: 'top',
   },
 });
