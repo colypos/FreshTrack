@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, TextInput, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowUp, ArrowDown, RotateCcw, Filter, Calendar, Plus, Package, X } from 'lucide-react-native';
+import { ArrowUp, ArrowDown, RotateCcw, Filter, Calendar, Plus, Package, X, Search } from 'lucide-react-native';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useStorage } from '@/hooks/useStorage';
 import { Movement } from '@/types';
@@ -299,7 +299,7 @@ export default function MovementsScreen() {
           <View style={styles.modalContent}>
             <View style={styles.searchContainer}>
               <View style={styles.searchBar}>
-                <Text style={styles.searchIcon}>🔍</Text>
+                <Search size={20} color={designSystem.colors.text.secondary} />
                 <TextInput
                   style={styles.searchInput}
                   placeholder="Produkt suchen..."
