@@ -1,4 +1,5 @@
 import { Tabs } from 'expo-router';
+import { View } from 'react-native';
 import { Package, Menu, Camera, ScrollText, Settings } from 'lucide-react-native';
 
 export default function TabLayout() {
@@ -30,7 +31,7 @@ export default function TabLayout() {
         options={{
           title: 'Dashboard',
           tabBarIcon: ({ size, color, focused }) => (
-            <div style={{
+            <View style={{
               backgroundColor: 'transparent',
               padding: '8px',
               width: '40px',
@@ -40,7 +41,7 @@ export default function TabLayout() {
               justifyContent: 'center',
             }}>
               <Menu size={24} color={focused ? '#FF9800' : '#000000'} />
-            </div>
+            </View>
           ),
         }}
       />
@@ -49,7 +50,7 @@ export default function TabLayout() {
         options={{
           title: 'Inventar',
           tabBarIcon: ({ size, color, focused }) => (
-            <div style={{
+            <View style={{
               backgroundColor: 'transparent',
               padding: '8px',
               width: '40px',
@@ -59,7 +60,7 @@ export default function TabLayout() {
               justifyContent: 'center',
             }}>
               <Package size={24} color={focused ? '#FF9800' : '#000000'} />
-            </div>
+            </View>
           ),
         }}
       />
@@ -68,7 +69,7 @@ export default function TabLayout() {
         options={{
           title: 'Scanner',
           tabBarIcon: ({ size, color, focused }) => (
-            <div style={{
+            <View style={{
               backgroundColor: 'transparent',
               padding: '8px',
               width: '40px',
@@ -78,7 +79,7 @@ export default function TabLayout() {
               justifyContent: 'center',
             }}>
               <Camera size={24} color={focused ? '#FF9800' : '#000000'} />
-            </div>
+            </View>
           ),
         }}
       />
@@ -87,7 +88,7 @@ export default function TabLayout() {
         options={{
           title: 'Bewegungen',
           tabBarIcon: ({ size, color, focused }) => (
-            <div style={{
+            <View style={{
               backgroundColor: 'transparent',
               padding: '8px',
               width: '40px',
@@ -97,7 +98,7 @@ export default function TabLayout() {
               justifyContent: 'center',
             }}>
               <ScrollText size={24} color={focused ? '#FF9800' : '#000000'} />
-            </div>
+            </View>
           ),
         }}
       />
@@ -106,7 +107,7 @@ export default function TabLayout() {
         options={{
           title: 'Einstellungen',
           tabBarIcon: ({ size, color, focused }) => (
-            <div style={{
+            <View style={{
               backgroundColor: 'transparent',
               padding: '8px',
               width: '40px',
@@ -116,7 +117,7 @@ export default function TabLayout() {
               justifyContent: 'center',
             }}>
               <Settings size={24} color={focused ? '#FF9800' : '#000000'} />
-            </div>
+            </View>
           ),
         }}
       />
