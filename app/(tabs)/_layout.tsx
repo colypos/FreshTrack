@@ -33,10 +33,9 @@ export default function TabLayout() {
           tabBarIcon: ({ size, color, focused }) => (
             <View style={{
               backgroundColor: 'transparent',
-              padding: '8px',
-              width: '40px',
-              height: '40px',
-              display: 'flex',
+              padding: 8,
+              width: 40,
+              height: 40,
               alignItems: 'center',
               justifyContent: 'center',
             }}>
@@ -52,10 +51,9 @@ export default function TabLayout() {
           tabBarIcon: ({ size, color, focused }) => (
             <View style={{
               backgroundColor: 'transparent',
-              padding: '8px',
-              width: '40px',
-              height: '40px',
-              display: 'flex',
+              padding: 8,
+              width: 40,
+              height: 40,
               alignItems: 'center',
               justifyContent: 'center',
             }}>
@@ -71,10 +69,9 @@ export default function TabLayout() {
           tabBarIcon: ({ size, color, focused }) => (
             <View style={{
               backgroundColor: 'transparent',
-              padding: '8px',
-              width: '40px',
-              height: '40px',
-              display: 'flex',
+              padding: 8,
+              width: 40,
+              height: 40,
               alignItems: 'center',
               justifyContent: 'center',
             }}>
@@ -90,10 +87,9 @@ export default function TabLayout() {
           tabBarIcon: ({ size, color, focused }) => (
             <View style={{
               backgroundColor: 'transparent',
-              padding: '8px',
-              width: '40px',
-              height: '40px',
-              display: 'flex',
+              padding: 8,
+              width: 40,
+              height: 40,
               alignItems: 'center',
               justifyContent: 'center',
             }}>
@@ -109,10 +105,9 @@ export default function TabLayout() {
           tabBarIcon: ({ size, color, focused }) => (
             <View style={{
               backgroundColor: 'transparent',
-              padding: '8px',
-              width: '40px',
-              height: '40px',
-              display: 'flex',
+              padding: 8,
+              width: 40,
+              height: 40,
               alignItems: 'center',
               justifyContent: 'center',
             }}>
