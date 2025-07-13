@@ -156,6 +156,7 @@ export default function MovementsScreen() {
             </TouchableOpacity>
           ))}
         </View>
+      </ScrollView>
 
       <View style={styles.statsBar}>
         <View style={styles.statItem}>
@@ -243,7 +244,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: designSystem.spacing.sm,
-    maxHeight: 58, // 2 rows max
+    maxHeight: 58,
     overflow: 'hidden',
   },
   filterChip: {
@@ -256,13 +257,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: designSystem.spacing.xs,
-    height: 26, // 60% of original 44px
+    height: 26,
     maxWidth: '48%',
     ...designSystem.shadows.low,
   },
   filterChipActive: {
     backgroundColor: designSystem.colors.filter.active,
-    borderWidth: designSystem.interactive.border.width, // Same border width
+    borderWidth: designSystem.interactive.border.width,
     borderColor: designSystem.interactive.border.color,
     borderRadius: designSystem.interactive.border.radius,
     paddingHorizontal: designSystem.spacing.md,
