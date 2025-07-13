@@ -784,11 +784,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: designSystem.spacing.sm,
-    maxHeight: 96, // Approximately 2 rows (44px height + 8px gap + 44px height)
+    maxHeight: 48, // Approximately 2 rows (22px height + 8px gap + 22px height)
     overflow: 'hidden',
   },
   categoryFilterButton: {
-    backgroundColor: designSystem.colors.background.secondary,
+    backgroundColor: '#FDD86E',
     borderWidth: designSystem.interactive.border.width,
     borderColor: designSystem.interactive.border.color,
     borderRadius: designSystem.interactive.border.radius,
@@ -797,7 +797,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: designSystem.spacing.sm,
-    minHeight: 44,
+    minHeight: 22,
     maxWidth: '48%', // Ensures responsive wrapping
     ...designSystem.shadows.low,
     ...designSystem.accessibility.minTouchTarget,
