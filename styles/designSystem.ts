@@ -206,6 +206,7 @@ export const interactive = {
       default: 2,
       active: 3,
     },
+    gap: Math.round(8 * 0.3), // 2px - rounded to prevent react-native-web issues
   },
   
   // Animation specifications
