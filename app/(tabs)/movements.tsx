@@ -217,8 +217,7 @@ export default function MovementsScreen() {
                   accessibilityLabel={`Filter ${filter.label}, ${filter.count} Bewegungen`}
                   accessibilityState={{ selected: isSelected }}
                 >
-                  {filter.icon}
-                  <Text style={[
+                  {filter.icon}<Text style={[
                     styles.categoryFilterButtonText,
                     isSelected && styles.categoryFilterButtonTextActive
                   ]} numberOfLines={1} ellipsizeMode="tail">
