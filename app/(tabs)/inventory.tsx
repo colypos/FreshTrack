@@ -356,11 +356,14 @@ export default function InventoryScreen() {
                   <Text style={[
                     styles.categoryFilterButtonText,
                     isSelected && styles.categoryFilterButtonTextActive
-                  ]}
-                  numberOfLines={1}
-                  ellipsizeMode="tail">
+                  ]}>
                     {category} ({count})
                   </Text>
+                  {isSelected && (
+                    <View style={styles.categoryFilterCheck}>
+                      <Text style={styles.categoryFilterCheckmark}>✓</Text>
+                    </View>
+                  )}
                 </TouchableOpacity>
               );
             })}
@@ -780,13 +783,12 @@ const styles = StyleSheet.create({
   categoryFilterButtons: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: designSystem.spacing.xs, // 30% of default spacing (4px instead of 8px)
-    rowGap: designSystem.spacing.xs, // 30% of default spacing for row gap
-    maxHeight: 56, // 2 rows (26px height + 4px gap + 26px height)
+    gap: designSystem.spacing.sm,
+    maxHeight: 58, // Approximately 2 rows (26px height + 6px gap + 26px height)
     overflow: 'hidden',
   },
   categoryFilterButton: {
-    backgroundColor: designSystem.colors.filter.default, // #FDD86E - Inactive state
+    backgroundColor: designSystem.colors.filter.default,
     borderWidth: designSystem.interactive.border.width,
     borderColor: designSystem.interactive.border.color,
     borderRadius: designSystem.interactive.border.radius,
@@ -794,46 +796,45 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     flexDirection: 'row', 
     alignItems: 'center',
+    gap: designSystem.spacing.xs,
     height: 26, // 60% of original 44px height
-    flex: 1,
-    marginHorizontal: 2, // Even distribution
-    minWidth: '48%', // Ensures 2 buttons per row maximum
-    maxWidth: '48%', // Maintains responsive layout
-    justifyContent: 'center',
-    ...designSystem.shadows.low,
+    paddingHorizontal: designSystem.spacing.md,
+    paddingVertical: 6,
   },
   categoryFilterButtonActive: {
-    backgroundColor: designSystem.colors.filter.active, // #FFB800 - Active state
-    borderWidth: designSystem.interactive.border.width,
-    borderColor: designSystem.interactive.border.color,
-    borderRadius: designSystem.interactive.border.radius,
-    paddingHorizontal: designSystem.spacing.md,
-    paddingVertical: 6,
-    flexDirection: 'row', 
-    alignItems: 'center',
+    gap: designSystem.spacing.xs,
     height: 26,
-    flex: 1,
-    marginHorizontal: 2,
-    minWidth: '48%',
     maxWidth: '48%',
-    justifyContent: 'center',
     ...designSystem.shadows.medium,
   },
   categoryFilterButtonText: {
-    fontSize: 14, // System default font size
-    fontWeight: '400', // System default font weight
-    color: designSystem.colors.text.secondary,
-    fontFamily: designSystem.typography.fontFamily.primary,
+    ...designSystem.componentStyles.textSecondary,
+    fontWeight: '500',
     flex: 1,
-    textAlign: 'center',
+    numberOfLines: 1,
+    ellipsizeMode: 'tail',
   },
   categoryFilterButtonTextActive: {
-    fontSize: 14, // Identical to inactive state
-    fontWeight: '400', // Identical to inactive state
-    color: designSystem.colors.text.secondary, // Identical to inactive state
-    fontFamily: designSystem.typography.fontFamily.primary,
-    flex: 1,
-    textAlign: 'center',
+    ...designSystem.componentStyles.textPrimary,
+    fontWeight: '600',
+    numberOfLines: 1,
+    ellipsizeMode: 'tail',
+  },
+  categoryFilterCheck: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: designSystem.colors.success[500],
+    borderWidth: 1,
+    borderColor: designSystem.interactive.border.color,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  categoryFilterCheckmark: {
+    ...designSystem.componentStyles.textCaption,
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: designSystem.colors.text.inverse,
   },
   
   // Product Area (now full width)
