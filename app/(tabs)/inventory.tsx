@@ -783,7 +783,7 @@ const styles = StyleSheet.create({
   categoryFilterButtons: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: designSystem.spacing.sm,
+    gap: designSystem.spacing.sm * 0.3, // 30% of default spacing (8px * 0.3 = 2.4px)
     maxHeight: 58, // Approximately 2 rows (26px height + 6px gap + 26px height)
     overflow: 'hidden',
   },
