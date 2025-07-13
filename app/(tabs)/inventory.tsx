@@ -13,10 +13,9 @@ export default function InventoryScreen() {
   const { t } = useLanguage();
   const { products, addProduct } = useStorage();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   
   const [newProduct, setNewProduct] = useState({
@@ -37,9 +36,23 @@ export default function InventoryScreen() {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          product.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          product.location.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
+    const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(product.category);
     return matchesSearch && matchesCategory;
   });
+
+  const toggleCategory = (category: string) => {
+    setSelectedCategories(prev => {
+      if (prev.includes(category)) {
+        return prev.filter(c => c !== category);
+      } else {
+        return [...prev, category];
+      }
+    });
+  };
+
+  const clearAllFilters = () => {
+    setSelectedCategories([]);
+  };
 
   const getStockStatus = (product: Product) => {
     const now = new Date();
@@ -168,12 +181,8 @@ export default function InventoryScreen() {
   };
 
   // Get current category display info
-  const getCurrentCategoryInfo = () => {
-    if (selectedCategory === 'all') {
-      return { name: 'Alle Kategorien', count: products.length };
-    }
-    const count = products.filter(p => p.category === selectedCategory).length;
-    return { name: selectedCategory, count };
+  const getFilteredCount = () => {
+    return filteredProducts.length;
   };
 
   // Product Card Components
@@ -311,102 +320,54 @@ export default function InventoryScreen() {
           </View>
         </View>
 
-        {/* Category Dropdown */}
-        <View style={styles.categoryDropdownContainer}>
-          <TouchableOpacity 
-            style={styles.categoryDropdownButton}
-            onPress={() => setShowCategoryDropdown(!showCategoryDropdown)}
-            activeOpacity={designSystem.interactive.states.active.opacity}
-            accessibilityLabel={`Kategorie auswählen, aktuell: ${getCurrentCategoryInfo().name}`}
-            accessibilityRole="button"
-            accessibilityState={{ expanded: showCategoryDropdown }}
-          >
-            <View style={styles.categoryDropdownContent}>
-              <Package size={20} color={designSystem.colors.text.secondary} />
-              <View style={styles.categoryDropdownText}>
-                <Text style={styles.categoryDropdownLabel}>Kategorie</Text>
-                <Text style={styles.categoryDropdownValue}>
-                  {getCurrentCategoryInfo().name} ({getCurrentCategoryInfo().count})
-                </Text>
-              </View>
-            </View>
-            <View style={[
-              styles.categoryDropdownArrow,
-              showCategoryDropdown && styles.categoryDropdownArrowOpen
-            ]}>
-              <Menu size={20} color={designSystem.colors.text.secondary} />
-            </View>
-          </TouchableOpacity>
-
-          {showCategoryDropdown && (
-            <View style={styles.categoryDropdownMenu}>
+        {/* Category Filter Buttons */}
+        <View style={styles.categoryFilterContainer}>
+          <View style={styles.categoryFilterHeader}>
+            <Text style={styles.categoryFilterTitle}>Kategorien</Text>
+            {selectedCategories.length > 0 && (
               <TouchableOpacity
-                style={[
-                  styles.categoryDropdownItem,
-                  selectedCategory === 'all' && styles.categoryDropdownItemActive
-                ]}
-                onPress={() => {
-                  setSelectedCategory('all');
-                  setShowCategoryDropdown(false);
-                }}
+                onPress={clearAllFilters}
                 activeOpacity={designSystem.interactive.states.active.opacity}
-                accessibilityLabel="Alle Kategorien anzeigen"
+                accessibilityLabel="Alle Filter zurücksetzen"
                 accessibilityRole="button"
-                accessibilityState={{ selected: selectedCategory === 'all' }}
               >
-                <Package size={18} color={selectedCategory === 'all' ? designSystem.colors.secondary[500] : designSystem.colors.text.secondary} />
-                <Text style={[
-                  styles.categoryDropdownItemText,
-                  selectedCategory === 'all' && styles.categoryDropdownItemTextActive
-                ]}>
-                  Alle Kategorien ({products.length})
-                </Text>
-                {selectedCategory === 'all' && (
-                  <View style={styles.categoryDropdownCheck}>
-                    <Text style={styles.categoryDropdownCheckmark}>✓</Text>
-                  </View>
-                )}
+                <Text style={styles.clearFiltersText}>Alle zurücksetzen</Text>
               </TouchableOpacity>
-              
-              {categories.map(category => {
-                const count = products.filter(p => p.category === category).length;
-                const isSelected = selectedCategory === category;
-                return (
-                  <TouchableOpacity
-                    key={category}
-                    style={[
-                      styles.categoryDropdownItem,
-                      isSelected && styles.categoryDropdownItemActive
-                    ]}
-                    onPress={() => {
-                      setSelectedCategory(category);
-                      setShowCategoryDropdown(false);
-                    }}
-                    activeOpacity={designSystem.interactive.states.active.opacity}
-                    accessibilityLabel={`Kategorie ${category} anzeigen, ${count} Produkte`}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: isSelected }}
-                  >
-                    <View style={[
-                      styles.categoryDot,
-                      { backgroundColor: isSelected ? designSystem.colors.secondary[500] : designSystem.colors.text.secondary }
-                    ]} />
-                    <Text style={[
-                      styles.categoryDropdownItemText,
-                      isSelected && styles.categoryDropdownItemTextActive
-                    ]}>
-                      {category} ({count})
-                    </Text>
-                    {isSelected && (
-                      <View style={styles.categoryDropdownCheck}>
-                        <Text style={styles.categoryDropdownCheckmark}>✓</Text>
-                      </View>
-                    )}
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          )}
+            )}
+          </View>
+          
+          <View style={styles.categoryFilterButtons}>
+            {categories.map(category => {
+              const count = products.filter(p => p.category === category).length;
+              const isSelected = selectedCategories.includes(category);
+              return (
+                <TouchableOpacity
+                  key={category}
+                  style={[
+                    styles.categoryFilterButton,
+                    isSelected && styles.categoryFilterButtonActive
+                  ]}
+                  onPress={() => toggleCategory(category)}
+                  activeOpacity={designSystem.interactive.states.active.opacity}
+                  accessibilityLabel={`Filter ${category}, ${count} Produkte`}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: isSelected }}
+                >
+                  <Text style={[
+                    styles.categoryFilterButtonText,
+                    isSelected && styles.categoryFilterButtonTextActive
+                  ]}>
+                    {category} ({count})
+                  </Text>
+                  {isSelected && (
+                    <View style={styles.categoryFilterCheck}>
+                      <Text style={styles.categoryFilterCheckmark}>✓</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         </View>
       </View>
 
@@ -415,8 +376,8 @@ export default function InventoryScreen() {
         <View style={styles.productArea}>
           <View style={styles.productHeader}>
             <Text style={styles.resultCount}>
-              {filteredProducts.length} {filteredProducts.length === 1 ? 'Produkt' : 'Produkte'}
-              {selectedCategory !== 'all' && ` in "${selectedCategory}"`}
+              {getFilteredCount()} {getFilteredCount() === 1 ? 'Produkt' : 'Produkte'}
+              {selectedCategories.length > 0 && ` (${selectedCategories.length} Filter aktiv)`}
             </Text>
           </View>
 
@@ -456,17 +417,6 @@ export default function InventoryScreen() {
           </ScrollView>
         </View>
       </View>
-
-      {/* Overlay to close dropdown when clicking outside */}
-      {showCategoryDropdown && (
-        <TouchableOpacity 
-          style={styles.dropdownOverlay}
-          onPress={() => setShowCategoryDropdown(false)}
-          activeOpacity={1}
-          accessibilityLabel="Dropdown schließen"
-          accessibilityRole="button"
-        />
-      )}
 
       {/* Add Product Modal */}
       <Modal
@@ -810,131 +760,78 @@ const styles = StyleSheet.create({
     ...designSystem.componentStyles.textPrimary,
     lineHeight: 20,
   },
-  mobileFilterButton: {
-    backgroundColor: designSystem.colors.background.secondary,
-    borderWidth: designSystem.interactive.border.width,
-    borderColor: designSystem.interactive.border.color,
-    width: 48,
-    height: 48,
-    borderRadius: designSystem.interactive.border.radius,
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...designSystem.shadows.low,
-  },
   
-  // Category Dropdown Styles
-  categoryDropdownContainer: {
-    position: 'relative',
+  // Category Filter Styles
+  categoryFilterContainer: {
     marginTop: designSystem.spacing.md,
-    zIndex: 1000,
-    elevation: 1000,
   },
-  categoryDropdownButton: {
-    backgroundColor: designSystem.colors.background.secondary,
-    borderWidth: designSystem.interactive.border.width,
-    borderColor: designSystem.interactive.border.color,
-    borderRadius: designSystem.interactive.border.radius,
-    padding: designSystem.spacing.lg,
+  categoryFilterHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    minHeight: 56,
-    zIndex: 1001,
-    elevation: 1001,
-    ...designSystem.shadows.low,
+    marginBottom: designSystem.spacing.md,
   },
-  categoryDropdownContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    gap: designSystem.spacing.md,
-  },
-  categoryDropdownText: {
-    flex: 1,
-  },
-  categoryDropdownLabel: {
-    ...designSystem.componentStyles.textCaption,
-    color: designSystem.colors.text.disabled,
-    fontWeight: '500',
-    marginBottom: 2,
-  },
-  categoryDropdownValue: {
+  categoryFilterTitle: {
     ...designSystem.componentStyles.textPrimary,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
-  categoryDropdownArrow: {
-    transform: [{ rotate: '0deg' }],
-    transition: 'transform 0.2s ease',
+  clearFiltersText: {
+    ...designSystem.componentStyles.textSecondary,
+    fontWeight: '600',
+    color: designSystem.colors.error[500],
   },
-  categoryDropdownArrowOpen: {
-    transform: [{ rotate: '180deg' }],
+  categoryFilterButtons: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: designSystem.spacing.sm,
+    maxHeight: 96, // Approximately 2 rows (44px height + 8px gap + 44px height)
+    overflow: 'hidden',
   },
-  categoryDropdownMenu: {
-    position: 'absolute',
-    top: '100%',
-    left: 0,
-    right: 0,
+  categoryFilterButton: {
     backgroundColor: designSystem.colors.background.secondary,
     borderWidth: designSystem.interactive.border.width,
     borderColor: designSystem.interactive.border.color,
-    borderTopWidth: 0,
     borderRadius: designSystem.interactive.border.radius,
-    maxHeight: 300,
-    zIndex: 1002,
-    elevation: 1002,
-    ...designSystem.shadows.high,
-  },
-  categoryDropdownItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: designSystem.spacing.lg,
     paddingVertical: designSystem.spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: designSystem.colors.border.secondary,
-    minHeight: 48,
-    gap: designSystem.spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: designSystem.spacing.sm,
+    minHeight: 44,
+    maxWidth: '48%', // Ensures responsive wrapping
+    ...designSystem.shadows.low,
     ...designSystem.accessibility.minTouchTarget,
   },
-  categoryDropdownItemActive: {
+  categoryFilterButtonActive: {
     backgroundColor: designSystem.colors.secondary[500],
+    borderWidth: 3,
+    borderColor: designSystem.interactive.border.color,
+    ...designSystem.shadows.medium,
   },
-  categoryDropdownItemText: {
-    ...designSystem.componentStyles.textPrimary,
+  categoryFilterButtonText: {
+    ...designSystem.componentStyles.textSecondary,
     fontWeight: '500',
     flex: 1,
   },
-  categoryDropdownItemTextActive: {
-    fontWeight: 'bold',
+  categoryFilterButtonTextActive: {
+    ...designSystem.componentStyles.textPrimary,
+    fontWeight: '600',
   },
-  categoryDropdownCheck: {
-    width: 24,
-    height: 24,
-    borderRadius: designSystem.interactive.border.radius,
+  categoryFilterCheck: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
     backgroundColor: designSystem.colors.success[500],
-    borderWidth: designSystem.interactive.border.width,
+    borderWidth: 1,
     borderColor: designSystem.interactive.border.color,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  categoryDropdownCheckmark: {
-    ...designSystem.componentStyles.textSecondary,
+  categoryFilterCheckmark: {
+    ...designSystem.componentStyles.textCaption,
+    fontSize: 10,
     fontWeight: 'bold',
-  },
-  dropdownOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'transparent',
-    zIndex: 1000,
-    elevation: 1000,
-  },
-  categoryDot: {
-    width: 8,
-    height: 8,
-    borderRadius: designSystem.interactive.border.radius,
+    color: designSystem.colors.text.inverse,
   },
   
   // Product Area (now full width)
@@ -949,6 +846,146 @@ const styles = StyleSheet.create({
     width: '100%',
     alignSelf: 'center',
     backgroundColor: designSystem.colors.background.primary,
+  },
+  productHeader: {
+    paddingHorizontal: 0,
+    paddingVertical: designSystem.spacing.md,
+    borderBottomColor: designSystem.colors.border.secondary,
+  },
+  resultCount: {
+    ...designSystem.componentStyles.textPrimary,
+    fontWeight: '600',
+  },
+  productList: {
+    flex: 1,
+  },
+  productListContent: {
+    padding: 0,
+    paddingTop: designSystem.spacing.sm,
+    paddingBottom: designSystem.spacing.xxl,
+  },
+  
+  // Product List View
+  productListView: {
+    gap: designSystem.spacing.md,
+  },
+  productListCard: {
+    ...designSystem.componentStyles.interactiveBase,
+    backgroundColor: designSystem.colors.background.secondary,
+    borderRadius: designSystem.interactive.border.radius,
+    padding: designSystem.spacing.lg,
+    paddingVertical: designSystem.spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: designSystem.spacing.md,
+    minHeight: 64,
+    marginBottom: 0,
+    ...designSystem.shadows.low,
+  },
+  productListContent: {
+    flex: 1,
+  },
+  productIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: designSystem.interactive.border.radius,
+    backgroundColor: designSystem.colors.background.primary,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  statusBadge: {
+    paddingHorizontal: designSystem.spacing.sm,
+    paddingVertical: designSystem.spacing.xs,
+    borderRadius: designSystem.interactive.border.radius,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+  },
+  statusText: {
+    ...designSystem.componentStyles.textCaption,
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  productName: {
+    ...designSystem.componentStyles.textPrimary,
+    fontWeight: 'bold',
+    flex: 1,
+    marginBottom: 4,
+  },
+  productListHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 6,
+  },
+  productCategory: {
+    ...designSystem.componentStyles.textSecondary,
+    fontSize: 13,
+    marginBottom: 10,
+    fontWeight: '500',
+  },
+  productListDetails: {
+    flexDirection: 'row',
+    gap: designSystem.spacing.lg,
+    marginTop: 6,
+  },
+  detailItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: designSystem.spacing.xs,
+  },
+  detailLabel: {
+    ...designSystem.componentStyles.textCaption,
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  detailValue: {
+    ...designSystem.componentStyles.textCaption,
+    fontSize: 11,
+    flex: 1,
+  },
+  
+  // Empty State
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: designSystem.spacing.xl,
+    paddingVertical: 48,
+    marginTop: 40,
+  },
+  emptyTitle: {
+    ...designSystem.componentStyles.textSubtitle,
+    marginTop: designSystem.spacing.lg,
+    marginBottom: designSystem.spacing.sm,
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    ...designSystem.componentStyles.textSecondary,
+    textAlign: 'center',
+    marginBottom: designSystem.spacing.xxl,
+    lineHeight: 20,
+    paddingHorizontal: designSystem.spacing.xl,
+  },
+  emptyAction: {
+    backgroundColor: designSystem.colors.background.primary,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+    paddingHorizontal: designSystem.spacing.xl,
+    paddingVertical: designSystem.spacing.md,
+    borderRadius: designSystem.interactive.border.radius,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: designSystem.spacing.sm,
+    minHeight: 44,
+    ...designSystem.accessibility.minTouchTarget,
+    ...designSystem.shadows.low,
+  },
+  emptyActionText: {
+    ...designSystem.componentStyles.textPrimary,
+    fontSize: 15,
+    fontWeight: '600',
   },
   productHeader: {
     paddingHorizontal: 0,
