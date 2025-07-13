@@ -783,12 +783,12 @@ const styles = StyleSheet.create({
   categoryFilterButtons: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: Math.round(designSystem.spacing.sm * 0.3), // 30% of default spacing (2.4px)
-    maxHeight: 55, // 2 rows with reduced gap
+    gap: designSystem.spacing.sm,
+    maxHeight: 58, // Approximately 2 rows (26px height + 6px gap + 26px height)
     overflow: 'hidden',
   },
   categoryFilterButton: {
-    backgroundColor: designSystem.colors.filter.default, // #FDD86E
+    backgroundColor: designSystem.colors.filter.default,
     borderWidth: designSystem.interactive.border.width,
     borderColor: designSystem.interactive.border.color,
     borderRadius: designSystem.interactive.border.radius,
@@ -796,42 +796,29 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     flexDirection: 'row', 
     alignItems: 'center',
-    gap: designSystem.spacing.xs, // 4px
+    gap: designSystem.spacing.xs,
     height: 26, // 60% of original 44px height
-    width: '48%', // Consistent width for even distribution
-    justifyContent: 'center',
-    ...designSystem.shadows.low,
+    paddingHorizontal: designSystem.spacing.md,
+    paddingVertical: 6,
   },
   categoryFilterButtonActive: {
-    backgroundColor: designSystem.colors.filter.active, // #FFB800
-    borderWidth: designSystem.interactive.border.width,
-    borderColor: designSystem.interactive.border.color,
-    borderRadius: designSystem.interactive.border.radius,
-    paddingHorizontal: designSystem.spacing.md,
-    paddingVertical: 6,
-    flexDirection: 'row', 
-    alignItems: 'center',
-    gap: designSystem.spacing.xs, // 4px
-    height: 26, // 60% of original 44px height
-    width: '48%', // Consistent width for even distribution
-    justifyContent: 'center',
+    gap: designSystem.spacing.xs,
+    height: 26,
+    maxWidth: '48%',
     ...designSystem.shadows.medium,
   },
   categoryFilterButtonText: {
-    fontSize: designSystem.typography.sizes.secondary.fontSize, // System default 14px
-    fontWeight: designSystem.typography.sizes.secondary.fontWeight, // System default '300'
-    color: designSystem.colors.text.primary,
-    fontFamily: designSystem.typography.fontFamily.primary,
+    ...designSystem.componentStyles.textSecondary,
+    fontWeight: '500',
     flex: 1,
-    textAlign: 'center',
+    numberOfLines: 1,
+    ellipsizeMode: 'tail',
   },
   categoryFilterButtonTextActive: {
-    fontSize: designSystem.typography.sizes.secondary.fontSize, // System default 14px
-    fontWeight: designSystem.typography.sizes.secondary.fontWeight, // System default '300'
-    color: designSystem.colors.text.primary,
-    fontFamily: designSystem.typography.fontFamily.primary,
-    flex: 1,
-    textAlign: 'center',
+    ...designSystem.componentStyles.textPrimary,
+    fontWeight: '600',
+    numberOfLines: 1,
+    ellipsizeMode: 'tail',
   },
   categoryFilterCheck: {
     width: 18,
