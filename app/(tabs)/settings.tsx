@@ -107,7 +107,7 @@ export default function SettingsScreen() {
             `Daten wurden erfolgreich importiert!\n\n` +
             `Importierte Datensätze:\n` +
             `• ${importedData.products?.length || 0} Produkte\n` +
-            `• ${importedData.movements?.length || 0} Bewegungen\n` +
+            `• Bewegungen wurden nicht importiert\n` +
             `• ${importedData.alerts?.length || 0} Warnungen`
           );
           
@@ -207,25 +207,8 @@ export default function SettingsScreen() {
         }
       }
       
-      // Import movements if present
-      if (data.movements && Array.isArray(data.movements)) {
-        for (const movementData of data.movements) {
-          // Find corresponding product
-          const product = products.find(p => p.name === movementData.productName);
-          
-          if (product) {
-            await addMovement({
-              productId: product.id,
-              productName: movementData.productName,
-              type: movementData.type,
-              quantity: movementData.quantity,
-              reason: movementData.reason || 'Import',
-              user: movementData.user || 'Import User',
-              notes: movementData.notes || '',
-            });
-          }
-        }
-      }
+      // Note: Movement import is currently not supported
+      // Movements data will be skipped during import process
       
     } catch (error) {
       console.error('Import processing error:', error);
