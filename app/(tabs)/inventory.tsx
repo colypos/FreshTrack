@@ -15,6 +15,7 @@ export default function InventoryScreen() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   
   const [newProduct, setNewProduct] = useState({
@@ -170,7 +171,59 @@ export default function InventoryScreen() {
     return dates;
   };
 
+  // Get current category display info
+  const getCurrentCategoryInfo = () => {
+    if (selectedCategory === 'all') {
+      return { name: 'Alle Kategorien', count: products.length };
+    }
+    const count = products.filter(p => p.category === selectedCategory).length;
+    return { name: selectedCategory, count };
+  };
+
   // Product Card Components
+  const ProductGridCard = ({ product }: { product: Product }) => {
+    const stockStatus = getStockStatus(product);
+    
+    return (
+      <TouchableOpacity 
+        style={styles.productGridCard}
+        onPress={() => setSelectedProduct(product)}
+        accessibilityLabel={`Produkt ${product.name}, ${stockStatus.label}, ${product.currentStock} ${product.unit}`}
+        accessibilityRole="button"
+        accessibilityHint="Tippen für Details"
+      >
+        <View style={styles.productCardHeader}>
+          <View style={styles.productIcon}>
+            <Package size={20} color="#6B7280" />
+          </View>
+          <View style={[styles.statusBadge, { backgroundColor: stockStatus.color }]}>
+            <Text style={styles.statusText}>{stockStatus.label}</Text>
+          </View>
+        </View>
+        
+        <View style={styles.productCardContent}>
+          <Text style={styles.productName} numberOfLines={2}>{product.name}</Text>
+          <Text style={styles.productCategory}>{product.category}</Text>
+          
+          <View style={styles.productDetails}>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Bestand:</Text>
+              <Text style={styles.detailValue}>{product.currentStock} {product.unit}</Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Calendar size={14} color="#6B7280" />
+              <Text style={styles.detailValue}>{formatGermanDate(product.expiryDate)}</Text>
+            </View>
+            <View style={styles.detailRow}>
+              <MapPin size={14} color="#6B7280" />
+              <Text style={styles.detailValue} numberOfLines={1}>{product.location}</Text>
+            </View>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
   const ProductListCard = ({ product }: { product: Product }) => {
     const stockStatus = getStockStatus(product);
     
@@ -183,7 +236,7 @@ export default function InventoryScreen() {
         accessibilityHint="Tippen für Details"
       >
         <View style={styles.productIcon}>
-          <Package size={18} color="#6B7280" />
+          <Package size={20} color="#6B7280" />
         </View>
         
         <View style={styles.productListContent}>
@@ -202,11 +255,11 @@ export default function InventoryScreen() {
               <Text style={styles.detailValue}>{product.currentStock} {product.unit}</Text>
             </View>
             <View style={styles.detailItem}>
-              <Calendar size={12} color="#6B7280" />
+              <Calendar size={14} color="#6B7280" />
               <Text style={styles.detailValue}>{formatGermanDate(product.expiryDate)}</Text>
             </View>
             <View style={styles.detailItem}>
-              <MapPin size={12} color="#6B7280" />
+              <MapPin size={14} color="#6B7280" />
               <Text style={styles.detailValue}>{product.location}</Text>
             </View>
           </View>
@@ -228,14 +281,14 @@ export default function InventoryScreen() {
               accessibilityLabel="Neues Produkt hinzufügen"
               accessibilityRole="button"
             >
-              <Plus size={20} color="#000000" />
+              <Plus size={24} color="#000000" />
             </TouchableOpacity>
           </View>
         </View>
 
         <View style={styles.searchContainer}>
           <View style={styles.searchBar}>
-            <Search size={18} color="#6B7280" />
+            <Search size={20} color="#6B7280" />
             <TextInput
               style={styles.searchInput}
               placeholder="Produkte, Kategorien oder Standorte suchen..."
@@ -252,63 +305,105 @@ export default function InventoryScreen() {
                 accessibilityLabel="Suche löschen"
                 accessibilityRole="button"
               >
-                <X size={18} color="#6B7280" />
+                <X size={20} color="#6B7280" />
               </TouchableOpacity>
             )}
           </View>
         </View>
 
-        {/* Category Filter Buttons */}
-        <View style={styles.categoryFiltersContainer}>
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            style={styles.categoryFiltersScrollView}
-            contentContainerStyle={styles.categoryFiltersContent}
+        {/* Category Dropdown */}
+        <View style={styles.categoryDropdownContainer}>
+          <TouchableOpacity 
+            style={styles.categoryDropdownButton}
+            onPress={() => setShowCategoryDropdown(!showCategoryDropdown)}
+            accessibilityLabel={`Kategorie auswählen, aktuell: ${getCurrentCategoryInfo().name}`}
+            accessibilityRole="button"
+            accessibilityState={{ expanded: showCategoryDropdown }}
           >
-            <TouchableOpacity
-              style={[
-                styles.categoryFilterButton,
-                selectedCategory === 'all' && styles.categoryFilterButtonActive
-              ]}
-              onPress={() => setSelectedCategory('all')}
-              accessibilityLabel="Alle Kategorien anzeigen"
-              accessibilityRole="button"
-              accessibilityState={{ selected: selectedCategory === 'all' }}
-            >
-              <Text style={[
-                styles.categoryFilterText,
-                selectedCategory === 'all' && styles.categoryFilterTextActive
-              ]}>
-                Alle ({products.length})
-              </Text>
-            </TouchableOpacity>
-            
-            {categories.map(category => {
-              const count = products.filter(p => p.category === category).length;
-              const isSelected = selectedCategory === category;
-              return (
-                <TouchableOpacity
-                  key={category}
-                  style={[
-                    styles.categoryFilterButton,
-                    isSelected && styles.categoryFilterButtonActive
-                  ]}
-                  onPress={() => setSelectedCategory(category)}
-                  accessibilityLabel={`Kategorie ${category} anzeigen, ${count} Produkte`}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: isSelected }}
-                >
-                  <Text style={[
-                    styles.categoryFilterText,
-                    isSelected && styles.categoryFilterTextActive
-                  ]}>
-                    {category} ({count})
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
+            <View style={styles.categoryDropdownContent}>
+              <Package size={20} color="#6B7280" />
+              <View style={styles.categoryDropdownText}>
+                <Text style={styles.categoryDropdownLabel}>Kategorie</Text>
+                <Text style={styles.categoryDropdownValue}>
+                  {getCurrentCategoryInfo().name} ({getCurrentCategoryInfo().count})
+                </Text>
+              </View>
+            </View>
+            <View style={[
+              styles.categoryDropdownArrow,
+              showCategoryDropdown && styles.categoryDropdownArrowOpen
+            ]}>
+              <Menu size={20} color="#6B7280" />
+            </View>
+          </TouchableOpacity>
+
+          {showCategoryDropdown && (
+            <View style={styles.categoryDropdownMenu}>
+              <TouchableOpacity
+                style={[
+                  styles.categoryDropdownItem,
+                  selectedCategory === 'all' && styles.categoryDropdownItemActive
+                ]}
+                onPress={() => {
+                  setSelectedCategory('all');
+                  setShowCategoryDropdown(false);
+                }}
+                accessibilityLabel="Alle Kategorien anzeigen"
+                accessibilityRole="button"
+                accessibilityState={{ selected: selectedCategory === 'all' }}
+              >
+                <Package size={18} color={selectedCategory === 'all' ? '#F68528' : '#6B7280'} />
+                <Text style={[
+                  styles.categoryDropdownItemText,
+                  selectedCategory === 'all' && styles.categoryDropdownItemTextActive
+                ]}>
+                  Alle Kategorien ({products.length})
+                </Text>
+                {selectedCategory === 'all' && (
+                  <View style={styles.categoryDropdownCheck}>
+                    <Text style={styles.categoryDropdownCheckmark}>✓</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+              
+              {categories.map(category => {
+                const count = products.filter(p => p.category === category).length;
+                const isSelected = selectedCategory === category;
+                return (
+                  <TouchableOpacity
+                    key={category}
+                    style={[
+                      styles.categoryDropdownItem,
+                      isSelected && styles.categoryDropdownItemActive
+                    ]}
+                    onPress={() => {
+                      setSelectedCategory(category);
+                      setShowCategoryDropdown(false);
+                    }}
+                    accessibilityLabel={`Kategorie ${category} anzeigen, ${count} Produkte`}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: isSelected }}
+                  >
+                    <View style={[
+                      styles.categoryDot,
+                      { backgroundColor: isSelected ? '#F68528' : '#6B7280' }
+                    ]} />
+                    <Text style={[
+                      styles.categoryDropdownItemText,
+                      isSelected && styles.categoryDropdownItemTextActive
+                    ]}>
+                      {category} ({count})
+                    </Text>
+                    {isSelected && (
+                      <View style={styles.categoryDropdownCheck}>
+                        <Text style={styles.categoryDropdownCheckmark}>✓</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          )}
         </View>
       </View>
 
@@ -335,7 +430,7 @@ export default function InventoryScreen() {
             
             {filteredProducts.length === 0 && (
               <View style={styles.emptyState}>
-                <Package size={48} color="#D1D5DB" />
+                <Package size={64} color="#D1D5DB" />
                 <Text style={styles.emptyTitle}>Keine Produkte gefunden</Text>
                 <Text style={styles.emptySubtitle}>
                   {searchQuery ? 
@@ -349,7 +444,7 @@ export default function InventoryScreen() {
                   accessibilityLabel="Erstes Produkt hinzufügen"
                   accessibilityRole="button"
                 >
-                  <Plus size={18} color="#000000" />
+                  <Plus size={20} color="#000000" />
                   <Text style={styles.emptyActionText}>Produkt hinzufügen</Text>
                 </TouchableOpacity>
               </View>
@@ -357,6 +452,16 @@ export default function InventoryScreen() {
           </ScrollView>
         </View>
       </View>
+
+      {/* Overlay to close dropdown when clicking outside */}
+      {showCategoryDropdown && (
+        <TouchableOpacity 
+          style={styles.dropdownOverlay}
+          onPress={() => setShowCategoryDropdown(false)}
+          accessibilityLabel="Dropdown schließen"
+          accessibilityRole="button"
+        />
+      )}
 
       {/* Add Product Modal */}
       <Modal
@@ -371,7 +476,6 @@ export default function InventoryScreen() {
               onPress={() => setShowAddModal(false)}
               accessibilityLabel="Abbrechen"
               accessibilityRole="button"
-              style={styles.modalButton}
             >
               <Text style={styles.cancelButton}>{t('cancel')}</Text>
             </TouchableOpacity>
@@ -380,7 +484,6 @@ export default function InventoryScreen() {
               onPress={handleAddProduct}
               accessibilityLabel="Produkt speichern"
               accessibilityRole="button"
-              style={styles.modalButton}
             >
               <Text style={styles.saveButton}>{t('save')}</Text>
             </TouchableOpacity>
@@ -493,7 +596,7 @@ export default function InventoryScreen() {
                     accessibilityHint="Datum aus Kalender auswählen"
                     accessibilityRole="button"
                   >
-                    <Calendar size={18} color="#6b7280" />
+                    <Calendar size={20} color="#6b7280" />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -547,7 +650,6 @@ export default function InventoryScreen() {
               onPress={() => setShowDatePicker(false)}
               accessibilityLabel="Abbrechen"
               accessibilityRole="button"
-              style={styles.modalButton}
             >
               <Text style={styles.cancelButton}>{t('cancel')}</Text>
             </TouchableOpacity>
@@ -556,7 +658,6 @@ export default function InventoryScreen() {
               onPress={() => setShowDatePicker(false)}
               accessibilityLabel="Fertig"
               accessibilityRole="button"
-              style={styles.modalButton}
             >
               <Text style={styles.saveButton}>Fertig</Text>
             </TouchableOpacity>
@@ -641,18 +742,17 @@ export default function InventoryScreen() {
 }
 
 const styles = StyleSheet.create({
-  // DESIGN SYSTEM - BASE STYLES
   container: {
     flex: 1,
     backgroundColor: '#D0D0D0',
   },
   
-  // HEADER STYLES - Modern with consistent spacing
+  // Header Styles
   header: {
     backgroundColor: '#D0D0D0',
-    paddingHorizontal: 20,
+    padding: 20,
     paddingTop: 16,
-    paddingBottom: 12,
+    paddingBottom: 16,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(0, 0, 0, 0.1)',
   },
@@ -666,91 +766,179 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     color: '#000000',
-    lineHeight: 1.2,
   },
   headerActions: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 0,
   },
-  
-  // BUTTON STYLES - Consistent design system
   addButton: {
     backgroundColor: '#F68528',
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: '#000000',
-    borderStyle: 'solid',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 2,
+    width: 44,
+    height: 44,
+    borderRadius: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    minWidth: 44,
-    minHeight: 36,
   },
   
-  // SEARCH STYLES - Enhanced with modern borders
+  // Search Styles
   searchContainer: {
-    marginBottom: 12,
+    flexDirection: 'row',
   },
   searchBar: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F5C9A4',
-    borderRadius: 2,
-    borderWidth: 2,
+    borderRadius: 0,
+    borderWidth: 1,
     borderColor: '#000000',
-    borderStyle: 'solid',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    gap: 8,
-    minHeight: 44,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 12,
+    minHeight: 48,
   },
   searchInput: {
     flex: 1,
     fontSize: 16,
     color: '#000000',
-    lineHeight: 1.4,
+    lineHeight: 20,
   },
-  
-  // CATEGORY FILTER BUTTONS - New horizontal design
-  categoryFiltersContainer: {
-    marginTop: 8,
-  },
-  categoryFiltersScrollView: {
-    flexGrow: 0,
-  },
-  categoryFiltersContent: {
-    paddingVertical: 4,
-    gap: 12,
-  },
-  categoryFilterButton: {
-    backgroundColor: '#FDD86E',
-    borderWidth: 2,
+  mobileFilterButton: {
+    backgroundColor: '#F5C9A4',
+    borderWidth: 1,
     borderColor: '#000000',
-    borderStyle: 'solid',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 2,
-    minHeight: 36,
+    width: 48,
+    height: 48,
+    borderRadius: 0,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  categoryFilterButtonActive: {
-    backgroundColor: '#FFB800',
-    borderWidth: 3,
+  
+  // Category Dropdown Styles
+  categoryDropdownContainer: {
+    position: 'relative',
+    marginTop: 12,
+    zIndex: 1000,
+    elevation: 1000,
+  },
+  categoryDropdownButton: {
+    backgroundColor: '#F5C9A4',
+    borderWidth: 1,
     borderColor: '#000000',
+    borderRadius: 0,
+    padding: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    minHeight: 56,
+    zIndex: 1001,
+    elevation: 1001,
   },
-  categoryFilterText: {
-    fontSize: 14,
-    fontWeight: '600',
+  categoryDropdownContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 12,
+  },
+  categoryDropdownText: {
+    flex: 1,
+  },
+  categoryDropdownLabel: {
+    fontSize: 12,
+    color: '#6B7280',
+    fontWeight: '500',
+    marginBottom: 2,
+  },
+  categoryDropdownValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
     color: '#000000',
-    lineHeight: 1.4,
   },
-  categoryFilterTextActive: {
+  categoryDropdownArrow: {
+    transform: [{ rotate: '0deg' }],
+    transition: 'transform 0.2s ease',
+  },
+  categoryDropdownArrowOpen: {
+    transform: [{ rotate: '180deg' }],
+  },
+  categoryDropdownMenu: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    backgroundColor: '#F5C9A4',
+    borderWidth: 1,
+    borderColor: '#000000',
+    borderTopWidth: 0,
+    borderRadius: 0,
+    maxHeight: 300,
+    zIndex: 1002,
+    elevation: 1002,
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  categoryDropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
+    minHeight: 48,
+    gap: 12,
+  },
+  categoryDropdownItemActive: {
+    backgroundColor: '#F68528',
+  },
+  categoryDropdownItemText: {
+    fontSize: 16,
+    color: '#000000',
+    fontWeight: '500',
+    flex: 1,
+  },
+  categoryDropdownItemTextActive: {
     fontWeight: 'bold',
   },
+  categoryDropdownCheck: {
+    width: 24,
+    height: 24,
+    borderRadius: 0,
+    backgroundColor: '#22C55E',
+    borderWidth: 1,
+    borderColor: '#000000',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  categoryDropdownCheckmark: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#000000',
+  },
+  dropdownOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'transparent',
+    zIndex: 1000,
+    elevation: 1000,
+  },
+  categoryDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 0,
+  },
   
-  // CONTENT AREA - Optimized spacing
+  // Product Area (now full width)
   contentContainer: {
     flex: 1,
     backgroundColor: '#D0D0D0',
@@ -761,82 +949,93 @@ const styles = StyleSheet.create({
     maxWidth: 1200,
     width: '100%',
     alignSelf: 'center',
+    backgroundColor: '#D0D0D0',
   },
   productHeader: {
-    paddingVertical: 8,
+    paddingHorizontal: 0,
+    paddingVertical: 12,
+    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
   },
   resultCount: {
     fontSize: 16,
     color: '#000000',
     fontWeight: '600',
-    lineHeight: 1.4,
   },
-  
-  // PRODUCT LIST - Compact and modern
   productList: {
     flex: 1,
   },
   productListContent: {
-    paddingTop: 8,
+    padding: 0,
+    paddingTop: 10,
     paddingBottom: 24,
   },
-  productListView: {
-    gap: 8, // Reduced from 12px to 8px for compact layout
-  },
   
-  // PRODUCT CARDS - Enhanced with borders and compact spacing
+  // Product List View
+  productListView: {
+    gap: 12,
+  },
   productListCard: {
     backgroundColor: '#F5C9A4',
-    borderRadius: 2,
-    borderWidth: 2,
+    borderRadius: 0,
+    borderWidth: 1,
     borderColor: '#000000',
-    borderStyle: 'solid',
-    padding: 12, // Reduced from 16px to 12px
+    padding: 16,
+    paddingVertical: 16,
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 12,
-    minHeight: 72, // Reduced for compact layout
+    minHeight: 64,
+    marginBottom: 0,
   },
   productListContent: {
     flex: 1,
   },
   productIcon: {
-    width: 32, // Reduced from 36px
-    height: 32,
-    borderRadius: 2,
+    width: 36,
+    height: 36,
+    borderRadius: 0,
     backgroundColor: '#D0D0D0',
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: '#000000',
-    borderStyle: 'solid',
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 2,
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 0,
+    borderWidth: 1,
+    borderColor: '#000000',
+  },
+  statusText: {
+    fontSize: 10,
+    color: '#000000',
+    fontWeight: 'bold',
+  },
+  productName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#000000',
+    flex: 1,
+    marginBottom: 4,
   },
   productListHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 4,
-  },
-  productName: {
-    fontSize: 16, // Main text size as specified
-    fontWeight: 'bold',
-    color: '#000000',
-    flex: 1,
-    lineHeight: 1.4,
-    marginBottom: 2,
+    marginBottom: 6,
   },
   productCategory: {
-    fontSize: 14, // Secondary text size as specified
+    fontSize: 13,
     color: '#000000',
-    marginBottom: 8,
+    marginBottom: 10,
     fontWeight: '500',
-    lineHeight: 1.4,
   },
   productListDetails: {
     flexDirection: 'row',
-    gap: 12, // Reduced spacing
-    marginTop: 4,
+    gap: 16,
+    marginTop: 6,
   },
   detailItem: {
     flexDirection: 'row',
@@ -844,34 +1043,67 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   detailLabel: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#000000',
     fontWeight: '600',
-    lineHeight: 1.4,
   },
   detailValue: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#000000',
-    lineHeight: 1.4,
+    flex: 1,
   },
   
-  // STATUS BADGE - Enhanced design
-  statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 2,
-    borderWidth: 2,
-    borderColor: '#000000',
-    borderStyle: 'solid',
+  // Details Panel (Desktop)
+  detailsPanel: {
+    width: 320,
+    backgroundColor: '#F5C9A4',
+    borderLeftWidth: 1,
+    borderLeftColor: '#000000',
   },
-  statusText: {
-    fontSize: 10,
-    color: '#000000',
+  detailsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#000000',
+  },
+  detailsTitle: {
+    fontSize: 18,
     fontWeight: 'bold',
-    lineHeight: 1.4,
+    color: '#000000',
+  },
+  detailsContent: {
+    flex: 1,
+    padding: 20,
+  },
+  detailsSection: {
+    marginBottom: 24,
+  },
+  detailsSectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#000000',
+    marginBottom: 12,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#000000',
+  },
+  detailsField: {
+    marginBottom: 12,
+  },
+  detailsLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#000000',
+    marginBottom: 4,
+  },
+  detailsValue: {
+    fontSize: 16,
+    color: '#000000',
   },
   
-  // EMPTY STATE - Modern design
+  // Empty State
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -886,24 +1118,22 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 8,
     textAlign: 'center',
-    lineHeight: 1.4,
   },
   emptySubtitle: {
     fontSize: 14,
     color: '#000000',
     textAlign: 'center',
     marginBottom: 24,
-    lineHeight: 1.4,
+    lineHeight: 20,
     paddingHorizontal: 20,
   },
   emptyAction: {
     backgroundColor: '#F68528',
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: '#000000',
-    borderStyle: 'solid',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 2,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 0,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
@@ -913,10 +1143,9 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: '#000000',
-    lineHeight: 1.4,
   },
   
-  // MODAL STYLES - Enhanced with design system
+  // Modal Styles
   modalContainer: {
     flex: 1,
     backgroundColor: '#D0D0D0',
@@ -926,45 +1155,34 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 20,
-    borderBottomWidth: 2,
+    borderBottomWidth: 1,
     borderBottomColor: '#000000',
-    borderStyle: 'solid',
     backgroundColor: '#F5C9A4',
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#000000',
-    lineHeight: 1.4,
-  },
-  modalButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 2,
-    minWidth: 60,
-    alignItems: 'center',
   },
   cancelButton: {
     fontSize: 16,
     color: '#000000',
     fontWeight: '600',
-    lineHeight: 1.4,
   },
   saveButton: {
     fontSize: 16,
     color: '#000000',
     fontWeight: 'bold',
-    lineHeight: 1.4,
   },
   modalContent: {
     flex: 1,
     padding: 20,
   },
   
-  // FORM STYLES - Consistent with design system
+  // Form Styles
   fieldGroup: {
-    marginBottom: 24, // Reduced spacing
-    paddingBottom: 16,
+    marginBottom: 32,
+    paddingBottom: 24,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(0, 0, 0, 0.1)',
   },
@@ -972,19 +1190,18 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#000000',
-    marginBottom: 16,
+    marginBottom: 20,
     paddingBottom: 8,
     borderBottomWidth: 2,
     borderBottomColor: '#F68528',
-    lineHeight: 1.4,
   },
   inputGroup: {
-    marginBottom: 16, // Reduced spacing
+    marginBottom: 20,
   },
   inputRow: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 16,
+    gap: 16,
+    marginBottom: 20,
   },
   inputGroupHalf: {
     flex: 1,
@@ -993,43 +1210,40 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#000000',
-    marginBottom: 6, // Reduced spacing
-    lineHeight: 1.4,
+    marginBottom: 8,
+    lineHeight: 20,
   },
   textInput: {
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: '#000000',
-    borderStyle: 'solid',
-    borderRadius: 2,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    borderRadius: 0,
+    padding: 14,
     fontSize: 16,
     backgroundColor: '#F5C9A4',
     color: '#000000',
-    minHeight: 44,
-    lineHeight: 1.4,
+    minHeight: 48,
+    lineHeight: 20,
   },
   dateInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 12,
   },
   dateInput: {
     flex: 1,
   },
   calendarButton: {
     backgroundColor: '#F5C9A4',
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: '#000000',
-    borderStyle: 'solid',
-    width: 44,
-    height: 44,
-    borderRadius: 2,
+    width: 48,
+    height: 48,
+    borderRadius: 0,
     justifyContent: 'center',
     alignItems: 'center',
   },
   
-  // DATE PICKER STYLES - Enhanced design
+  // Date Picker Styles
   datePickerContent: {
     flex: 1,
     padding: 20,
@@ -1042,45 +1256,44 @@ const styles = StyleSheet.create({
   },
   dateOption: {
     backgroundColor: '#F5C9A4',
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: '#000000',
-    borderStyle: 'solid',
-    borderRadius: 2,
-    padding: 8,
+    borderRadius: 0,
+    padding: 12,
     width: '31%',
     alignItems: 'center',
-    minHeight: 56,
+    minHeight: 60,
     justifyContent: 'center',
   },
   dateOptionSelected: {
     backgroundColor: '#F68528',
-    borderWidth: 3,
+    borderColor: '#000000',
   },
   dateOptionToday: {
     backgroundColor: '#22C55E',
+    borderColor: '#000000',
   },
   dateOptionThisWeek: {
     backgroundColor: '#EAB308',
+    borderColor: '#000000',
   },
   dateOptionText: {
     fontSize: 14,
     fontWeight: '600',
     color: '#000000',
     textAlign: 'center',
-    lineHeight: 1.4,
   },
   dateOptionTextSelected: {
-    fontWeight: 'bold',
+    color: '#000000',
   },
   dateOptionTextToday: {
-    fontWeight: 'bold',
+    color: '#000000',
   },
   dateOptionLabel: {
     fontSize: 10,
     color: '#000000',
     marginTop: 2,
     fontWeight: '500',
-    lineHeight: 1.4,
   },
   quickDateSection: {
     marginTop: 20,
@@ -1090,34 +1303,29 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#000000',
     marginBottom: 16,
-    lineHeight: 1.4,
   },
   quickDateButtons: {
     gap: 8,
   },
   quickDateButton: {
     backgroundColor: '#F5C9A4',
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: '#000000',
-    borderStyle: 'solid',
-    borderRadius: 2,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    borderRadius: 0,
+    padding: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    minHeight: 48,
+    minHeight: 56,
   },
   quickDateButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#000000',
-    lineHeight: 1.4,
   },
   quickDateButtonDate: {
     fontSize: 14,
     color: '#000000',
     fontWeight: '500',
-    lineHeight: 1.4,
   },
 });
