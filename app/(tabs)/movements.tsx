@@ -5,6 +5,7 @@ import { ArrowUp, ArrowDown, RotateCcw, Filter, Calendar } from 'lucide-react-na
 import { useLanguage } from '@/hooks/useLanguage';
 import { useStorage } from '@/hooks/useStorage';
 import { Movement } from '@/types';
+import designSystem from '@/styles/designSystem';
 
 export default function MovementsScreen() {
   const { t } = useLanguage();
@@ -18,26 +19,26 @@ export default function MovementsScreen() {
   const getMovementIcon = (type: string) => {
     switch (type) {
       case 'in':
-        return <ArrowUp size={20} color="#22C55E" />;
+        return <ArrowUp size={20} color={designSystem.colors.success[500]} />;
       case 'out':
-        return <ArrowDown size={20} color="#EF4444" />;
+        return <ArrowDown size={20} color={designSystem.colors.error[500]} />;
       case 'adjustment':
-        return <RotateCcw size={20} color="#6B7280" />;
+        return <RotateCcw size={20} color={designSystem.colors.neutral[500]} />;
       default:
-        return <RotateCcw size={20} color="#6B7280" />;
+        return <RotateCcw size={20} color={designSystem.colors.neutral[500]} />;
     }
   };
 
   const getMovementColor = (type: string) => {
     switch (type) {
       case 'in':
-        return '#22C55E';
+        return designSystem.colors.success[500];
       case 'out':
-        return '#EF4444';
+        return designSystem.colors.error[500];
       case 'adjustment':
-        return '#6B7280';
+        return designSystem.colors.neutral[500];
       default:
-        return '#6B7280';
+        return designSystem.colors.neutral[500];
     }
   };
 
@@ -55,7 +56,12 @@ export default function MovementsScreen() {
   };
 
   const MovementCard = ({ movement }: { movement: Movement }) => (
-    <TouchableOpacity style={styles.movementCard}>
+    <TouchableOpacity 
+      style={styles.movementCard}
+      activeOpacity={designSystem.interactive.states.active.opacity}
+      accessibilityRole="button"
+      accessibilityLabel={`${movement.productName} ${getMovementLabel(movement.type)} ${movement.quantity}`}
+    >
       <View style={styles.movementIcon}>
         {getMovementIcon(movement.type)}
       </View>
@@ -92,8 +98,13 @@ export default function MovementsScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>{t('movements')}</Text>
-        <TouchableOpacity style={styles.filterButton}>
-          <Filter size={24} color="#6b7280" />
+        <TouchableOpacity 
+          style={styles.filterButton}
+          activeOpacity={designSystem.interactive.states.active.opacity}
+          accessibilityRole="button"
+          accessibilityLabel="Filter öffnen"
+        >
+          <Filter size={24} color={designSystem.colors.text.secondary} />
         </TouchableOpacity>
       </View>
 
@@ -104,9 +115,9 @@ export default function MovementsScreen() {
       >
         {[
           { key: 'all', label: 'Alle', icon: null },
-          { key: 'in', label: t('stockIn'), icon: <ArrowUp size={16} color="#22C55E" /> },
-          { key: 'out', label: t('stockOut'), icon: <ArrowDown size={16} color="#EF4444" /> },
-          { key: 'adjustment', label: t('adjustment'), icon: <RotateCcw size={16} color="#6B7280" /> },
+          { key: 'in', label: t('stockIn'), icon: <ArrowUp size={16} color={designSystem.colors.success[500]} /> },
+          { key: 'out', label: t('stockOut'), icon: <ArrowDown size={16} color={designSystem.colors.error[500]} /> },
+          { key: 'adjustment', label: t('adjustment'), icon: <RotateCcw size={16} color={designSystem.colors.neutral[500]} /> },
         ].map(filter => (
           <TouchableOpacity
             key={filter.key}
@@ -115,6 +126,10 @@ export default function MovementsScreen() {
               filterType === filter.key && styles.filterChipActive
             ]}
             onPress={() => setFilterType(filter.key as any)}
+            activeOpacity={designSystem.interactive.states.active.opacity}
+            accessibilityRole="button"
+            accessibilityLabel={`Filter ${filter.label}`}
+            accessibilityState={{ selected: filterType === filter.key }}
           >
             {filter.icon}
             <Text style={[
@@ -151,7 +166,7 @@ export default function MovementsScreen() {
         
         {filteredMovements.length === 0 && (
           <View style={styles.emptyState}>
-            <Calendar size={48} color="#d1d5db" />
+            <Calendar size={48} color={designSystem.colors.neutral[300]} />
             <Text style={styles.emptyText}>Keine Bewegungen gefunden</Text>
             <Text style={styles.emptySubtext}>
               Verwenden Sie den Scanner, um Lagerbewegungen zu erfassen
@@ -166,114 +181,116 @@ export default function MovementsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#D0D0D0',
+    backgroundColor: designSystem.colors.background.primary,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
+    padding: designSystem.spacing.xl,
     paddingBottom: 10,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#000000',
+    ...designSystem.componentStyles.textTitle,
   },
   filterButton: {
-    backgroundColor: '#F5C9A4',
-    borderWidth: 1,
-    borderColor: '#000000',
+    backgroundColor: designSystem.colors.background.secondary,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
     width: 48,
     height: 48,
-    borderRadius: 0,
+    borderRadius: designSystem.interactive.border.radius,
     justifyContent: 'center',
     alignItems: 'center',
+    ...designSystem.accessibility.minTouchTarget,
+    ...designSystem.shadows.low,
   },
   filterContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 12,
+    paddingHorizontal: designSystem.spacing.xl,
+    marginBottom: designSystem.spacing.md,
   },
   filterChip: {
-    backgroundColor: '#F5C9A4',
-    paddingHorizontal: 16,
+    ...designSystem.componentStyles.filterButtonDefault,
+    paddingHorizontal: designSystem.spacing.lg,
     paddingVertical: 6,
-    borderRadius: 0,
-    marginRight: 8,
+    marginRight: designSystem.spacing.sm,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    borderWidth: 1,
-    borderColor: '#000000',
     height: 32,
     justifyContent: 'center',
   },
   filterChipActive: {
-    backgroundColor: '#F68528',
-    borderColor: '#000000',
+    ...designSystem.componentStyles.filterButtonActive,
+    paddingHorizontal: designSystem.spacing.lg,
+    paddingVertical: 6,
+    marginRight: designSystem.spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    height: 32,
+    justifyContent: 'center',
   },
   filterText: {
-    fontSize: 14,
-    color: '#000000',
+    ...designSystem.componentStyles.textSecondary,
     fontWeight: '500',
   },
   filterTextActive: {
-    color: '#000000',
+    color: designSystem.colors.text.primary,
     fontWeight: '600',
   },
   statsBar: {
-    backgroundColor: '#F5C9A4',
-    borderWidth: 1,
-    borderColor: '#000000',
+    backgroundColor: designSystem.colors.background.secondary,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
     flexDirection: 'row',
-    marginHorizontal: 20,
-    marginBottom: 16,
-    borderRadius: 0,
-    padding: 16,
+    marginHorizontal: designSystem.spacing.xl,
+    marginBottom: designSystem.spacing.lg,
+    borderRadius: designSystem.interactive.border.radius,
+    padding: designSystem.spacing.lg,
+    ...designSystem.shadows.low,
   },
   statItem: {
     flex: 1,
     alignItems: 'center',
   },
   statValue: {
-    fontSize: 20,
+    ...designSystem.componentStyles.textHeader,
     fontWeight: 'bold',
-    color: '#000000',
   },
   statLabel: {
-    fontSize: 12,
-    color: '#000000',
+    ...designSystem.componentStyles.textCaption,
     marginTop: 2,
   },
   statDivider: {
     width: 1,
-    backgroundColor: '#000000',
-    marginHorizontal: 16,
+    backgroundColor: designSystem.interactive.border.color,
+    marginHorizontal: designSystem.spacing.lg,
   },
   movementsList: {
     flex: 1,
-    padding: 20,
+    padding: designSystem.spacing.xl,
     paddingTop: 0,
   },
   movementCard: {
-    backgroundColor: '#F5C9A4',
-    borderRadius: 0,
-    borderWidth: 1,
-    borderColor: '#000000',
-    padding: 16,
+    ...designSystem.componentStyles.interactiveBase,
+    backgroundColor: designSystem.colors.background.secondary,
+    borderRadius: designSystem.interactive.border.radius,
+    padding: designSystem.spacing.lg,
     marginBottom: 4,
     flexDirection: 'row',
+    ...designSystem.shadows.low,
   },
   movementIcon: {
     width: 40,
     height: 40,
-    borderRadius: 0,
-    backgroundColor: '#D0D0D0',
-    borderWidth: 1,
-    borderColor: '#000000',
+    borderRadius: designSystem.interactive.border.radius,
+    backgroundColor: designSystem.colors.background.primary,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: designSystem.spacing.md,
   },
   movementContent: {
     flex: 1,
@@ -285,34 +302,31 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   productName: {
-    fontSize: 16,
+    ...designSystem.componentStyles.textPrimary,
     fontWeight: '600',
-    color: '#000000',
     flex: 1,
   },
   quantityText: {
-    fontSize: 16,
+    ...designSystem.componentStyles.textPrimary,
     fontWeight: 'bold',
   },
   movementDetails: {
     flexDirection: 'row',
-    gap: 8,
-    marginBottom: 8,
+    gap: designSystem.spacing.sm,
+    marginBottom: designSystem.spacing.sm,
   },
   movementType: {
-    fontSize: 12,
-    color: '#000000',
-    backgroundColor: '#D0D0D0',
-    borderWidth: 1,
-    borderColor: '#000000',
-    paddingHorizontal: 8,
+    ...designSystem.componentStyles.textCaption,
+    backgroundColor: designSystem.colors.background.primary,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+    paddingHorizontal: designSystem.spacing.sm,
     paddingVertical: 2,
-    borderRadius: 0,
+    borderRadius: designSystem.interactive.border.radius,
     fontWeight: '500',
   },
   movementReason: {
-    fontSize: 14,
-    color: '#000000',
+    ...designSystem.componentStyles.textSecondary,
   },
   movementFooter: {
     flexDirection: 'row',
@@ -320,22 +334,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   movementTime: {
-    fontSize: 12,
-    color: '#000000',
+    ...designSystem.componentStyles.textCaption,
   },
   movementUser: {
-    fontSize: 12,
-    color: '#000000',
+    ...designSystem.componentStyles.textCaption,
     fontWeight: '500',
   },
   movementNotes: {
-    fontSize: 12,
-    color: '#000000',
+    ...designSystem.componentStyles.textCaption,
     fontStyle: 'italic',
-    marginTop: 8,
-    paddingTop: 8,
+    marginTop: designSystem.spacing.sm,
+    paddingTop: designSystem.spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: '#000000',
+    borderTopColor: designSystem.interactive.border.color,
   },
   emptyState: {
     alignItems: 'center',
@@ -343,15 +354,13 @@ const styles = StyleSheet.create({
     padding: 40,
   },
   emptyText: {
-    fontSize: 18,
+    ...designSystem.componentStyles.textSubtitle,
     fontWeight: '600',
-    color: '#000000',
-    marginTop: 16,
-    marginBottom: 8,
+    marginTop: designSystem.spacing.lg,
+    marginBottom: designSystem.spacing.sm,
   },
   emptySubtext: {
-    fontSize: 14,
-    color: '#000000',
+    ...designSystem.componentStyles.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
   },

@@ -5,6 +5,7 @@ import { Globe, Bell, Download, Upload, Shield, CircleHelp as HelpCircle, Chevro
 import { useLanguage } from '@/hooks/useLanguage';
 import { useStorage } from '@/hooks/useStorage';
 import * as DocumentPicker from 'expo-document-picker';
+import designSystem from '@/styles/designSystem';
 
 const languages = [
   { code: 'de', name: 'Deutsch' },
@@ -68,20 +69,24 @@ export default function SettingsScreen() {
     <TouchableOpacity 
       style={styles.settingItem} 
       onPress={onPress}
+      activeOpacity={onPress ? designSystem.interactive.states.active.opacity : 1}
       disabled={!onPress}
+      accessibilityRole={onPress ? "button" : "none"}
+      accessibilityLabel={title}
+      accessibilityHint={subtitle}
     >
       <View style={styles.settingIcon}>
         {icon}
       </View>
       <View style={styles.settingContent}>
-        <Text style={[styles.settingTitle, danger && { color: '#EF4444' }]}>
+        <Text style={[styles.settingTitle, danger && { color: designSystem.colors.error[500] }]}>
           {title}
         </Text>
         {subtitle && (
           <Text style={styles.settingSubtitle}>{subtitle}</Text>
         )}
       </View>
-      {rightElement || (onPress && <ChevronRight size={20} color="#9ca3af" />)}
+      {rightElement || (onPress && <ChevronRight size={20} color={designSystem.colors.text.disabled} />)}
     </TouchableOpacity>
   );
 
@@ -103,13 +108,13 @@ export default function SettingsScreen() {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <SettingSection title="Benutzer">
           <SettingItem
-            icon={<User size={22} color="#6b7280" />}
+            icon={<User size={22} color={designSystem.colors.text.secondary} />}
             title="Profil"
             subtitle="Benutzerdaten verwalten"
             onPress={() => console.log('Profile')}
           />
           <SettingItem
-            icon={<Building size={22} color="#6b7280" />}
+            icon={<Building size={22} color={designSystem.colors.text.secondary} />}
             title="Restaurant"
             subtitle="Betriebsdaten und Standorte"
             onPress={() => console.log('Restaurant')}
@@ -118,7 +123,7 @@ export default function SettingsScreen() {
 
         <SettingSection title="Sprache & Region">
           <SettingItem
-            icon={<Globe size={22} color="#6b7280" />}
+            icon={<Globe size={22} color={designSystem.colors.text.secondary} />}
             title={t('language')}
             subtitle={languages.find(l => l.code === currentLanguage)?.name}
             rightElement={
@@ -131,6 +136,10 @@ export default function SettingsScreen() {
                       currentLanguage === lang.code && styles.languageButtonActive
                     ]}
                     onPress={() => changeLanguage(lang.code)}
+                    activeOpacity={designSystem.interactive.states.active.opacity}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Sprache ändern zu ${lang.name}`}
+                    accessibilityState={{ selected: currentLanguage === lang.code }}
                   >
                     <Text style={styles.languageText}>{lang.name}</Text>
                   </TouchableOpacity>
@@ -142,49 +151,79 @@ export default function SettingsScreen() {
 
         <SettingSection title="Benachrichtigungen">
           <SettingItem
-            icon={<Bell size={22} color="#6b7280" />}
+            icon={<Bell size={22} color={designSystem.colors.text.secondary} />}
             title="Verfallsdatum Warnungen"
             subtitle="Bei ablaufenden Produkten benachrichtigen"
-            rightElement={<Switch value={true} onValueChange={() => {}} />}
+            rightElement={
+              <Switch 
+                value={true} 
+                onValueChange={() => {}}
+                trackColor={{ 
+                  false: designSystem.colors.neutral[300], 
+                  true: designSystem.colors.success[500] 
+                }}
+                thumbColor={designSystem.colors.background.surface}
+              />
+            }
           />
           <SettingItem
-            icon={<Bell size={22} color="#6b7280" />}
+            icon={<Bell size={22} color={designSystem.colors.text.secondary} />}
             title="Niedriger Bestand"
             subtitle="Bei niedrigem Lagerbestand benachrichtigen"
-            rightElement={<Switch value={true} onValueChange={() => {}} />}
+            rightElement={
+              <Switch 
+                value={true} 
+                onValueChange={() => {}}
+                trackColor={{ 
+                  false: designSystem.colors.neutral[300], 
+                  true: designSystem.colors.success[500] 
+                }}
+                thumbColor={designSystem.colors.background.surface}
+              />
+            }
           />
         </SettingSection>
 
         <SettingSection title="Daten & Backup">
           <SettingItem
-            icon={<Download size={22} color="#6b7280" />}
+            icon={<Download size={22} color={designSystem.colors.text.secondary} />}
             title="Daten exportieren"
             subtitle="Inventardaten als CSV herunterladen"
             onPress={handleExportData}
           />
           <SettingItem
-            icon={<Upload size={22} color="#6b7280" />}
+            icon={<Upload size={22} color={designSystem.colors.text.secondary} />}
             title="Daten importieren"
             subtitle="Produktdaten aus CSV-Datei importieren"
             onPress={handleImportData}
           />
           <SettingItem
-            icon={<Shield size={22} color="#6b7280" />}
+            icon={<Shield size={22} color={designSystem.colors.text.secondary} />}
             title="Automatisches Backup"
             subtitle="Tägliche Datensicherung"
-            rightElement={<Switch value={false} onValueChange={() => {}} />}
+            rightElement={
+              <Switch 
+                value={false} 
+                onValueChange={() => {}}
+                trackColor={{ 
+                  false: designSystem.colors.neutral[300], 
+                  true: designSystem.colors.success[500] 
+                }}
+                thumbColor={designSystem.colors.background.surface}
+              />
+            }
           />
         </SettingSection>
 
         <SettingSection title="Support">
           <SettingItem
-            icon={<HelpCircle size={22} color="#6b7280" />}
+            icon={<HelpCircle size={22} color={designSystem.colors.text.secondary} />}
             title="Hilfe & FAQ"
             subtitle="Häufig gestellte Fragen"
             onPress={() => console.log('Help')}
           />
           <SettingItem
-            icon={<HelpCircle size={22} color="#6b7280" />}
+            icon={<HelpCircle size={22} color={designSystem.colors.text.secondary} />}
             title="Kontakt"
             subtitle="Support kontaktieren"
             onPress={() => console.log('Contact')}
@@ -205,109 +244,107 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#D0D0D0',
+    backgroundColor: designSystem.colors.background.primary,
   },
   header: {
-    padding: 20,
+    padding: designSystem.spacing.xl,
     paddingBottom: 10,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#000000',
+    ...designSystem.componentStyles.textTitle,
   },
   content: {
     flex: 1,
   },
   settingSection: {
-    marginBottom: 32,
+    marginBottom: designSystem.spacing.xxxl,
   },
   sectionTitle: {
-    fontSize: 16,
+    ...designSystem.componentStyles.textPrimary,
     fontWeight: '600',
-    color: '#000000',
-    marginBottom: 12,
-    marginHorizontal: 20,
+    marginBottom: designSystem.spacing.md,
+    marginHorizontal: designSystem.spacing.xl,
   },
   sectionContent: {
-    backgroundColor: '#F5C9A4',
-    borderWidth: 1,
-    borderColor: '#000000',
-    marginHorizontal: 20,
-    borderRadius: 0,
+    backgroundColor: designSystem.colors.background.secondary,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+    marginHorizontal: designSystem.spacing.xl,
+    borderRadius: designSystem.interactive.border.radius,
+    ...designSystem.shadows.low,
   },
   settingItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    padding: designSystem.spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: '#000000',
+    borderBottomColor: designSystem.interactive.border.color,
+    minHeight: 64,
+    ...designSystem.accessibility.minTouchTarget,
   },
   settingIcon: {
     width: 40,
     height: 40,
-    borderRadius: 0,
-    backgroundColor: '#D0D0D0',
-    borderWidth: 1,
-    borderColor: '#000000',
+    borderRadius: designSystem.interactive.border.radius,
+    backgroundColor: designSystem.colors.background.primary,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: designSystem.spacing.md,
   },
   settingContent: {
     flex: 1,
   },
   settingTitle: {
-    fontSize: 16,
+    ...designSystem.componentStyles.textPrimary,
     fontWeight: '600',
-    color: '#000000',
     marginBottom: 2,
   },
   settingSubtitle: {
-    fontSize: 14,
-    color: '#000000',
+    ...designSystem.componentStyles.textSecondary,
   },
   languageSelector: {
     flexDirection: 'column',
-    gap: 12,
+    gap: designSystem.spacing.md,
     minWidth: 120,
   },
   languageButton: {
     width: '100%',
     height: 44,
-    borderRadius: 0,
-    backgroundColor: '#D0D0D0',
+    borderRadius: designSystem.interactive.border.radius,
+    backgroundColor: designSystem.colors.background.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#000000',
-    paddingHorizontal: 12,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+    paddingHorizontal: designSystem.spacing.md,
+    ...designSystem.accessibility.minTouchTarget,
+    ...designSystem.shadows.low,
   },
   languageButtonActive: {
-    backgroundColor: '#F68528',
-    borderColor: '#000000',
+    backgroundColor: designSystem.colors.secondary[500],
+    borderColor: designSystem.interactive.border.color,
+    ...designSystem.shadows.medium,
   },
   languageText: {
-    fontSize: 14,
+    ...designSystem.componentStyles.textSecondary,
     fontWeight: '600',
-    color: '#000000',
     textAlign: 'center',
     lineHeight: 16,
   },
   footer: {
-    padding: 20,
+    padding: designSystem.spacing.xl,
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: designSystem.spacing.xl,
   },
   versionText: {
-    fontSize: 14,
+    ...designSystem.componentStyles.textSecondary,
     fontWeight: '600',
-    color: '#000000',
     marginBottom: 4,
   },
   copyrightText: {
-    fontSize: 12,
-    color: '#000000',
+    ...designSystem.componentStyles.textCaption,
     textAlign: 'center',
     lineHeight: 16,
   },

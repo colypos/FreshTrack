@@ -5,6 +5,7 @@ import { Search, Plus, Filter, Package, Calendar, MapPin, Menu, X, Grid2x2 as Gr
 import { useLanguage } from '@/hooks/useLanguage';
 import { useStorage } from '@/hooks/useStorage';
 import { Product } from '@/types';
+import designSystem from '@/styles/designSystem';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -29,11 +30,6 @@ export default function InventoryScreen() {
     supplier: '',
     barcode: '',
   });
-
-  // Responsive breakpoints
-  const isDesktop = screenWidth >= 1024;
-  const isTablet = screenWidth >= 768 && screenWidth < 1024;
-  const isMobile = screenWidth < 768;
 
   const categories = Array.from(new Set(products.map(p => p.category))).filter(Boolean);
 
@@ -188,6 +184,7 @@ export default function InventoryScreen() {
       <TouchableOpacity 
         style={styles.productGridCard}
         onPress={() => setSelectedProduct(product)}
+        activeOpacity={designSystem.interactive.states.active.opacity}
         accessibilityLabel={`Produkt ${product.name}, ${stockStatus.label}, ${product.currentStock} ${product.unit}`}
         accessibilityRole="button"
         accessibilityHint="Tippen für Details"
@@ -231,6 +228,7 @@ export default function InventoryScreen() {
       <TouchableOpacity 
         style={styles.productListCard}
         onPress={() => setSelectedProduct(product)}
+        activeOpacity={designSystem.interactive.states.active.opacity}
         accessibilityLabel={`Produkt ${product.name}, ${stockStatus.label}, ${product.currentStock} ${product.unit}`}
         accessibilityRole="button"
         accessibilityHint="Tippen für Details"
@@ -278,21 +276,22 @@ export default function InventoryScreen() {
             <TouchableOpacity 
               style={styles.addButton}
               onPress={() => setShowAddModal(true)}
+              activeOpacity={designSystem.interactive.states.active.opacity}
               accessibilityLabel="Neues Produkt hinzufügen"
               accessibilityRole="button"
             >
-              <Plus size={24} color="#000000" />
+              <Plus size={24} color={designSystem.colors.text.primary} />
             </TouchableOpacity>
           </View>
         </View>
 
         <View style={styles.searchContainer}>
           <View style={styles.searchBar}>
-            <Search size={20} color="#6B7280" />
+            <Search size={20} color={designSystem.colors.text.secondary} />
             <TextInput
               style={styles.searchInput}
               placeholder="Produkte, Kategorien oder Standorte suchen..."
-              placeholderTextColor="#6B7280"
+              placeholderTextColor={designSystem.colors.text.disabled}
               value={searchQuery}
               onChangeText={setSearchQuery}
               accessibilityLabel="Suchfeld für Produkte"
@@ -302,10 +301,11 @@ export default function InventoryScreen() {
             {searchQuery.length > 0 && (
               <TouchableOpacity 
                 onPress={() => setSearchQuery('')}
+                activeOpacity={designSystem.interactive.states.active.opacity}
                 accessibilityLabel="Suche löschen"
                 accessibilityRole="button"
               >
-                <X size={20} color="#6B7280" />
+                <X size={20} color={designSystem.colors.text.secondary} />
               </TouchableOpacity>
             )}
           </View>
@@ -316,12 +316,13 @@ export default function InventoryScreen() {
           <TouchableOpacity 
             style={styles.categoryDropdownButton}
             onPress={() => setShowCategoryDropdown(!showCategoryDropdown)}
+            activeOpacity={designSystem.interactive.states.active.opacity}
             accessibilityLabel={`Kategorie auswählen, aktuell: ${getCurrentCategoryInfo().name}`}
             accessibilityRole="button"
             accessibilityState={{ expanded: showCategoryDropdown }}
           >
             <View style={styles.categoryDropdownContent}>
-              <Package size={20} color="#6B7280" />
+              <Package size={20} color={designSystem.colors.text.secondary} />
               <View style={styles.categoryDropdownText}>
                 <Text style={styles.categoryDropdownLabel}>Kategorie</Text>
                 <Text style={styles.categoryDropdownValue}>
@@ -333,7 +334,7 @@ export default function InventoryScreen() {
               styles.categoryDropdownArrow,
               showCategoryDropdown && styles.categoryDropdownArrowOpen
             ]}>
-              <Menu size={20} color="#6B7280" />
+              <Menu size={20} color={designSystem.colors.text.secondary} />
             </View>
           </TouchableOpacity>
 
@@ -348,11 +349,12 @@ export default function InventoryScreen() {
                   setSelectedCategory('all');
                   setShowCategoryDropdown(false);
                 }}
+                activeOpacity={designSystem.interactive.states.active.opacity}
                 accessibilityLabel="Alle Kategorien anzeigen"
                 accessibilityRole="button"
                 accessibilityState={{ selected: selectedCategory === 'all' }}
               >
-                <Package size={18} color={selectedCategory === 'all' ? '#F68528' : '#6B7280'} />
+                <Package size={18} color={selectedCategory === 'all' ? designSystem.colors.secondary[500] : designSystem.colors.text.secondary} />
                 <Text style={[
                   styles.categoryDropdownItemText,
                   selectedCategory === 'all' && styles.categoryDropdownItemTextActive
@@ -380,13 +382,14 @@ export default function InventoryScreen() {
                       setSelectedCategory(category);
                       setShowCategoryDropdown(false);
                     }}
+                    activeOpacity={designSystem.interactive.states.active.opacity}
                     accessibilityLabel={`Kategorie ${category} anzeigen, ${count} Produkte`}
                     accessibilityRole="button"
                     accessibilityState={{ selected: isSelected }}
                   >
                     <View style={[
                       styles.categoryDot,
-                      { backgroundColor: isSelected ? '#F68528' : '#6B7280' }
+                      { backgroundColor: isSelected ? designSystem.colors.secondary[500] : designSystem.colors.text.secondary }
                     ]} />
                     <Text style={[
                       styles.categoryDropdownItemText,
@@ -430,7 +433,7 @@ export default function InventoryScreen() {
             
             {filteredProducts.length === 0 && (
               <View style={styles.emptyState}>
-                <Package size={64} color="#D1D5DB" />
+                <Package size={64} color={designSystem.colors.neutral[300]} />
                 <Text style={styles.emptyTitle}>Keine Produkte gefunden</Text>
                 <Text style={styles.emptySubtitle}>
                   {searchQuery ? 
@@ -441,10 +444,11 @@ export default function InventoryScreen() {
                 <TouchableOpacity 
                   style={styles.emptyAction}
                   onPress={() => setShowAddModal(true)}
+                  activeOpacity={designSystem.interactive.states.active.opacity}
                   accessibilityLabel="Erstes Produkt hinzufügen"
                   accessibilityRole="button"
                 >
-                  <Plus size={20} color="#000000" />
+                  <Plus size={20} color={designSystem.colors.text.primary} />
                   <Text style={styles.emptyActionText}>Produkt hinzufügen</Text>
                 </TouchableOpacity>
               </View>
@@ -458,6 +462,7 @@ export default function InventoryScreen() {
         <TouchableOpacity 
           style={styles.dropdownOverlay}
           onPress={() => setShowCategoryDropdown(false)}
+          activeOpacity={1}
           accessibilityLabel="Dropdown schließen"
           accessibilityRole="button"
         />
@@ -744,42 +749,42 @@ export default function InventoryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#D0D0D0',
+    backgroundColor: designSystem.colors.background.primary,
   },
   
   // Header Styles
   header: {
-    backgroundColor: '#D0D0D0',
-    padding: 20,
+    backgroundColor: designSystem.colors.background.primary,
+    padding: designSystem.spacing.xl,
     paddingTop: 16,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
+    borderBottomColor: designSystem.colors.border.secondary,
   },
   headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: designSystem.spacing.lg,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#000000',
+    ...designSystem.componentStyles.textTitle,
   },
   headerActions: {
     flexDirection: 'row',
     gap: 0,
   },
   addButton: {
-    backgroundColor: '#F68528',
-    borderWidth: 1,
-    borderColor: '#000000',
+    backgroundColor: designSystem.colors.secondary[500],
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
     width: 44,
     height: 44,
-    borderRadius: 0,
+    borderRadius: designSystem.interactive.border.radius,
     justifyContent: 'center',
     alignItems: 'center',
+    ...designSystem.accessibility.minTouchTarget,
+    ...designSystem.shadows.low,
   },
   
   // Search Styles
@@ -790,71 +795,72 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F5C9A4',
-    borderRadius: 0,
-    borderWidth: 1,
-    borderColor: '#000000',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 12,
+    backgroundColor: designSystem.colors.background.secondary,
+    borderRadius: designSystem.interactive.border.radius,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+    paddingHorizontal: designSystem.spacing.lg,
+    paddingVertical: designSystem.spacing.md,
+    gap: designSystem.spacing.md,
     minHeight: 48,
+    ...designSystem.shadows.low,
   },
   searchInput: {
     flex: 1,
-    fontSize: 16,
-    color: '#000000',
+    ...designSystem.componentStyles.textPrimary,
     lineHeight: 20,
   },
   mobileFilterButton: {
-    backgroundColor: '#F5C9A4',
-    borderWidth: 1,
-    borderColor: '#000000',
+    backgroundColor: designSystem.colors.background.secondary,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
     width: 48,
     height: 48,
-    borderRadius: 0,
+    borderRadius: designSystem.interactive.border.radius,
     justifyContent: 'center',
     alignItems: 'center',
+    ...designSystem.shadows.low,
   },
   
   // Category Dropdown Styles
   categoryDropdownContainer: {
     position: 'relative',
-    marginTop: 12,
+    marginTop: designSystem.spacing.md,
     zIndex: 1000,
     elevation: 1000,
   },
   categoryDropdownButton: {
-    backgroundColor: '#F5C9A4',
-    borderWidth: 1,
-    borderColor: '#000000',
-    borderRadius: 0,
-    padding: 16,
+    backgroundColor: designSystem.colors.background.secondary,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+    borderRadius: designSystem.interactive.border.radius,
+    padding: designSystem.spacing.lg,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     minHeight: 56,
     zIndex: 1001,
     elevation: 1001,
+    ...designSystem.shadows.low,
   },
   categoryDropdownContent: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    gap: 12,
+    gap: designSystem.spacing.md,
   },
   categoryDropdownText: {
     flex: 1,
   },
   categoryDropdownLabel: {
-    fontSize: 12,
-    color: '#6B7280',
+    ...designSystem.componentStyles.textCaption,
+    color: designSystem.colors.text.disabled,
     fontWeight: '500',
     marginBottom: 2,
   },
   categoryDropdownValue: {
-    fontSize: 16,
+    ...designSystem.componentStyles.textPrimary,
     fontWeight: 'bold',
-    color: '#000000',
   },
   categoryDropdownArrow: {
     transform: [{ rotate: '0deg' }],
@@ -868,39 +874,33 @@ const styles = StyleSheet.create({
     top: '100%',
     left: 0,
     right: 0,
-    backgroundColor: '#F5C9A4',
-    borderWidth: 1,
-    borderColor: '#000000',
+    backgroundColor: designSystem.colors.background.secondary,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
     borderTopWidth: 0,
-    borderRadius: 0,
+    borderRadius: designSystem.interactive.border.radius,
     maxHeight: 300,
     zIndex: 1002,
     elevation: 1002,
-    shadowColor: '#000000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    ...designSystem.shadows.high,
   },
   categoryDropdownItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: designSystem.spacing.lg,
+    paddingVertical: designSystem.spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
+    borderBottomColor: designSystem.colors.border.secondary,
     minHeight: 48,
-    gap: 12,
+    gap: designSystem.spacing.md,
+    ...designSystem.accessibility.minTouchTarget,
   },
   categoryDropdownItemActive: {
-    backgroundColor: '#F68528',
+    backgroundColor: designSystem.colors.secondary[500],
   },
   categoryDropdownItemText: {
-    fontSize: 16,
-    color: '#000000',
+    ...designSystem.componentStyles.textPrimary,
     fontWeight: '500',
     flex: 1,
   },
@@ -910,17 +910,16 @@ const styles = StyleSheet.create({
   categoryDropdownCheck: {
     width: 24,
     height: 24,
-    borderRadius: 0,
-    backgroundColor: '#22C55E',
-    borderWidth: 1,
-    borderColor: '#000000',
+    borderRadius: designSystem.interactive.border.radius,
+    backgroundColor: designSystem.colors.success[500],
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
     justifyContent: 'center',
     alignItems: 'center',
   },
   categoryDropdownCheckmark: {
-    fontSize: 14,
+    ...designSystem.componentStyles.textSecondary,
     fontWeight: 'bold',
-    color: '#000000',
   },
   dropdownOverlay: {
     position: 'absolute',
@@ -935,30 +934,29 @@ const styles = StyleSheet.create({
   categoryDot: {
     width: 8,
     height: 8,
-    borderRadius: 0,
+    borderRadius: designSystem.interactive.border.radius,
   },
   
   // Product Area (now full width)
   contentContainer: {
     flex: 1,
-    backgroundColor: '#D0D0D0',
-    paddingHorizontal: 20,
+    backgroundColor: designSystem.colors.background.primary,
+    paddingHorizontal: designSystem.spacing.xl,
   },
   productArea: {
     flex: 1,
     maxWidth: 1200,
     width: '100%',
     alignSelf: 'center',
-    backgroundColor: '#D0D0D0',
+    backgroundColor: designSystem.colors.background.primary,
   },
   productHeader: {
     paddingHorizontal: 0,
-    paddingVertical: 12,
-    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
+    paddingVertical: designSystem.spacing.md,
+    borderBottomColor: designSystem.colors.border.secondary,
   },
   resultCount: {
-    fontSize: 16,
-    color: '#000000',
+    ...designSystem.componentStyles.textPrimary,
     fontWeight: '600',
   },
   productList: {
@@ -966,26 +964,26 @@ const styles = StyleSheet.create({
   },
   productListContent: {
     padding: 0,
-    paddingTop: 10,
-    paddingBottom: 24,
+    paddingTop: designSystem.spacing.sm,
+    paddingBottom: designSystem.spacing.xxl,
   },
   
   // Product List View
   productListView: {
-    gap: 12,
+    gap: designSystem.spacing.md,
   },
   productListCard: {
-    backgroundColor: '#F5C9A4',
-    borderRadius: 0,
-    borderWidth: 1,
-    borderColor: '#000000',
-    padding: 16,
-    paddingVertical: 16,
+    ...designSystem.componentStyles.interactiveBase,
+    backgroundColor: designSystem.colors.background.secondary,
+    borderRadius: designSystem.interactive.border.radius,
+    padding: designSystem.spacing.lg,
+    paddingVertical: designSystem.spacing.lg,
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 12,
+    gap: designSystem.spacing.md,
     minHeight: 64,
     marginBottom: 0,
+    ...designSystem.shadows.low,
   },
   productListContent: {
     flex: 1,
@@ -993,30 +991,29 @@ const styles = StyleSheet.create({
   productIcon: {
     width: 36,
     height: 36,
-    borderRadius: 0,
-    backgroundColor: '#D0D0D0',
-    borderWidth: 1,
-    borderColor: '#000000',
+    borderRadius: designSystem.interactive.border.radius,
+    backgroundColor: designSystem.colors.background.primary,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 2,
   },
   statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 0,
-    borderWidth: 1,
-    borderColor: '#000000',
+    paddingHorizontal: designSystem.spacing.sm,
+    paddingVertical: designSystem.spacing.xs,
+    borderRadius: designSystem.interactive.border.radius,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
   },
   statusText: {
+    ...designSystem.componentStyles.textCaption,
     fontSize: 10,
-    color: '#000000',
     fontWeight: 'bold',
   },
   productName: {
-    fontSize: 16,
+    ...designSystem.componentStyles.textPrimary,
     fontWeight: 'bold',
-    color: '#000000',
     flex: 1,
     marginBottom: 4,
   },
@@ -1027,305 +1024,293 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   productCategory: {
+    ...designSystem.componentStyles.textSecondary,
     fontSize: 13,
-    color: '#000000',
     marginBottom: 10,
     fontWeight: '500',
   },
   productListDetails: {
     flexDirection: 'row',
-    gap: 16,
+    gap: designSystem.spacing.lg,
     marginTop: 6,
   },
   detailItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: designSystem.spacing.xs,
   },
   detailLabel: {
+    ...designSystem.componentStyles.textCaption,
     fontSize: 11,
-    color: '#000000',
     fontWeight: '600',
   },
   detailValue: {
+    ...designSystem.componentStyles.textCaption,
     fontSize: 11,
-    color: '#000000',
     flex: 1,
   },
   
   // Details Panel (Desktop)
   detailsPanel: {
     width: 320,
-    backgroundColor: '#F5C9A4',
+    backgroundColor: designSystem.colors.background.secondary,
     borderLeftWidth: 1,
-    borderLeftColor: '#000000',
+    borderLeftColor: designSystem.interactive.border.color,
   },
   detailsHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
+    padding: designSystem.spacing.xl,
     borderBottomWidth: 1,
-    borderBottomColor: '#000000',
+    borderBottomColor: designSystem.interactive.border.color,
   },
   detailsTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#000000',
+    ...designSystem.componentStyles.textSubtitle,
   },
   detailsContent: {
     flex: 1,
-    padding: 20,
+    padding: designSystem.spacing.xl,
   },
   detailsSection: {
-    marginBottom: 24,
+    marginBottom: designSystem.spacing.xxl,
   },
   detailsSectionTitle: {
-    fontSize: 16,
+    ...designSystem.componentStyles.textPrimary,
     fontWeight: 'bold',
-    color: '#000000',
-    marginBottom: 12,
-    paddingBottom: 8,
+    marginBottom: designSystem.spacing.md,
+    paddingBottom: designSystem.spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: '#000000',
+    borderBottomColor: designSystem.interactive.border.color,
   },
   detailsField: {
-    marginBottom: 12,
+    marginBottom: designSystem.spacing.md,
   },
   detailsLabel: {
-    fontSize: 14,
+    ...designSystem.componentStyles.textSecondary,
     fontWeight: '600',
-    color: '#000000',
     marginBottom: 4,
   },
   detailsValue: {
-    fontSize: 16,
-    color: '#000000',
+    ...designSystem.componentStyles.textPrimary,
   },
   
   // Empty State
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: designSystem.spacing.xl,
     paddingVertical: 48,
     marginTop: 40,
   },
   emptyTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#000000',
-    marginTop: 16,
-    marginBottom: 8,
+    ...designSystem.componentStyles.textSubtitle,
+    marginTop: designSystem.spacing.lg,
+    marginBottom: designSystem.spacing.sm,
     textAlign: 'center',
   },
   emptySubtitle: {
-    fontSize: 14,
-    color: '#000000',
+    ...designSystem.componentStyles.textSecondary,
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: designSystem.spacing.xxl,
     lineHeight: 20,
-    paddingHorizontal: 20,
+    paddingHorizontal: designSystem.spacing.xl,
   },
   emptyAction: {
-    backgroundColor: '#F68528',
-    borderWidth: 1,
-    borderColor: '#000000',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 0,
+    backgroundColor: designSystem.colors.secondary[500],
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+    paddingHorizontal: designSystem.spacing.xl,
+    paddingVertical: designSystem.spacing.md,
+    borderRadius: designSystem.interactive.border.radius,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: designSystem.spacing.sm,
     minHeight: 44,
+    ...designSystem.accessibility.minTouchTarget,
+    ...designSystem.shadows.low,
   },
   emptyActionText: {
+    ...designSystem.componentStyles.textPrimary,
     fontSize: 15,
     fontWeight: '600',
-    color: '#000000',
   },
   
   // Modal Styles
   modalContainer: {
     flex: 1,
-    backgroundColor: '#D0D0D0',
+    backgroundColor: designSystem.colors.background.primary,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
+    padding: designSystem.spacing.xl,
     borderBottomWidth: 1,
-    borderBottomColor: '#000000',
-    backgroundColor: '#F5C9A4',
+    borderBottomColor: designSystem.interactive.border.color,
+    backgroundColor: designSystem.colors.background.secondary,
   },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#000000',
+    ...designSystem.componentStyles.textSubtitle,
   },
   cancelButton: {
-    fontSize: 16,
-    color: '#000000',
+    ...designSystem.componentStyles.textPrimary,
     fontWeight: '600',
   },
   saveButton: {
-    fontSize: 16,
-    color: '#000000',
+    ...designSystem.componentStyles.textPrimary,
     fontWeight: 'bold',
   },
   modalContent: {
     flex: 1,
-    padding: 20,
+    padding: designSystem.spacing.xl,
   },
   
   // Form Styles
   fieldGroup: {
-    marginBottom: 32,
-    paddingBottom: 24,
+    marginBottom: designSystem.spacing.xxxl,
+    paddingBottom: designSystem.spacing.xxl,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
+    borderBottomColor: designSystem.colors.border.secondary,
   },
   groupTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#000000',
-    marginBottom: 20,
-    paddingBottom: 8,
+    ...designSystem.componentStyles.textSubtitle,
+    marginBottom: designSystem.spacing.xl,
+    paddingBottom: designSystem.spacing.sm,
     borderBottomWidth: 2,
-    borderBottomColor: '#F68528',
+    borderBottomColor: designSystem.colors.secondary[500],
   },
   inputGroup: {
-    marginBottom: 20,
+    marginBottom: designSystem.spacing.xl,
   },
   inputRow: {
     flexDirection: 'row',
-    gap: 16,
-    marginBottom: 20,
+    gap: designSystem.spacing.lg,
+    marginBottom: designSystem.spacing.xl,
   },
   inputGroupHalf: {
     flex: 1,
   },
   inputLabel: {
-    fontSize: 16,
+    ...designSystem.componentStyles.textPrimary,
     fontWeight: '600',
-    color: '#000000',
-    marginBottom: 8,
+    marginBottom: designSystem.spacing.sm,
     lineHeight: 20,
   },
   textInput: {
-    borderWidth: 1,
-    borderColor: '#000000',
-    borderRadius: 0,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+    borderRadius: designSystem.interactive.border.radius,
     padding: 14,
-    fontSize: 16,
-    backgroundColor: '#F5C9A4',
-    color: '#000000',
+    ...designSystem.componentStyles.textPrimary,
+    backgroundColor: designSystem.colors.background.secondary,
     minHeight: 48,
     lineHeight: 20,
+    ...designSystem.shadows.low,
   },
   dateInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: designSystem.spacing.md,
   },
   dateInput: {
     flex: 1,
   },
   calendarButton: {
-    backgroundColor: '#F5C9A4',
-    borderWidth: 1,
-    borderColor: '#000000',
+    backgroundColor: designSystem.colors.background.secondary,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
     width: 48,
     height: 48,
-    borderRadius: 0,
+    borderRadius: designSystem.interactive.border.radius,
     justifyContent: 'center',
     alignItems: 'center',
+    ...designSystem.shadows.low,
   },
   
   // Date Picker Styles
   datePickerContent: {
     flex: 1,
-    padding: 20,
+    padding: designSystem.spacing.xl,
   },
   dateGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 32,
+    gap: designSystem.spacing.sm,
+    marginBottom: designSystem.spacing.xxxl,
   },
   dateOption: {
-    backgroundColor: '#F5C9A4',
-    borderWidth: 1,
-    borderColor: '#000000',
-    borderRadius: 0,
-    padding: 12,
+    backgroundColor: designSystem.colors.background.secondary,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+    borderRadius: designSystem.interactive.border.radius,
+    padding: designSystem.spacing.md,
     width: '31%',
     alignItems: 'center',
     minHeight: 60,
     justifyContent: 'center',
+    ...designSystem.shadows.low,
   },
   dateOptionSelected: {
-    backgroundColor: '#F68528',
-    borderColor: '#000000',
+    backgroundColor: designSystem.colors.secondary[500],
+    borderColor: designSystem.interactive.border.color,
+    ...designSystem.shadows.medium,
   },
   dateOptionToday: {
-    backgroundColor: '#22C55E',
-    borderColor: '#000000',
+    backgroundColor: designSystem.colors.success[500],
+    borderColor: designSystem.interactive.border.color,
+    ...designSystem.shadows.medium,
   },
   dateOptionThisWeek: {
-    backgroundColor: '#EAB308',
-    borderColor: '#000000',
+    backgroundColor: designSystem.colors.warning[500],
+    borderColor: designSystem.interactive.border.color,
+    ...designSystem.shadows.medium,
   },
   dateOptionText: {
-    fontSize: 14,
+    ...designSystem.componentStyles.textSecondary,
     fontWeight: '600',
-    color: '#000000',
     textAlign: 'center',
   },
   dateOptionTextSelected: {
-    color: '#000000',
+    color: designSystem.colors.text.primary,
   },
   dateOptionTextToday: {
-    color: '#000000',
+    color: designSystem.colors.text.primary,
   },
   dateOptionLabel: {
+    ...designSystem.componentStyles.textCaption,
     fontSize: 10,
-    color: '#000000',
     marginTop: 2,
     fontWeight: '500',
   },
   quickDateSection: {
-    marginTop: 20,
+    marginTop: designSystem.spacing.xl,
   },
   quickDateTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#000000',
-    marginBottom: 16,
+    ...designSystem.componentStyles.textSubtitle,
+    marginBottom: designSystem.spacing.lg,
   },
   quickDateButtons: {
-    gap: 8,
+    gap: designSystem.spacing.sm,
   },
   quickDateButton: {
-    backgroundColor: '#F5C9A4',
-    borderWidth: 1,
-    borderColor: '#000000',
-    borderRadius: 0,
-    padding: 16,
+    backgroundColor: designSystem.colors.background.secondary,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+    borderRadius: designSystem.interactive.border.radius,
+    padding: designSystem.spacing.lg,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     minHeight: 56,
+    ...designSystem.shadows.low,
   },
   quickDateButtonText: {
-    fontSize: 16,
+    ...designSystem.componentStyles.textPrimary,
     fontWeight: '600',
-    color: '#000000',
   },
   quickDateButtonDate: {
-    fontSize: 14,
-    color: '#000000',
+    ...designSystem.componentStyles.textSecondary,
     fontWeight: '500',
   },
 });

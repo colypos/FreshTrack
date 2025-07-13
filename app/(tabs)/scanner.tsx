@@ -6,6 +6,7 @@ import { Camera, QrCode, Plus, Package } from 'lucide-react-native';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useStorage } from '@/hooks/useStorage';
+import designSystem from '@/styles/designSystem';
 
 export default function ScannerScreen() {
   const { t } = useLanguage();
@@ -187,12 +188,18 @@ export default function ScannerScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.permissionContainer}>
-          <Camera size={64} color="#6b7280" />
+          <Camera size={64} color={designSystem.colors.text.secondary} />
           <Text style={styles.permissionTitle}>Kamera-Berechtigung erforderlich</Text>
           <Text style={styles.permissionText}>
             Um Barcodes zu scannen, benötigen wir Zugriff auf Ihre Kamera.
           </Text>
-          <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
+          <TouchableOpacity 
+            style={styles.permissionButton} 
+            onPress={requestPermission}
+            activeOpacity={designSystem.interactive.states.active.opacity}
+            accessibilityRole="button"
+            accessibilityLabel="Kamera-Berechtigung erteilen"
+          >
             <Text style={styles.permissionButtonText}>Berechtigung erteilen</Text>
           </TouchableOpacity>
         </View>
@@ -211,16 +218,22 @@ export default function ScannerScreen() {
           <TouchableOpacity 
             style={styles.scanButton}
             onPress={() => setShowCamera(true)}
+            activeOpacity={designSystem.interactive.states.active.opacity}
+            accessibilityRole="button"
+            accessibilityLabel={t('scanBarcode')}
           >
-            <QrCode size={32} color="#ffffff" />
+            <QrCode size={32} color={designSystem.colors.text.primary} />
             <Text style={styles.scanButtonText}>{t('scanBarcode')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
             style={styles.manualButton}
             onPress={() => setShowManualEntry(true)}
+            activeOpacity={designSystem.interactive.states.active.opacity}
+            accessibilityRole="button"
+            accessibilityLabel={t('manualEntry')}
           >
-            <Plus size={24} color="#22C55E" />
+            <Plus size={24} color={designSystem.colors.success[500]} />
             <Text style={styles.manualButtonText}>{t('manualEntry')}</Text>
           </TouchableOpacity>
         </View>
@@ -240,7 +253,12 @@ export default function ScannerScreen() {
       <Modal visible={showCamera} animationType="slide">
         <SafeAreaView style={styles.cameraContainer}>
           <View style={styles.cameraHeader}>
-            <TouchableOpacity onPress={() => setShowCamera(false)}>
+            <TouchableOpacity 
+              onPress={() => setShowCamera(false)}
+              activeOpacity={designSystem.interactive.states.active.opacity}
+              accessibilityRole="button"
+              accessibilityLabel="Kamera schließen"
+            >
               <Text style={styles.cancelButton}>Abbrechen</Text>
             </TouchableOpacity>
             <Text style={styles.cameraTitle}>Barcode scannen</Text>
@@ -269,11 +287,21 @@ export default function ScannerScreen() {
       <Modal visible={showManualEntry} animationType="slide" presentationStyle="pageSheet">
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalHeader}>
-            <TouchableOpacity onPress={() => setShowManualEntry(false)}>
+            <TouchableOpacity 
+              onPress={() => setShowManualEntry(false)}
+              activeOpacity={designSystem.interactive.states.active.opacity}
+              accessibilityRole="button"
+              accessibilityLabel={t('cancel')}
+            >
               <Text style={styles.cancelButton}>{t('cancel')}</Text>
             </TouchableOpacity>
             <Text style={styles.modalTitle}>Barcode eingeben</Text>
-            <TouchableOpacity onPress={handleManualEntry}>
+            <TouchableOpacity 
+              onPress={handleManualEntry}
+              activeOpacity={designSystem.interactive.states.active.opacity}
+              accessibilityRole="button"
+              accessibilityLabel="Barcode suchen"
+            >
               <Text style={styles.saveButton}>Suchen</Text>
             </TouchableOpacity>
           </View>
@@ -285,7 +313,10 @@ export default function ScannerScreen() {
               value={manualBarcode}
               onChangeText={setManualBarcode}
               placeholder="Barcode eingeben..."
+              placeholderTextColor={designSystem.colors.text.disabled}
               autoFocus
+              returnKeyType="search"
+              accessibilityLabel="Barcode eingeben"
             />
           </View>
         </SafeAreaView>
@@ -507,72 +538,66 @@ export default function ScannerScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#D0D0D0',
+    backgroundColor: designSystem.colors.background.primary,
   },
   header: {
-    padding: 20,
+    padding: designSystem.spacing.xl,
     paddingBottom: 10,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#000000',
+    ...designSystem.componentStyles.textTitle,
   },
   content: {
     flex: 1,
-    padding: 20,
+    padding: designSystem.spacing.xl,
   },
   scanOptions: {
-    gap: 16,
+    gap: designSystem.spacing.lg,
     marginBottom: 40,
   },
   scanButton: {
-    backgroundColor: '#F5C9A4',
-    borderRadius: 0,
-    borderWidth: 1,
-    borderColor: '#000000',
-    padding: 24,
+    ...designSystem.componentStyles.interactiveBase,
+    backgroundColor: designSystem.colors.background.secondary,
+    borderRadius: designSystem.interactive.border.radius,
+    padding: designSystem.spacing.xxl,
     alignItems: 'center',
     justifyContent: 'center',
+    ...designSystem.shadows.low,
   },
   scanButtonText: {
-    color: '#000000',
-    fontSize: 18,
+    ...designSystem.componentStyles.textSubtitle,
     fontWeight: '600',
-    marginTop: 8,
+    marginTop: designSystem.spacing.sm,
   },
   manualButton: {
-    backgroundColor: '#F5C9A4',
-    borderRadius: 0,
-    padding: 20,
+    ...designSystem.componentStyles.interactiveBase,
+    backgroundColor: designSystem.colors.background.secondary,
+    borderRadius: designSystem.interactive.border.radius,
+    padding: designSystem.spacing.xl,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#000000',
-    gap: 8,
+    gap: designSystem.spacing.sm,
+    ...designSystem.shadows.low,
   },
   manualButtonText: {
-    color: '#000000',
-    fontSize: 16,
+    ...designSystem.componentStyles.textPrimary,
     fontWeight: '600',
   },
   instructionsContainer: {
-    backgroundColor: '#F5C9A4',
-    borderRadius: 0,
-    borderWidth: 1,
-    borderColor: '#000000',
-    padding: 20,
+    ...designSystem.componentStyles.interactiveBase,
+    backgroundColor: designSystem.colors.background.secondary,
+    borderRadius: designSystem.interactive.border.radius,
+    padding: designSystem.spacing.xl,
+    ...designSystem.shadows.low,
   },
   instructionsTitle: {
-    fontSize: 18,
+    ...designSystem.componentStyles.textSubtitle,
     fontWeight: '600',
-    color: '#000000',
-    marginBottom: 12,
+    marginBottom: designSystem.spacing.md,
   },
   instructionsText: {
-    fontSize: 14,
-    color: '#000000',
+    ...designSystem.componentStyles.textSecondary,
     lineHeight: 20,
   },
   permissionContainer: {
@@ -582,52 +607,50 @@ const styles = StyleSheet.create({
     padding: 40,
   },
   permissionTitle: {
-    fontSize: 20,
+    ...designSystem.componentStyles.textHeader,
     fontWeight: '600',
-    color: '#000000',
-    marginTop: 16,
-    marginBottom: 8,
+    marginTop: designSystem.spacing.lg,
+    marginBottom: designSystem.spacing.sm,
     textAlign: 'center',
   },
   permissionText: {
-    fontSize: 16,
-    color: '#000000',
+    ...designSystem.componentStyles.textPrimary,
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: designSystem.spacing.xxl,
     lineHeight: 22,
   },
   permissionButton: {
-    backgroundColor: '#F5C9A4',
-    borderWidth: 1,
-    borderColor: '#000000',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 0,
+    ...designSystem.componentStyles.interactiveBase,
+    backgroundColor: designSystem.colors.background.secondary,
+    paddingHorizontal: designSystem.spacing.xxl,
+    paddingVertical: designSystem.spacing.md,
+    borderRadius: designSystem.interactive.border.radius,
+    ...designSystem.accessibility.minTouchTarget,
+    ...designSystem.shadows.low,
   },
   permissionButtonText: {
-    color: '#000000',
-    fontSize: 16,
+    ...designSystem.componentStyles.textPrimary,
     fontWeight: '600',
   },
   cameraContainer: {
     flex: 1,
-    backgroundColor: '#000000',
+    backgroundColor: designSystem.colors.neutral[900],
   },
   cameraHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#000000',
+    padding: designSystem.spacing.xl,
+    backgroundColor: designSystem.colors.neutral[900],
   },
   cameraTitle: {
-    fontSize: 18,
+    ...designSystem.componentStyles.textSubtitle,
     fontWeight: '600',
-    color: '#ffffff',
+    color: designSystem.colors.text.inverse,
   },
   cancelButton: {
-    fontSize: 16,
-    color: '#ffffff',
+    ...designSystem.componentStyles.textPrimary,
+    color: designSystem.colors.text.inverse,
   },
   camera: {
     flex: 1,
@@ -641,103 +664,97 @@ const styles = StyleSheet.create({
   scanFrame: {
     width: 250,
     height: 250,
-    borderWidth: 2,
-    borderColor: '#F68528',
-    borderRadius: 0,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.colors.secondary[500],
+    borderRadius: designSystem.interactive.border.radius,
     backgroundColor: 'transparent',
   },
   scanInstructions: {
-    color: '#ffffff',
-    fontSize: 16,
+    ...designSystem.componentStyles.textPrimary,
+    color: designSystem.colors.text.inverse,
     textAlign: 'center',
-    marginTop: 20,
+    marginTop: designSystem.spacing.xl,
     paddingHorizontal: 40,
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: '#D0D0D0',
+    backgroundColor: designSystem.colors.background.primary,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
+    padding: designSystem.spacing.xl,
     borderBottomWidth: 1,
-    borderBottomColor: '#000000',
+    borderBottomColor: designSystem.interactive.border.color,
   },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000000',
+    ...designSystem.componentStyles.textSubtitle,
   },
   saveButton: {
-    fontSize: 16,
-    color: '#000000',
+    ...designSystem.componentStyles.textPrimary,
     fontWeight: '600',
   },
   modalContent: {
     flex: 1,
-    padding: 20,
+    padding: designSystem.spacing.xl,
   },
   productInfo: {
-    backgroundColor: '#F5C9A4',
-    borderRadius: 0,
-    borderWidth: 1,
-    borderColor: '#000000',
-    padding: 16,
+    ...designSystem.componentStyles.interactiveBase,
+    backgroundColor: designSystem.colors.background.secondary,
+    borderRadius: designSystem.interactive.border.radius,
+    padding: designSystem.spacing.lg,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    marginBottom: 24,
+    gap: designSystem.spacing.md,
+    marginBottom: designSystem.spacing.xxl,
+    ...designSystem.shadows.low,
   },
   productName: {
-    fontSize: 16,
+    ...designSystem.componentStyles.textPrimary,
     fontWeight: '600',
-    color: '#000000',
   },
   productDetails: {
-    fontSize: 14,
-    color: '#000000',
+    ...designSystem.componentStyles.textSecondary,
     marginTop: 2,
   },
   movementTypeContainer: {
-    marginBottom: 20,
+    marginBottom: designSystem.spacing.xl,
   },
   buttonGroup: {
     flexDirection: 'row',
-    gap: 8,
+    gap: designSystem.spacing.sm,
   },
   typeButton: {
     flex: 1,
-    backgroundColor: '#F5C9A4',
-    borderWidth: 1,
-    borderColor: '#000000',
-    paddingVertical: 12,
-    borderRadius: 0,
+    backgroundColor: designSystem.colors.background.secondary,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+    paddingVertical: designSystem.spacing.md,
+    borderRadius: designSystem.interactive.border.radius,
     alignItems: 'center',
+    ...designSystem.shadows.low,
   },
   typeButtonText: {
-    fontSize: 14,
+    ...designSystem.componentStyles.textSecondary,
     fontWeight: '600',
-    color: '#000000',
   },
   inputGroup: {
-    marginBottom: 20,
+    marginBottom: designSystem.spacing.xl,
   },
   inputLabel: {
-    fontSize: 14,
+    ...designSystem.componentStyles.textSecondary,
     fontWeight: '600',
-    color: '#000000',
-    marginBottom: 8,
+    marginBottom: designSystem.spacing.sm,
   },
   textInput: {
-    borderWidth: 1,
-    borderColor: '#000000',
-    borderRadius: 0,
-    padding: 12,
-    fontSize: 16,
-    backgroundColor: '#F5C9A4',
-    color: '#000000',
+    ...designSystem.componentStyles.interactiveBase,
+    backgroundColor: designSystem.colors.background.secondary,
+    borderRadius: designSystem.interactive.border.radius,
+    padding: designSystem.spacing.md,
+    ...designSystem.componentStyles.textPrimary,
+    minHeight: 48,
+    ...designSystem.shadows.low,
   },
   textArea: {
     height: 80,
@@ -746,44 +763,43 @@ const styles = StyleSheet.create({
   dateInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: designSystem.spacing.sm,
   },
   dateInput: {
     flex: 1,
   },
   calendarButton: {
-    backgroundColor: '#F5C9A4',
-    borderWidth: 1,
-    borderColor: '#000000',
+    backgroundColor: designSystem.colors.background.secondary,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
     width: 44,
     height: 44,
-    borderRadius: 0,
+    borderRadius: designSystem.interactive.border.radius,
     justifyContent: 'center',
     alignItems: 'center',
+    ...designSystem.shadows.low,
   },
   barcodeInfo: {
-    backgroundColor: '#F5C9A4',
-    borderRadius: 0,
-    borderWidth: 1,
-    borderColor: '#000000',
-    padding: 12,
-    marginBottom: 20,
+    ...designSystem.componentStyles.interactiveBase,
+    backgroundColor: designSystem.colors.background.secondary,
+    borderRadius: designSystem.interactive.border.radius,
+    padding: designSystem.spacing.md,
+    marginBottom: designSystem.spacing.xl,
+    ...designSystem.shadows.low,
   },
   barcodeLabel: {
-    fontSize: 12,
-    color: '#000000',
+    ...designSystem.componentStyles.textCaption,
     fontWeight: '600',
     marginBottom: 4,
   },
   barcodeValue: {
-    fontSize: 16,
-    color: '#000000',
+    ...designSystem.componentStyles.textPrimary,
     fontWeight: '600',
     fontFamily: 'monospace',
   },
   inputRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: designSystem.spacing.md,
   },
   inputGroupHalf: {
     flex: 1,

@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Package, TriangleAlert as AlertTriangle, TrendingDown, Clock } from 'lucide-react-native';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useStorage } from '@/hooks/useStorage';
+import designSystem from '@/styles/designSystem';
 
 export default function DashboardScreen() {
   const { t } = useLanguage();
@@ -24,7 +25,12 @@ export default function DashboardScreen() {
   const recentMovements = movements.slice(0, 5);
 
   const StatCard = ({ icon, title, value, color }: any) => (
-    <TouchableOpacity style={[styles.statCard, { borderLeftColor: color }]}>
+    <TouchableOpacity 
+      style={[styles.statCard, { borderLeftColor: color }]}
+      activeOpacity={designSystem.interactive.states.active.opacity}
+      accessibilityRole="button"
+      accessibilityLabel={`${title}: ${value}`}
+    >
       <View style={styles.statIcon}>
         {icon}
       </View>
@@ -45,35 +51,39 @@ export default function DashboardScreen() {
 
         <View style={styles.statsGrid}>
           <StatCard
-            icon={<Package size={24} color="#22C55E" />}
+            icon={<Package size={24} color={designSystem.colors.success[500]} />}
             title={t('totalProducts')}
             value={stats.totalProducts}
-            color="#22C55E"
+            color={designSystem.colors.success[500]}
           />
           <StatCard
-            icon={<TrendingDown size={24} color="#F97316" />}
+            icon={<TrendingDown size={24} color={designSystem.colors.warning[500]} />}
             title={t('lowStock')}
             value={stats.lowStockCount}
-            color="#F97316"
+            color={designSystem.colors.warning[500]}
           />
           <StatCard
-            icon={<Clock size={24} color="#EAB308" />}
+            icon={<Clock size={24} color={designSystem.colors.warning[700]} />}
             title={t('expiringSoon')}
             value={stats.expiringSoonCount}
-            color="#EAB308"
+            color={designSystem.colors.warning[700]}
           />
           <StatCard
-            icon={<AlertTriangle size={24} color="#EF4444" />}
+            icon={<AlertTriangle size={24} color={designSystem.colors.error[500]} />}
             title={t('criticalAlerts')}
             value={stats.criticalAlerts}
-            color="#EF4444"
+            color={designSystem.colors.error[500]}
           />
         </View>
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>{t('recentMovements')}</Text>
-            <TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={designSystem.interactive.states.active.opacity}
+              accessibilityRole="button"
+              accessibilityLabel={t('viewAll')}
+            >
               <Text style={styles.viewAllText}>{t('viewAll')}</Text>
             </TouchableOpacity>
           </View>
@@ -85,8 +95,8 @@ export default function DashboardScreen() {
                   <View style={[
                     styles.movementIndicator,
                     { backgroundColor: 
-                      movement.type === 'in' ? '#22C55E' : 
-                      movement.type === 'out' ? '#EF4444' : '#6B7280'
+                      movement.type === 'in' ? designSystem.colors.success[500] : 
+                      movement.type === 'out' ? designSystem.colors.error[500] : designSystem.colors.neutral[500]
                     }
                   ]} />
                 </View>
@@ -116,128 +126,117 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#D0D0D0',
+    backgroundColor: designSystem.colors.background.primary,
   },
   scrollView: {
     flex: 1,
   },
   header: {
-    padding: 20,
+    padding: designSystem.spacing.xl,
     paddingBottom: 10,
   },
   title: {
+    ...designSystem.componentStyles.textTitle,
     fontSize: 32,
-    fontWeight: 'bold',
-    color: '#000000',
     marginBottom: 4,
   },
   subtitle: {
-    fontSize: 18,
-    color: '#000000',
+    ...designSystem.componentStyles.textSubtitle,
   },
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    padding: 10,
-    gap: 10,
+    padding: designSystem.spacing.sm,
+    gap: designSystem.spacing.sm,
   },
   statCard: {
-    backgroundColor: '#F5C9A4',
-    borderRadius: 0,
-    borderWidth: 1,
-    borderColor: '#000000',
-    padding: 16,
+    ...designSystem.componentStyles.interactiveBase,
+    backgroundColor: designSystem.colors.background.secondary,
+    borderRadius: designSystem.interactive.border.radius,
+    padding: designSystem.spacing.lg,
     flexDirection: 'row',
     alignItems: 'center',
     width: '48%',
+    ...designSystem.shadows.low,
   },
   statIcon: {
-    marginRight: 12,
+    marginRight: designSystem.spacing.md,
   },
   statContent: {
     flex: 1,
   },
   statValue: {
+    ...designSystem.componentStyles.textHeader,
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#000000',
   },
   statTitle: {
-    fontSize: 12,
-    color: '#000000',
+    ...designSystem.componentStyles.textCaption,
     marginTop: 2,
   },
   section: {
-    padding: 20,
+    padding: designSystem.spacing.xl,
     paddingTop: 10,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: designSystem.spacing.lg,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#000000',
+    ...designSystem.componentStyles.textHeader,
   },
   viewAllText: {
-    fontSize: 14,
-    color: '#000000',
+    ...designSystem.componentStyles.textSecondary,
     fontWeight: '600',
   },
   movementCard: {
-    backgroundColor: '#F5C9A4',
-    borderRadius: 0,
-    borderWidth: 1,
-    borderColor: '#000000',
-    padding: 16,
-    marginBottom: 12,
+    ...designSystem.componentStyles.interactiveBase,
+    backgroundColor: designSystem.colors.background.secondary,
+    borderRadius: designSystem.interactive.border.radius,
+    padding: designSystem.spacing.lg,
+    marginBottom: designSystem.spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
+    ...designSystem.shadows.low,
   },
   movementIcon: {
     width: 40,
     height: 40,
-    borderRadius: 0,
-    backgroundColor: '#D0D0D0',
-    borderWidth: 1,
-    borderColor: '#000000',
+    borderRadius: designSystem.interactive.border.radius,
+    backgroundColor: designSystem.colors.background.primary,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: designSystem.spacing.md,
   },
   movementIndicator: {
     width: 12,
     height: 12,
-    borderRadius: 0,
+    borderRadius: designSystem.interactive.border.radius,
   },
   movementContent: {
     flex: 1,
   },
   movementProduct: {
-    fontSize: 16,
+    ...designSystem.componentStyles.textPrimary,
     fontWeight: '600',
-    color: '#000000',
     marginBottom: 4,
   },
   movementDetails: {
-    fontSize: 14,
-    color: '#000000',
+    ...designSystem.componentStyles.textSecondary,
     marginBottom: 2,
   },
   movementTime: {
-    fontSize: 12,
-    color: '#000000',
+    ...designSystem.componentStyles.textCaption,
   },
   emptyState: {
     padding: 40,
     alignItems: 'center',
   },
   emptyText: {
-    fontSize: 16,
-    color: '#000000',
+    ...designSystem.componentStyles.textPrimary,
     textAlign: 'center',
   },
 });
