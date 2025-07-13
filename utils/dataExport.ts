@@ -189,6 +189,11 @@ async function validateSession(): Promise<boolean> {
  */
 function checkRateLimit(): boolean {
   try {
+    // Check if localStorage is available (browser environment)
+    if (typeof localStorage === 'undefined') {
+      return true; // Allow export in non-browser environments
+    }
+    
     const rateLimitData = localStorage.getItem(RATE_LIMIT.storageKey);
     const now = Date.now();
     
@@ -389,6 +394,21 @@ function generateMockUserData() {
  */
 function logExportActivity(success: boolean, recordCount: number, error?: ExportError): void {
   try {
+    // Check if localStorage is available (browser environment)
+    if (typeof localStorage === 'undefined') {
+      console.log('Export Activity Log (localStorage unavailable):', {
+        timestamp: new Date().toISOString(),
+        success,
+        recordCount,
+        error: error ? {
+          type: error.type,
+          message: error.message,
+          details: error.details
+        } : null
+      });
+      return;
+    }
+    
     const logEntry = {
       timestamp: new Date().toISOString(),
       success,
