@@ -113,34 +113,50 @@ export default function MovementsScreen() {
         showsHorizontalScrollIndicator={false}
         style={styles.filterContainer}
       >
-        {[
-          { key: 'all', label: 'Alle', icon: null },
-          { key: 'in', label: t('stockIn'), icon: <ArrowUp size={16} color={designSystem.colors.success[500]} /> },
-          { key: 'out', label: t('stockOut'), icon: <ArrowDown size={16} color={designSystem.colors.error[500]} /> },
-          { key: 'adjustment', label: t('adjustment'), icon: <RotateCcw size={16} color={designSystem.colors.neutral[500]} /> },
-        ].map(filter => (
-          <TouchableOpacity
-            key={filter.key}
-            style={[
-              styles.filterChip,
-              filterType === filter.key && styles.filterChipActive
-            ]}
-            onPress={() => setFilterType(filter.key as any)}
-            activeOpacity={designSystem.interactive.states.active.opacity}
-            accessibilityRole="button"
-            accessibilityLabel={`Filter ${filter.label}`}
-            accessibilityState={{ selected: filterType === filter.key }}
-          >
-            {filter.icon}
-            <Text style={[
-              styles.filterText,
-              filterType === filter.key && styles.filterTextActive
-            ]}>
-              {filter.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+        <View style={styles.filterHeader}>
+          <Text style={styles.filterTitle}>Bewegungstypen</Text>
+          {filterType !== 'all' && (
+            <TouchableOpacity
+              onPress={() => setFilterType('all')}
+              activeOpacity={designSystem.interactive.states.active.opacity}
+              accessibilityLabel="Alle Filter zurücksetzen"
+              accessibilityRole="button"
+            >
+              <Text style={styles.clearFiltersText}>Zurücksetzen</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+        
+        <View style={styles.filterButtons}>
+          {[
+            { key: 'all', label: 'Alle', icon: null },
+            { key: 'in', label: t('stockIn'), icon: <ArrowUp size={14} color={designSystem.colors.success[500]} /> },
+            { key: 'out', label: t('stockOut'), icon: <ArrowDown size={14} color={designSystem.colors.error[500]} /> },
+            { key: 'adjustment', label: t('adjustment'), icon: <RotateCcw size={14} color={designSystem.colors.neutral[500]} /> },
+          ].map(filter => (
+            <TouchableOpacity
+              key={filter.key}
+              style={[
+                styles.filterChip,
+                filterType === filter.key && styles.filterChipActive
+              ]}
+              onPress={() => setFilterType(filter.key as any)}
+              activeOpacity={designSystem.interactive.states.active.opacity}
+              accessibilityRole="button"
+              accessibilityLabel={`Filter ${filter.label}`}
+              accessibilityState={{ selected: filterType === filter.key }}
+            >
+              {filter.icon}
+              <Text style={[
+                styles.filterText,
+                filterType === filter.key && styles.filterTextActive
+              ]} numberOfLines={1} ellipsizeMode="tail">
+                {filter.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
 
       <View style={styles.statsBar}>
         <View style={styles.statItem}>
@@ -209,35 +225,68 @@ const styles = StyleSheet.create({
     paddingHorizontal: designSystem.spacing.xl,
     marginBottom: designSystem.spacing.md,
   },
+  filterHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: designSystem.spacing.sm,
+  },
+  filterTitle: {
+    ...designSystem.componentStyles.textPrimary,
+    fontWeight: '600',
+  },
+  clearFiltersText: {
+    ...designSystem.componentStyles.textSecondary,
+    fontWeight: '600',
+    color: designSystem.colors.error[500],
+  },
+  filterButtons: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: designSystem.spacing.sm,
+    maxHeight: 58, // 2 rows max
+    overflow: 'hidden',
+  },
   filterChip: {
-    ...designSystem.componentStyles.filterButtonDefault,
-    paddingHorizontal: designSystem.spacing.lg,
+    backgroundColor: designSystem.colors.filter.default,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+    borderRadius: designSystem.interactive.border.radius,
+    paddingHorizontal: designSystem.spacing.md,
     paddingVertical: 6,
-    marginRight: designSystem.spacing.sm,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    height: 32,
-    justifyContent: 'center',
+    gap: designSystem.spacing.xs,
+    height: 26, // 60% of original 44px
+    maxWidth: '48%',
+    ...designSystem.shadows.low,
   },
   filterChipActive: {
-    ...designSystem.componentStyles.filterButtonActive,
-    paddingHorizontal: designSystem.spacing.lg,
+    backgroundColor: designSystem.colors.filter.active,
+    borderWidth: designSystem.interactive.border.width, // Same border width
+    borderColor: designSystem.interactive.border.color,
+    borderRadius: designSystem.interactive.border.radius,
+    paddingHorizontal: designSystem.spacing.md,
     paddingVertical: 6,
-    marginRight: designSystem.spacing.sm,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    height: 32,
-    justifyContent: 'center',
+    gap: designSystem.spacing.xs,
+    height: 26,
+    maxWidth: '48%',
+    ...designSystem.shadows.medium,
   },
   filterText: {
     ...designSystem.componentStyles.textSecondary,
     fontWeight: '500',
+    flex: 1,
+    numberOfLines: 1,
+    ellipsizeMode: 'tail',
   },
   filterTextActive: {
-    color: designSystem.colors.text.primary,
+    ...designSystem.componentStyles.textPrimary,
     fontWeight: '600',
+    numberOfLines: 1,
+    ellipsizeMode: 'tail',
   },
   statsBar: {
     backgroundColor: designSystem.colors.background.secondary,
