@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowUp, ArrowDown, RotateCcw, Filter, Calendar } from 'lucide-react-native';
+import { ArrowUp, ArrowDown, RotateCcw, Filter, Calendar, Plus } from 'lucide-react-native';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useStorage } from '@/hooks/useStorage';
 import { Movement } from '@/types';
@@ -55,12 +55,17 @@ export default function MovementsScreen() {
     }
   };
 
+  const clearAllFilters = () => {
+    setFilterType('all');
+  };
+
   const MovementCard = ({ movement }: { movement: Movement }) => (
     <TouchableOpacity 
       style={styles.movementCard}
       activeOpacity={designSystem.interactive.states.active.opacity}
       accessibilityRole="button"
       accessibilityLabel={`${movement.productName} ${getMovementLabel(movement.type)} ${movement.quantity}`}
+      accessibilityHint="Tippen für Details"
     >
       <View style={styles.movementIcon}>
         {getMovementIcon(movement.type)}
@@ -68,27 +73,36 @@ export default function MovementsScreen() {
       
       <View style={styles.movementContent}>
         <View style={styles.movementHeader}>
-          <Text style={styles.productName}>{movement.productName}</Text>
-          <Text style={[styles.quantityText, { color: getMovementColor(movement.type) }]}>
-            {movement.type === 'in' ? '+' : movement.type === 'out' ? '-' : ''}
-            {movement.quantity}
-          </Text>
+          <Text style={styles.productName} numberOfLines={1}>{movement.productName}</Text>
+          <View style={[styles.statusBadge, { backgroundColor: getMovementColor(movement.type) }]}>
+            <Text style={styles.statusText}>{getMovementLabel(movement.type)}</Text>
+          </View>
         </View>
+        
+        <Text style={styles.movementCategory}>{movement.reason}</Text>
         
         <View style={styles.movementDetails}>
-          <Text style={styles.movementType}>{getMovementLabel(movement.type)}</Text>
-          <Text style={styles.movementReason}>{movement.reason}</Text>
-        </View>
-        
-        <View style={styles.movementFooter}>
-          <Text style={styles.movementTime}>
-            {new Date(movement.timestamp).toLocaleDateString()} • {new Date(movement.timestamp).toLocaleTimeString()}
-          </Text>
-          <Text style={styles.movementUser}>{movement.user}</Text>
+          <View style={styles.detailItem}>
+            <Text style={styles.detailLabel}>Menge:</Text>
+            <Text style={[styles.detailValue, { color: getMovementColor(movement.type) }]}>
+              {movement.type === 'in' ? '+' : movement.type === 'out' ? '-' : ''}
+              {movement.quantity}
+            </Text>
+          </View>
+          <View style={styles.detailItem}>
+            <Calendar size={14} color="#6B7280" />
+            <Text style={styles.detailValue}>
+              {new Date(movement.timestamp).toLocaleDateString()}
+            </Text>
+          </View>
+          <View style={styles.detailItem}>
+            <Text style={styles.detailLabel}>User:</Text>
+            <Text style={styles.detailValue}>{movement.user}</Text>
+          </View>
         </View>
         
         {movement.notes && (
-          <Text style={styles.movementNotes}>{movement.notes}</Text>
+          <Text style={styles.movementNotes} numberOfLines={2}>{movement.notes}</Text>
         )}
       </View>
     </TouchableOpacity>
@@ -96,100 +110,123 @@ export default function MovementsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Header with consistent styling */}
       <View style={styles.header}>
-        <Text style={styles.title}>{t('movements')}</Text>
-        <TouchableOpacity 
-          style={styles.filterButton}
-          activeOpacity={designSystem.interactive.states.active.opacity}
-          accessibilityRole="button"
-          accessibilityLabel="Filter öffnen"
-        >
-          <Filter size={24} color={designSystem.colors.text.secondary} />
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false}
-        style={styles.filterContainer}
-      >
-        <View style={styles.filterHeader}>
-          <Text style={styles.filterTitle}>Bewegungstypen</Text>
-          {filterType !== 'all' && (
-            <TouchableOpacity
-              onPress={() => setFilterType('all')}
+        <View style={styles.headerTop}>
+          <Text style={styles.title}>{t('movements')}</Text>
+          <View style={styles.headerActions}>
+            <TouchableOpacity 
+              style={styles.addButton}
               activeOpacity={designSystem.interactive.states.active.opacity}
-              accessibilityLabel="Alle Filter zurücksetzen"
+              accessibilityLabel="Neue Bewegung hinzufügen"
               accessibilityRole="button"
             >
-              <Text style={styles.clearFiltersText}>Zurücksetzen</Text>
+              <Plus size={24} color={designSystem.colors.text.primary} />
             </TouchableOpacity>
-          )}
+          </View>
         </View>
-        
-        <View style={styles.filterButtons}>
-          {[
-            { key: 'all', label: 'Alle', icon: null },
-            { key: 'in', label: t('stockIn'), icon: <ArrowUp size={14} color={designSystem.colors.success[500]} /> },
-            { key: 'out', label: t('stockOut'), icon: <ArrowDown size={14} color={designSystem.colors.error[500]} /> },
-            { key: 'adjustment', label: t('adjustment'), icon: <RotateCcw size={14} color={designSystem.colors.neutral[500]} /> },
-          ].map(filter => (
-            <TouchableOpacity
-              key={filter.key}
-              style={[
-                styles.filterChip,
-                filterType === filter.key && styles.filterChipActive
-              ]}
-              onPress={() => setFilterType(filter.key as any)}
-              activeOpacity={designSystem.interactive.states.active.opacity}
-              accessibilityRole="button"
-              accessibilityLabel={`Filter ${filter.label}`}
-              accessibilityState={{ selected: filterType === filter.key }}
-            >
-              {filter.icon}
-              <Text style={[
-                styles.filterText,
-                filterType === filter.key && styles.filterTextActive
-              ]} numberOfLines={1} ellipsizeMode="tail">
-                {filter.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </ScrollView>
 
-      <View style={styles.statsBar}>
-        <View style={styles.statItem}>
-          <Text style={styles.statValue}>{movements.filter(m => m.type === 'in').length}</Text>
-          <Text style={styles.statLabel}>Eingänge</Text>
-        </View>
-        <View style={styles.statDivider} />
-        <View style={styles.statItem}>
-          <Text style={styles.statValue}>{movements.filter(m => m.type === 'out').length}</Text>
-          <Text style={styles.statLabel}>Ausgänge</Text>
-        </View>
-        <View style={styles.statDivider} />
-        <View style={styles.statItem}>
-          <Text style={styles.statValue}>{movements.filter(m => m.type === 'adjustment').length}</Text>
-          <Text style={styles.statLabel}>Anpassungen</Text>
+        {/* Filter Section - consistent with Inventory */}
+        <View style={styles.categoryFilterContainer}>
+          <View style={styles.categoryFilterHeader}>
+            <Text style={styles.categoryFilterTitle}>Bewegungstypen</Text>
+            {filterType !== 'all' && (
+              <TouchableOpacity
+                onPress={clearAllFilters}
+                activeOpacity={designSystem.interactive.states.active.opacity}
+                accessibilityLabel="Alle Filter zurücksetzen"
+                accessibilityRole="button"
+              >
+                <Text style={styles.clearFiltersText}>Zurücksetzen</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+          
+          <View style={styles.categoryFilterButtons}>
+            {[
+              { key: 'all', label: 'Alle', icon: null, count: movements.length },
+              { key: 'in', label: t('stockIn'), icon: <ArrowUp size={14} color={designSystem.colors.success[500]} />, count: movements.filter(m => m.type === 'in').length },
+              { key: 'out', label: t('stockOut'), icon: <ArrowDown size={14} color={designSystem.colors.error[500]} />, count: movements.filter(m => m.type === 'out').length },
+              { key: 'adjustment', label: t('adjustment'), icon: <RotateCcw size={14} color={designSystem.colors.neutral[500]} />, count: movements.filter(m => m.type === 'adjustment').length },
+            ].map(filter => {
+              const isSelected = filterType === filter.key;
+              return (
+                <TouchableOpacity
+                  key={filter.key}
+                  style={[
+                    styles.categoryFilterButton,
+                    isSelected && styles.categoryFilterButtonActive
+                  ]}
+                  onPress={() => setFilterType(filter.key as any)}
+                  activeOpacity={designSystem.interactive.states.active.opacity}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Filter ${filter.label}, ${filter.count} Bewegungen`}
+                  accessibilityState={{ selected: isSelected }}
+                >
+                  {filter.icon}
+                  <Text style={[
+                    styles.categoryFilterButtonText,
+                    isSelected && styles.categoryFilterButtonTextActive
+                  ]} numberOfLines={1} ellipsizeMode="tail">
+                    {filter.label} ({filter.count})
+                  </Text>
+                  {isSelected && (
+                    <View style={styles.categoryFilterCheck}>
+                      <Text style={styles.categoryFilterCheckmark}>✓</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         </View>
       </View>
 
-      <ScrollView style={styles.movementsList} showsVerticalScrollIndicator={false}>
-        {filteredMovements.map(movement => (
-          <MovementCard key={movement.id} movement={movement} />
-        ))}
-        
-        {filteredMovements.length === 0 && (
-          <View style={styles.emptyState}>
-            <Calendar size={48} color={designSystem.colors.neutral[300]} />
-            <Text style={styles.emptyText}>Keine Bewegungen gefunden</Text>
-            <Text style={styles.emptySubtext}>
-              Verwenden Sie den Scanner, um Lagerbewegungen zu erfassen
+      {/* Main Content Area - consistent with Inventory */}
+      <View style={styles.contentContainer}>
+        <View style={styles.movementArea}>
+          <View style={styles.movementHeader}>
+            <Text style={styles.resultCount}>
+              {filteredMovements.length} {filteredMovements.length === 1 ? 'Bewegung' : 'Bewegungen'}
+              {filterType !== 'all' && ` (1 Filter aktiv)`}
             </Text>
           </View>
-        )}
-      </ScrollView>
+
+          <ScrollView 
+            style={styles.movementsList} 
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.movementsListContent}
+          >
+            <View style={styles.movementsListView}>
+              {filteredMovements.map(movement => (
+                <MovementCard key={movement.id} movement={movement} />
+              ))}
+            </View>
+            
+            {filteredMovements.length === 0 && (
+              <View style={styles.emptyState}>
+                <Calendar size={64} color={designSystem.colors.neutral[300]} />
+                <Text style={styles.emptyTitle}>Keine Bewegungen gefunden</Text>
+                <Text style={styles.emptySubtitle}>
+                  {filterType !== 'all' ? 
+                    `Keine ${getMovementLabel(filterType)}-Bewegungen vorhanden` : 
+                    'Verwenden Sie den Scanner, um Lagerbewegungen zu erfassen'
+                  }
+                </Text>
+                <TouchableOpacity 
+                  style={styles.emptyAction}
+                  activeOpacity={designSystem.interactive.states.active.opacity}
+                  accessibilityLabel="Neue Bewegung hinzufügen"
+                  accessibilityRole="button"
+                >
+                  <Plus size={20} color={designSystem.colors.text.primary} />
+                  <Text style={styles.emptyActionText}>Bewegung hinzufügen</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </ScrollView>
+        </View>
+      </View>
     </SafeAreaView>
   );
 }
@@ -199,39 +236,53 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: designSystem.colors.background.primary,
   },
+  
+  // Header Styles - consistent with Inventory
   header: {
+    backgroundColor: designSystem.colors.background.primary,
+    padding: designSystem.spacing.xl,
+    paddingTop: 16,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: designSystem.colors.border.secondary,
+  },
+  headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: designSystem.spacing.xl,
-    paddingBottom: 10,
+    marginBottom: designSystem.spacing.lg,
   },
   title: {
     ...designSystem.componentStyles.textTitle,
   },
-  filterButton: {
-    backgroundColor: designSystem.colors.background.secondary,
+  headerActions: {
+    flexDirection: 'row',
+    gap: 0,
+  },
+  addButton: {
+    backgroundColor: designSystem.colors.secondary[500],
     borderWidth: designSystem.interactive.border.width,
     borderColor: designSystem.interactive.border.color,
-    width: 48,
-    height: 48,
+    width: 44,
+    height: 44,
     borderRadius: designSystem.interactive.border.radius,
     justifyContent: 'center',
     alignItems: 'center',
     ...designSystem.accessibility.minTouchTarget,
     ...designSystem.shadows.low,
   },
-  filterContainer: {
-    paddingHorizontal: designSystem.spacing.xl,
-    marginBottom: designSystem.spacing.md,
+  
+  // Category Filter Styles - consistent with Inventory
+  categoryFilterContainer: {
+    marginTop: designSystem.spacing.md,
   },
-  filterHeader: {
+  categoryFilterHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: designSystem.spacing.sm,
+    marginBottom: designSystem.spacing.md,
   },
-  filterTitle: {
+  categoryFilterTitle: {
     ...designSystem.componentStyles.textPrimary,
     fontWeight: '600',
   },
@@ -240,154 +291,175 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: designSystem.colors.error[500],
   },
-  filterButtons: {
+  categoryFilterButtons: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: designSystem.spacing.sm,
+    gap: designSystem.spacing.sm * 0.3,
     maxHeight: 58,
     overflow: 'hidden',
   },
-  filterChip: {
+  categoryFilterButton: {
     backgroundColor: designSystem.colors.filter.default,
     borderWidth: designSystem.interactive.border.width,
     borderColor: designSystem.interactive.border.color,
     borderRadius: designSystem.interactive.border.radius,
     paddingHorizontal: designSystem.spacing.md,
     paddingVertical: 6,
-    flexDirection: 'row',
+    flexDirection: 'row', 
     alignItems: 'center',
     gap: designSystem.spacing.xs,
     height: 26,
     maxWidth: '48%',
-    ...designSystem.shadows.low,
   },
-  filterChipActive: {
+  categoryFilterButtonActive: {
     backgroundColor: designSystem.colors.filter.active,
-    borderWidth: designSystem.interactive.border.width,
-    borderColor: designSystem.interactive.border.color,
-    borderRadius: designSystem.interactive.border.radius,
-    paddingHorizontal: designSystem.spacing.md,
-    paddingVertical: 6,
-    flexDirection: 'row',
-    alignItems: 'center',
     gap: designSystem.spacing.xs,
     height: 26,
     maxWidth: '48%',
     ...designSystem.shadows.medium,
   },
-  filterText: {
+  categoryFilterButtonText: {
     ...designSystem.componentStyles.textSecondary,
     fontWeight: '500',
     flex: 1,
     numberOfLines: 1,
     ellipsizeMode: 'tail',
   },
-  filterTextActive: {
+  categoryFilterButtonTextActive: {
     ...designSystem.componentStyles.textPrimary,
     fontWeight: '600',
     numberOfLines: 1,
     ellipsizeMode: 'tail',
   },
-  statsBar: {
-    backgroundColor: designSystem.colors.background.secondary,
-    borderWidth: designSystem.interactive.border.width,
+  categoryFilterCheck: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: designSystem.colors.success[500],
+    borderWidth: 1,
     borderColor: designSystem.interactive.border.color,
-    flexDirection: 'row',
-    marginHorizontal: designSystem.spacing.xl,
-    marginBottom: designSystem.spacing.lg,
-    borderRadius: designSystem.interactive.border.radius,
-    padding: designSystem.spacing.lg,
-    ...designSystem.shadows.low,
-  },
-  statItem: {
-    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  statValue: {
-    ...designSystem.componentStyles.textHeader,
-    fontWeight: 'bold',
-  },
-  statLabel: {
+  categoryFilterCheckmark: {
     ...designSystem.componentStyles.textCaption,
-    marginTop: 2,
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: designSystem.colors.text.inverse,
   },
-  statDivider: {
-    width: 1,
-    backgroundColor: designSystem.interactive.border.color,
-    marginHorizontal: designSystem.spacing.lg,
+  
+  // Content Area - consistent with Inventory
+  contentContainer: {
+    flex: 1,
+    backgroundColor: designSystem.colors.background.primary,
+    paddingHorizontal: designSystem.spacing.xl,
+  },
+  movementArea: {
+    flex: 1,
+    maxWidth: 1200,
+    width: '100%',
+    alignSelf: 'center',
+    backgroundColor: designSystem.colors.background.primary,
+  },
+  movementHeader: {
+    paddingHorizontal: 0,
+    paddingVertical: designSystem.spacing.md,
+    borderBottomColor: designSystem.colors.border.secondary,
+  },
+  resultCount: {
+    ...designSystem.componentStyles.textPrimary,
+    fontWeight: '600',
   },
   movementsList: {
     flex: 1,
-    padding: designSystem.spacing.xl,
-    paddingTop: 0,
+  },
+  movementsListContent: {
+    padding: 0,
+    paddingTop: designSystem.spacing.sm,
+    paddingBottom: designSystem.spacing.xxl,
+  },
+  
+  // Movement List View - consistent with Inventory
+  movementsListView: {
+    gap: designSystem.spacing.md,
   },
   movementCard: {
     ...designSystem.componentStyles.interactiveBase,
     backgroundColor: designSystem.colors.background.secondary,
     borderRadius: designSystem.interactive.border.radius,
     padding: designSystem.spacing.lg,
-    marginBottom: 4,
+    paddingVertical: designSystem.spacing.lg,
     flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: designSystem.spacing.md,
+    minHeight: 64,
+    marginBottom: 0,
     ...designSystem.shadows.low,
   },
+  movementContent: {
+    flex: 1,
+  },
   movementIcon: {
-    width: 40,
-    height: 40,
+    width: 36,
+    height: 36,
     borderRadius: designSystem.interactive.border.radius,
     backgroundColor: designSystem.colors.background.primary,
     borderWidth: designSystem.interactive.border.width,
     borderColor: designSystem.interactive.border.color,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: designSystem.spacing.md,
+    marginTop: 2,
   },
-  movementContent: {
+  statusBadge: {
+    paddingHorizontal: designSystem.spacing.sm,
+    paddingVertical: designSystem.spacing.xs,
+    borderRadius: designSystem.interactive.border.radius,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+  },
+  statusText: {
+    ...designSystem.componentStyles.textCaption,
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: designSystem.colors.text.inverse,
+  },
+  productName: {
+    ...designSystem.componentStyles.textPrimary,
+    fontWeight: 'bold',
     flex: 1,
+    marginBottom: 4,
   },
   movementHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
+    alignItems: 'flex-start',
+    marginBottom: 6,
   },
-  productName: {
-    ...designSystem.componentStyles.textPrimary,
-    fontWeight: '600',
-    flex: 1,
-  },
-  quantityText: {
-    ...designSystem.componentStyles.textPrimary,
-    fontWeight: 'bold',
+  movementCategory: {
+    ...designSystem.componentStyles.textSecondary,
+    fontSize: 13,
+    marginBottom: 10,
+    fontWeight: '500',
   },
   movementDetails: {
     flexDirection: 'row',
-    gap: designSystem.spacing.sm,
-    marginBottom: designSystem.spacing.sm,
+    gap: designSystem.spacing.lg,
+    marginTop: 6,
   },
-  movementType: {
-    ...designSystem.componentStyles.textCaption,
-    backgroundColor: designSystem.colors.background.primary,
-    borderWidth: designSystem.interactive.border.width,
-    borderColor: designSystem.interactive.border.color,
-    paddingHorizontal: designSystem.spacing.sm,
-    paddingVertical: 2,
-    borderRadius: designSystem.interactive.border.radius,
-    fontWeight: '500',
-  },
-  movementReason: {
-    ...designSystem.componentStyles.textSecondary,
-  },
-  movementFooter: {
+  detailItem: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: designSystem.spacing.xs,
   },
-  movementTime: {
+  detailLabel: {
     ...designSystem.componentStyles.textCaption,
+    fontSize: 11,
+    fontWeight: '600',
   },
-  movementUser: {
+  detailValue: {
     ...designSystem.componentStyles.textCaption,
-    fontWeight: '500',
+    fontSize: 11,
+    flex: 1,
   },
   movementNotes: {
     ...designSystem.componentStyles.textCaption,
@@ -397,20 +469,45 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: designSystem.interactive.border.color,
   },
+  
+  // Empty State - consistent with Inventory
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 40,
+    paddingHorizontal: designSystem.spacing.xl,
+    paddingVertical: 48,
+    marginTop: 40,
   },
-  emptyText: {
+  emptyTitle: {
     ...designSystem.componentStyles.textSubtitle,
-    fontWeight: '600',
     marginTop: designSystem.spacing.lg,
     marginBottom: designSystem.spacing.sm,
+    textAlign: 'center',
   },
-  emptySubtext: {
+  emptySubtitle: {
     ...designSystem.componentStyles.textSecondary,
     textAlign: 'center',
+    marginBottom: designSystem.spacing.xxl,
     lineHeight: 20,
+    paddingHorizontal: designSystem.spacing.xl,
+  },
+  emptyAction: {
+    backgroundColor: designSystem.colors.secondary[500],
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+    paddingHorizontal: designSystem.spacing.xl,
+    paddingVertical: designSystem.spacing.md,
+    borderRadius: designSystem.interactive.border.radius,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: designSystem.spacing.sm,
+    minHeight: 44,
+    ...designSystem.accessibility.minTouchTarget,
+    ...designSystem.shadows.low,
+  },
+  emptyActionText: {
+    ...designSystem.componentStyles.textPrimary,
+    fontSize: 15,
+    fontWeight: '600',
   },
 });
