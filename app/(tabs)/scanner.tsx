@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScrollView } from 'react-native';
@@ -20,6 +20,20 @@ export default function ScannerScreen() {
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [pendingBarcode, setPendingBarcode] = useState<string>('');
+  
+  // Scanner State Management - Lösung für Multiple Dialog Bug
+  const [scannerState, setScannerState] = useState({
+    isProcessing: false,
+    lastScannedCode: '',
+    lastScanTime: 0,
+    dialogActive: false
+  });
+  
+  // Refs für zusätzliche Kontrolle
+  const scanProcessingRef = useRef(false);
+  const dialogActiveRef = useRef(false);
+  const scanCooldownRef = useRef<NodeJS.Timeout | null>(null);
+  
   const [movementData, setMovementData] = useState({
     type: 'in' as 'in' | 'out' | 'adjustment',
     quantity: 0,
@@ -39,34 +53,191 @@ export default function ScannerScreen() {
     barcode: '',
   });
 
-  useEffect(() => {
-    if (scannedData) {
-      handleBarcodeScanned(scannedData);
-    }
-  }, [scannedData]);
+  // Konstanten für Scan-Kontrolle
+  const SCAN_COOLDOWN_MS = 2000; // 2 Sekunden zwischen Scans
+  const PROCESSING_TIMEOUT_MS = 5000; // 5 Sekunden Timeout für Processing
 
-  const handleBarcodeScanned = (data: string) => {
+  /**
+   * Debounced Barcode Handler - Hauptlösung für Multiple Dialog Problem
+   */
+  const handleBarcodeScanned = useCallback(async (data: string) => {
+    const now = Date.now();
+    
+    // Debug-Logging für Entwicklung
+    if (__DEV__) {
+      console.log('🔍 Barcode Scan Event:', {
+        data,
+        isProcessing: scannerState.isProcessing,
+        dialogActive: scannerState.dialogActive,
+        lastCode: scannerState.lastScannedCode,
+        timeSinceLastScan: now - scannerState.lastScanTime,
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    // Schutz 1: Bereits in Verarbeitung
+    if (scannerState.isProcessing || scanProcessingRef.current) {
+      console.log('⚠️ Scan blocked: Already processing');
+      return;
+    }
+    
+    // Schutz 2: Dialog bereits aktiv
+    if (scannerState.dialogActive || dialogActiveRef.current) {
+      console.log('⚠️ Scan blocked: Dialog already active');
+      return;
+    }
+    
+    // Schutz 3: Cooldown-Periode
+    if (now - scannerState.lastScanTime < SCAN_COOLDOWN_MS) {
+      console.log('⚠️ Scan blocked: Cooldown period');
+      return;
+    }
+    
+    // Schutz 4: Duplikat-Scan
+    if (data === scannerState.lastScannedCode && now - scannerState.lastScanTime < SCAN_COOLDOWN_MS * 2) {
+      console.log('⚠️ Scan blocked: Duplicate code');
+      return;
+    }
+    
+    // Processing-State setzen
+    setScannerState(prev => ({
+      ...prev,
+      isProcessing: true,
+      lastScannedCode: data,
+      lastScanTime: now
+    }));
+    scanProcessingRef.current = true;
+    
+    // Kamera sofort schließen
     setShowCamera(false);
     
-    // Find product by barcode
-    const product = products.find(p => p.barcode === data);
+    // Kurze Verzögerung für UI-Update
+    setTimeout(async () => {
+      try {
+        // Produktsuche
+        const product = products.find(p => p.barcode === data);
+        
+        if (product) {
+          // Produkt gefunden - Movement Modal öffnen
+          console.log('✅ Product found:', product.name);
+          setSelectedProduct(product);
+          setShowMovementModal(true);
+          resetScannerState();
+        } else {
+          // Produkt nicht gefunden - Dialog anzeigen
+          console.log('❌ Product not found, showing dialog');
+          showProductNotFoundDialog(data);
+        }
+      } catch (error) {
+        console.error('❌ Error processing scan:', error);
+        resetScannerState();
+        Alert.alert('Fehler', 'Fehler beim Verarbeiten des Scans. Bitte versuchen Sie es erneut.');
+      }
+    }, 150); // Kurze Verzögerung für bessere UX
     
-    if (product) {
-      setSelectedProduct(product);
-      setShowMovementModal(true);
-    } else {
-      Alert.alert(
-        t('productNotFound'),
-        `Barcode: ${data}\n\nMöchten Sie ein neues Produkt anlegen?`,
-        [
-          { text: t('cancel'), style: 'cancel' },
-          { text: 'Produkt anlegen', onPress: () => handleCreateProduct(data) }
-        ]
-      );
+  }, [products, scannerState]);
+
+  /**
+   * Sicherer Dialog für "Produkt nicht gefunden"
+   */
+  const showProductNotFoundDialog = useCallback((barcode: string) => {
+    // Doppelter Schutz vor mehrfachen Dialogen
+    if (dialogActiveRef.current || scannerState.dialogActive) {
+      console.log('⚠️ Dialog blocked: Already active');
+      resetScannerState();
+      return;
     }
     
+    // Dialog-State setzen
+    setScannerState(prev => ({ ...prev, dialogActive: true }));
+    dialogActiveRef.current = true;
+    
+    Alert.alert(
+      t('productNotFound'),
+      `Barcode: ${barcode}\n\nMöchten Sie ein neues Produkt anlegen?`,
+      [
+        { 
+          text: t('cancel'), 
+          style: 'cancel',
+          onPress: () => {
+            console.log('🚫 User cancelled product creation');
+            resetScannerState();
+          }
+        },
+        { 
+          text: 'Produkt anlegen', 
+          onPress: () => {
+            console.log('✅ User confirmed product creation');
+            handleCreateProduct(barcode);
+          }
+        }
+      ],
+      { 
+        cancelable: false, // Verhindert versehentliches Schließen
+        onDismiss: () => {
+          console.log('📱 Dialog dismissed');
+          resetScannerState();
+        }
+      }
+    );
+  }, [t, scannerState.dialogActive]);
+
+  /**
+   * Scanner-State zurücksetzen
+   */
+  const resetScannerState = useCallback(() => {
+    console.log('🔄 Resetting scanner state');
+    
+    setScannerState({
+      isProcessing: false,
+      lastScannedCode: '',
+      lastScanTime: 0,
+      dialogActive: false
+    });
+    
+    scanProcessingRef.current = false;
+    dialogActiveRef.current = false;
     setScannedData(null);
-  };
+    
+    // Cooldown-Timer löschen
+    if (scanCooldownRef.current) {
+      clearTimeout(scanCooldownRef.current);
+      scanCooldownRef.current = null;
+    }
+  }, []);
+
+  /**
+   * Sicherheits-Timeout für Processing-State
+   */
+  useEffect(() => {
+    if (scannerState.isProcessing) {
+      const timeout = setTimeout(() => {
+        console.log('⏰ Processing timeout reached, resetting state');
+        resetScannerState();
+      }, PROCESSING_TIMEOUT_MS);
+      
+      return () => clearTimeout(timeout);
+    }
+  }, [scannerState.isProcessing, resetScannerState]);
+
+  /**
+   * Überwachter useEffect für scannedData
+   */
+  useEffect(() => {
+    if (scannedData && !scannerState.isProcessing && !scannerState.dialogActive) {
+      console.log('📊 Processing scanned data:', scannedData);
+      handleBarcodeScanned(scannedData);
+    }
+  }, [scannedData, handleBarcodeScanned, scannerState.isProcessing, scannerState.dialogActive]);
+
+  /**
+   * Cleanup beim Unmount
+   */
+  useEffect(() => {
+    return () => {
+      resetScannerState();
+    };
+  }, [resetScannerState]);
 
   const handleCreateProduct = (barcode: string) => {
     setPendingBarcode(barcode);
@@ -82,6 +253,7 @@ export default function ScannerScreen() {
       barcode: barcode,
     });
     setShowAddProductModal(true);
+    resetScannerState();
   };
 
   const handleAddProduct = async () => {
@@ -144,6 +316,7 @@ export default function ScannerScreen() {
       Alert.alert('Fehler', 'Produkt konnte nicht angelegt werden.');
     }
   };
+
   const handleManualEntry = () => {
     if (manualBarcode.trim()) {
       handleBarcodeScanned(manualBarcode.trim());
@@ -180,6 +353,19 @@ export default function ScannerScreen() {
     Alert.alert('Erfolg', 'Bewegung wurde erfasst');
   };
 
+  /**
+   * Sicherer Camera Handler mit Debouncing
+   */
+  const handleCameraBarcodeScan = useCallback(({ data }: { data: string }) => {
+    // Zusätzlicher Schutz auf Camera-Level
+    if (scannerState.isProcessing || scannerState.dialogActive) {
+      return;
+    }
+    
+    console.log('📷 Camera scan detected:', data);
+    setScannedData(data);
+  }, [scannerState.isProcessing, scannerState.dialogActive]);
+
   if (!permission) {
     return <View style={styles.container}><Text>Loading...</Text></View>;
   }
@@ -211,30 +397,63 @@ export default function ScannerScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>{t('scanner')}</Text>
+        {/* Debug-Info in Development */}
+        {__DEV__ && (
+          <Text style={styles.debugText}>
+            Processing: {scannerState.isProcessing ? 'Yes' : 'No'} | 
+            Dialog: {scannerState.dialogActive ? 'Yes' : 'No'}
+          </Text>
+        )}
       </View>
 
       <View style={styles.content}>
         <View style={styles.scanOptions}>
           <TouchableOpacity 
-            style={styles.scanButton}
-            onPress={() => setShowCamera(true)}
+            style={[
+              styles.scanButton,
+              scannerState.isProcessing && styles.scanButtonDisabled
+            ]}
+            onPress={() => !scannerState.isProcessing && setShowCamera(true)}
             activeOpacity={designSystem.interactive.states.active.opacity}
             accessibilityRole="button"
             accessibilityLabel={t('scanBarcode')}
+            disabled={scannerState.isProcessing}
           >
-            <QrCode size={32} color={designSystem.colors.text.primary} />
-            <Text style={styles.scanButtonText}>{t('scanBarcode')}</Text>
+            <QrCode size={32} color={
+              scannerState.isProcessing 
+                ? designSystem.colors.text.disabled 
+                : designSystem.colors.text.primary
+            } />
+            <Text style={[
+              styles.scanButtonText,
+              scannerState.isProcessing && styles.scanButtonTextDisabled
+            ]}>
+              {scannerState.isProcessing ? 'Verarbeitung...' : t('scanBarcode')}
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
-            style={styles.manualButton}
-            onPress={() => setShowManualEntry(true)}
+            style={[
+              styles.manualButton,
+              scannerState.isProcessing && styles.manualButtonDisabled
+            ]}
+            onPress={() => !scannerState.isProcessing && setShowManualEntry(true)}
             activeOpacity={designSystem.interactive.states.active.opacity}
             accessibilityRole="button"
             accessibilityLabel={t('manualEntry')}
+            disabled={scannerState.isProcessing}
           >
-            <Plus size={24} color={designSystem.colors.success[500]} />
-            <Text style={styles.manualButtonText}>{t('manualEntry')}</Text>
+            <Plus size={24} color={
+              scannerState.isProcessing 
+                ? designSystem.colors.text.disabled 
+                : designSystem.colors.success[500]
+            } />
+            <Text style={[
+              styles.manualButtonText,
+              scannerState.isProcessing && styles.manualButtonTextDisabled
+            ]}>
+              {t('manualEntry')}
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -254,7 +473,10 @@ export default function ScannerScreen() {
         <SafeAreaView style={styles.cameraContainer}>
           <View style={styles.cameraHeader}>
             <TouchableOpacity 
-              onPress={() => setShowCamera(false)}
+              onPress={() => {
+                setShowCamera(false);
+                resetScannerState();
+              }}
               activeOpacity={designSystem.interactive.states.active.opacity}
               accessibilityRole="button"
               accessibilityLabel="Kamera schließen"
@@ -268,7 +490,7 @@ export default function ScannerScreen() {
           <CameraView
             style={styles.camera}
             facing="back"
-            onBarcodeScanned={({ data }) => setScannedData(data)}
+            onBarcodeScanned={handleCameraBarcodeScan}
             barcodeScannerSettings={{
               barcodeTypes: ['qr', 'pdf417', 'ean13', 'ean8', 'code128', 'code39'],
             }}
@@ -278,6 +500,11 @@ export default function ScannerScreen() {
               <Text style={styles.scanInstructions}>
                 Richten Sie den Barcode im Rahmen aus
               </Text>
+              {scannerState.isProcessing && (
+                <Text style={styles.processingText}>
+                  Verarbeitung läuft...
+                </Text>
+              )}
             </View>
           </CameraView>
         </SafeAreaView>
@@ -443,6 +670,7 @@ export default function ScannerScreen() {
           </ScrollView>
         </SafeAreaView>
       </Modal>
+
       {/* Movement Modal */}
       <Modal visible={showMovementModal} animationType="slide" presentationStyle="pageSheet">
         <SafeAreaView style={styles.modalContainer}>
@@ -547,6 +775,11 @@ const styles = StyleSheet.create({
   title: {
     ...designSystem.componentStyles.textTitle,
   },
+  debugText: {
+    ...designSystem.componentStyles.textCaption,
+    color: designSystem.colors.warning[500],
+    marginTop: 4,
+  },
   content: {
     flex: 1,
     padding: designSystem.spacing.xl,
@@ -564,10 +797,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     ...designSystem.shadows.low,
   },
+  scanButtonDisabled: {
+    opacity: 0.6,
+    backgroundColor: designSystem.colors.neutral[200],
+  },
   scanButtonText: {
     ...designSystem.componentStyles.textSubtitle,
     fontWeight: '600',
     marginTop: designSystem.spacing.sm,
+  },
+  scanButtonTextDisabled: {
+    color: designSystem.colors.text.disabled,
   },
   manualButton: {
     ...designSystem.componentStyles.interactiveBase,
@@ -580,9 +820,16 @@ const styles = StyleSheet.create({
     gap: designSystem.spacing.sm,
     ...designSystem.shadows.low,
   },
+  manualButtonDisabled: {
+    opacity: 0.6,
+    backgroundColor: designSystem.colors.neutral[200],
+  },
   manualButtonText: {
     ...designSystem.componentStyles.textPrimary,
     fontWeight: '600',
+  },
+  manualButtonTextDisabled: {
+    color: designSystem.colors.text.disabled,
   },
   instructionsContainer: {
     ...designSystem.componentStyles.interactiveBase,
@@ -675,6 +922,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: designSystem.spacing.xl,
     paddingHorizontal: 40,
+  },
+  processingText: {
+    ...designSystem.componentStyles.textPrimary,
+    color: designSystem.colors.warning[500],
+    textAlign: 'center',
+    marginTop: designSystem.spacing.md,
+    fontWeight: '600',
   },
   modalContainer: {
     flex: 1,
