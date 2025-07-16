@@ -10,7 +10,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChefHat, CreditCard, Shield, LogIn, User, Clock, CheckCircle } from 'lucide-react-native';
+import { ChefHat, CreditCard, Shield, LogIn, User, Clock, CircleCheck as CheckCircle } from 'lucide-react-native';
 import { useAuth } from '@/hooks/useAuth';
 import { RESTAURANT_CONFIG } from '@/constants/restaurant';
 import { ROLE_DISPLAY_NAMES, ROLE_DESCRIPTIONS } from '@/constants/users';
