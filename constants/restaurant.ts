@@ -50,14 +50,3 @@ if (__DEV__ && !validateRestaurantConfig()) {
   console.error('❌ Restaurant-Konfiguration ist unvollständig!');
   throw new Error('Restaurant-Konfiguration fehlt erforderliche Felder');
 }
-
-// Schutz vor versehentlicher Modifikation
-if (__DEV__) {
-  // Test: Versuche Modifikation (sollte fehlschlagen)
-  try {
-    (RESTAURANT_CONFIG as any).name = 'Geändert';
-    console.error('❌ SICHERHEITSFEHLER: Restaurant-Konfiguration wurde modifiziert!');
-  } catch (error) {
-    console.log('✅ Restaurant-Konfiguration ist korrekt geschützt');
-  }
-}
