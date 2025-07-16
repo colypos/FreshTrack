@@ -3,11 +3,14 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Package, TriangleAlert as AlertTriangle, TrendingDown, Clock } from 'lucide-react-native';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useAuth } from '@/hooks/useAuth';
 import { useStorage } from '@/hooks/useStorage';
+import { RESTAURANT_CONFIG } from '@/constants/restaurant';
 import designSystem from '@/styles/designSystem';
 
 export default function DashboardScreen() {
   const { t } = useLanguage();
+  const { currentUser, isAuthenticated } = useAuth();
   const { products, movements, alerts } = useStorage();
 
   const stats = {
@@ -45,8 +48,13 @@ export default function DashboardScreen() {
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={styles.title}>FreshTrack</Text>
+          <Text style={styles.title}>{RESTAURANT_CONFIG.name}</Text>
           <Text style={styles.subtitle}>{t('dashboard')}</Text>
+          {isAuthenticated && currentUser && (
+            <Text style={styles.userInfo}>
+              Angemeldet als: {currentUser.displayName}
+            </Text>
+          )}
         </View>
 
         <View style={styles.statsGrid}>
@@ -142,6 +150,12 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     ...designSystem.componentStyles.textSubtitle,
+  },
+  userInfo: {
+    ...designSystem.componentStyles.textCaption,
+    marginTop: 4,
+    color: designSystem.colors.success[600],
+    fontWeight: '600',
   },
   statsGrid: {
     flexDirection: 'row',

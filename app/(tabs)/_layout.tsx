@@ -1,8 +1,11 @@
 import { Tabs } from 'expo-router';
 import { View } from 'react-native';
-import { Package, Menu, Camera, ScrollText, Settings } from 'lucide-react-native';
+import { Package, Menu, Camera, ScrollText, Settings, Users } from 'lucide-react-native';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function TabLayout() {
+  const { isAuthenticated } = useAuth();
+
   return (
     <Tabs
       screenOptions={{
@@ -58,6 +61,24 @@ export default function TabLayout() {
               justifyContent: 'center',
             }}>
               <Package size={24} color={focused ? '#FF9800' : '#000000'} />
+            </View>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="auth"
+        options={{
+          title: 'Benutzer',
+          tabBarIcon: ({ size, color, focused }) => (
+            <View style={{
+              backgroundColor: 'transparent',
+              padding: 8,
+              width: 40,
+              height: 40,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <Users size={24} color={focused ? '#FF9800' : '#000000'} />
             </View>
           ),
         }}
