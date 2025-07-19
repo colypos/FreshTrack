@@ -288,14 +288,12 @@ export default function SettingsScreen() {
           <SettingItem
             icon={<User size={22} color={designSystem.colors.text.secondary} />}
             title="Profil"
-            subtitle="Benutzerdaten verwalten"
-            onPress={() => console.log('Profile')}
+            subtitle="CurrentUser"
           />
           <SettingItem
             icon={<Building size={22} color={designSystem.colors.text.secondary} />}
             title="Restaurant"
-            subtitle="Betriebsdaten und Standorte"
-            onPress={() => console.log('Restaurant')}
+            subtitle="Coop Restaurant Aarberg"
           />
         </SettingSection>
 
