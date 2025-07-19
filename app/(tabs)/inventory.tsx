@@ -1012,6 +1012,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: 6,
+    width: '100%',
   },
   productCategory: {
     ...designSystem.componentStyles.textSecondary,
