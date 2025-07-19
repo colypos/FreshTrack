@@ -284,7 +284,7 @@ export default function SettingsScreen() {
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <SettingSection title="Benutzer">
+        <View style={styles.settingsContainer}>
           <SettingItem
             icon={<User size={22} color={designSystem.colors.text.secondary} />}
             title="Profil"
@@ -295,9 +295,6 @@ export default function SettingsScreen() {
             title="Restaurant"
             subtitle="Coop Restaurant Aarberg"
           />
-        </SettingSection>
-
-        <SettingSection title="Sprache & Region">
           <SettingItem
             icon={<Globe size={22} color={designSystem.colors.text.secondary} />}
             title={t('language')}
@@ -323,9 +320,6 @@ export default function SettingsScreen() {
               </View>
             }
           />
-        </SettingSection>
-
-        <SettingSection title="Daten & Backup">
           <SettingItem
             icon={<Download size={22} color={designSystem.colors.text.secondary} />}
             title="Daten exportieren"
@@ -359,9 +353,6 @@ export default function SettingsScreen() {
               />
             }
           />
-        </SettingSection>
-
-        <SettingSection title="Support">
           <SettingItem
             icon={<HelpCircle size={22} color={designSystem.colors.text.secondary} />}
             title="Hilfe & FAQ"
@@ -374,7 +365,7 @@ export default function SettingsScreen() {
             subtitle="Support kontaktieren"
             onPress={() => console.log('Contact')}
           />
-        </SettingSection>
+        </View>
 
         <View style={styles.footer}>
           <Text style={styles.versionText}>FreshTrack v0.2.0</Text>
@@ -401,6 +392,15 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  settingsContainer: {
+    backgroundColor: designSystem.colors.background.secondary,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+    marginHorizontal: designSystem.spacing.xl,
+    borderRadius: designSystem.interactive.border.radius,
+    marginBottom: designSystem.spacing.xxxl,
+    ...designSystem.shadows.low,
   },
   settingSection: {
     marginBottom: designSystem.spacing.xxxl,
