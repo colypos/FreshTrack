@@ -931,6 +931,11 @@ const styles = StyleSheet.create({
     ...designSystem.componentStyles.textPrimary,
     fontWeight: '600',
   },
+  filterIndicator: {
+    ...designSystem.componentStyles.textSecondary,
+    fontWeight: '500',
+    color: designSystem.colors.secondary[600],
+  },
   productList: {
     flex: 1,
   },
