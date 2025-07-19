@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Modal, Alert, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, Plus, Filter, Package, Calendar, MapPin, Menu, X, Grid2x2 as Grid, List } from 'lucide-react-native';
@@ -13,6 +13,7 @@ const { width: screenWidth } = Dimensions.get('window');
 export default function InventoryScreen() {
   const { t } = useLanguage();
   const { products, addProduct } = useStorage();
+  const router = useRouter();
   const params = useLocalSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -111,7 +112,6 @@ export default function InventoryScreen() {
   const showAllProducts = () => {
     setSelectedCategories([]);
     setSearchQuery('');
-    // Clear any navigation-based filters by resetting params
     if (params.filter) {
       router.replace('/inventory');
     }
@@ -358,7 +358,7 @@ export default function InventoryScreen() {
       {/* Header with Search */}
       <View style={styles.header}>
         <View style={styles.headerTop}>
-          <Text style={styles.title}>{t('inventory')}</Text>
+          <Text style={styles.title}>Inventar</Text>
           <View style={styles.headerActions}>
             <TouchableOpacity 
               style={styles.addButton}
@@ -403,25 +403,15 @@ export default function InventoryScreen() {
           <View style={styles.categoryFilterHeader}>
             <Text style={styles.categoryFilterTitle}>Kategorien</Text>
             <View style={styles.filterActions}>
-              {selectedCategories.length > 0 && (
-                <TouchableOpacity
-                  onPress={clearAllFilters}
-                  activeOpacity={designSystem.interactive.states.active.opacity}
-                  accessibilityLabel="Kategorie-Filter zurücksetzen"
-                  accessibilityRole="button"
-                >
-                  <Text style={styles.clearFiltersText}>Zurücksetzen</Text>
-                </TouchableOpacity>
-              )}
               {(selectedCategories.length > 0 || searchQuery.length > 0 || params.filter) && (
                 <TouchableOpacity
                   onPress={showAllProducts}
                   activeOpacity={designSystem.interactive.states.active.opacity}
                   accessibilityLabel="Alle Filter zurücksetzen und alle Produkte anzeigen"
                   accessibilityRole="button"
-                  style={styles.showAllButton}
+                  style={styles.viewAllButton}
                 >
-                  <Text style={styles.showAllText}>Alle anzeigen</Text>
+                  <Text style={styles.viewAllText}>View All</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -879,7 +869,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: designSystem.colors.error[500],
   },
-  showAllButton: {
+  viewAllButton: {
     backgroundColor: designSystem.colors.secondary[500],
     borderWidth: designSystem.interactive.border.width,
     borderColor: designSystem.interactive.border.color,
@@ -891,7 +881,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     ...designSystem.shadows.low,
   },
-  showAllText: {
+  viewAllText: {
     ...designSystem.componentStyles.textSecondary,
     fontWeight: '600',
     fontSize: 13,

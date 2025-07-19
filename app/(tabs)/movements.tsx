@@ -241,6 +241,9 @@ export default function MovementsScreen() {
             <Text style={styles.resultCount}>
               {filteredMovements.length} {filteredMovements.length === 1 ? 'Bewegung' : 'Bewegungen'}
               {filterType !== 'all' && ` (1 Filter aktiv)`}
+              {getFilterDisplayName() && (
+                <Text style={styles.filterIndicator}> • {getFilterDisplayName()}</Text>
+              )}
             </Text>
           </View>
 
