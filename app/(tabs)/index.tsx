@@ -16,10 +16,28 @@ export default function DashboardScreen() {
     totalProducts: products.length,
     lowStockCount: products.filter(p => p.currentStock <= p.minStock).length,
     expiringSoonCount: products.filter(p => {
-      const daysUntilExpiry = Math.ceil(
-        (new Date(p.expiryDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24)
-      );
-      return daysUntilExpiry <= 7 && daysUntilExpiry >= 0;
+      // Parse German date format DD.MM.YYYY
+      const parseGermanDate = (dateString) => {
+        if (!dateString) return new Date();
+        
+        const germanDateRegex = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/;
+        const match = dateString.match(germanDateRegex);
+        
+        if (match) {
+          const [, day, month, year] = match;
+          // Create date with month-1 because JavaScript months are 0-indexed
+          return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        }
+        
+        // Fallback to standard Date parsing
+        return new Date(dateString);
+      };
+      
+      const expiryDate = parseGermanDate(p.expiryDate);
+      const daysUntilExpiry = Math.ceil((expiryDate.getTime() - new Date().getTime()) / (1000 * 3600 * 24));
+      
+      // Include expired products (negative days) and products expiring within 7 days
+      return daysUntilExpiry <= 7;
     }).length,
     criticalAlerts: alerts.filter(a => a.severity === 'high' && !a.acknowledged).length,
   };
