@@ -36,6 +36,50 @@ export default function DashboardScreen() {
     criticalAlerts: alerts.filter(a => a.severity === 'high' && !a.acknowledged).length,
   };
 
+  // Calculate critical alerts: expired products OR low stock products
+  const expiredProducts = products.filter(p => {
+    const parseGermanDate = (dateString) => {
+      if (!dateString) return new Date();
+      const germanDateRegex = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/;
+      const match = dateString.match(germanDateRegex);
+      if (match) {
+        const [, day, month, year] = match;
+        return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      }
+      return new Date(dateString);
+    };
+    
+    const expiryDate = parseGermanDate(p.expiryDate);
+    const daysUntilExpiry = Math.ceil((expiryDate.getTime() - new Date().getTime()) / (1000 * 3600 * 24));
+    
+    return daysUntilExpiry < 0; // Only expired products
+  }).length;
+  
+  const lowStockProducts = products.filter(p => p.currentStock <= p.minStock).length;
+  
+  // Critical alerts = expired products + low stock products (but avoid double counting)
+  const criticalAlertsCount = products.filter(p => {
+    const parseGermanDate = (dateString) => {
+      if (!dateString) return new Date();
+      const germanDateRegex = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/;
+      const match = dateString.match(germanDateRegex);
+      if (match) {
+        const [, day, month, year] = match;
+        return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      }
+      return new Date(dateString);
+    };
+    
+    const expiryDate = parseGermanDate(p.expiryDate);
+    const daysUntilExpiry = Math.ceil((expiryDate.getTime() - new Date().getTime()) / (1000 * 3600 * 24));
+    
+    // Critical if expired OR low stock
+    return daysUntilExpiry < 0 || p.currentStock <= p.minStock;
+  }).length;
+
+  // Update stats object
+  stats.criticalAlerts = criticalAlertsCount;
+
   const recentMovements = movements.slice(0, 5);
 
   const StatCard = ({ icon, title, value, color, onPress }: any) => (
