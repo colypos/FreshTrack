@@ -247,19 +247,19 @@ Bei technischen Problemen:
 
 ## 🚀 Roadmap & Zukünftige Features
 
-### **Version 1.1** (Q2 2025)
+### **Version 1.0** (Q4 2025)
 - **Cloud-Synchronisation** zwischen Geräten
 - **Team-Funktionen** für mehrere Benutzer
 - **Erweiterte Berichte** und Analytics
 - **API-Integration** für Lieferanten
 
-### **Version 1.2** (Q3 2025)
+### **Version 1.1** (Q1 2026)
 - **Automatische Bestellvorschläge** basierend auf Verbrauch
 - **Rezeptverwaltung** mit Zutatenverfolgung
 - **Kostenverfolgung** und Gewinnmargen-Analyse
 - **Mobile Etikettendruck** für Produkte
 
-### **Version 2.0** (Q4 2025)
+### **Version 2.0** (Q3 2026)
 - **KI-gestützte Vorhersagen** für Bestellmengen
 - **Integration mit Kassensystemen**
 - **Erweiterte Compliance-Features** für Lebensmittelsicherheit
@@ -267,7 +267,7 @@ Bei technischen Problemen:
 
 ## 📄 Lizenz & Copyright
 
-**FreshTrack v1.0.0**
+**FreshTrack v0.6.0**
 © 2025 FreshTrack Development Team
 
 Entwickelt für nachhaltige Gastronomie und effiziente Lagerverwaltung.
