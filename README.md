@@ -43,7 +43,6 @@ FreshTrack ist eine moderne, benutzerfreundliche Mobile-App für die professione
 - **Datenexport** als JSON-Datei mit allen Informationen
 - **Datenimport** für Migration und Backup-Wiederherstellung
 - **Benutzerprofile** und Restaurantinformationen
-- **Benachrichtigungseinstellungen** für Warnungen
 
 ## 🛠️ Technische Spezifikationen
 
@@ -56,7 +55,7 @@ FreshTrack ist eine moderne, benutzerfreundliche Mobile-App für die professione
 ### **Design System**
 - **Material Design** Prinzipien
 - **WCAG 2.1 AA** Barrierefreiheit
-- **Responsive Design** für alle Bildschirmgrößen
+- **Responsive Design** für alle Bildschirmgrössen
 - **8px Grid System** für konsistente Abstände
 - **Professionelle Farbpalette** mit hohem Kontrast
 
@@ -191,7 +190,7 @@ Sprache ändern: Einstellungen → Sprache → Gewünschte Sprache auswählen
 ### **Barrierefreiheit**
 - **WCAG 2.1 AA** konform
 - **Hohe Kontraste** für bessere Lesbarkeit
-- **Große Touch-Targets** (mindestens 44x44 Punkte)
+- **Grosse Touch-Targets** (mindestens 44x44 Punkte)
 - **Screen Reader** Unterstützung
 - **Tastaturnavigation** vollständig unterstützt
 
@@ -199,7 +198,7 @@ Sprache ändern: Einstellungen → Sprache → Gewünschte Sprache auswählen
 - **Mobile First** Ansatz
 - **Tablet-optimiert** mit Zwei-Spalten-Layout
 - **Desktop-Unterstützung** mit Drei-Spalten-Layout
-- **Automatische Anpassung** an Bildschirmgröße
+- **Automatische Anpassung** an Bildschirmgrösse
 
 ### **Performance**
 - **Schnelle Ladezeiten** durch optimierte Komponenten
