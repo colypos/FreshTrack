@@ -325,11 +325,9 @@ export default function InventoryScreen() {
         </View>
         
         <View style={styles.productListContent}>
-          <View style={styles.productListHeader}>
-            <Text style={styles.productName} numberOfLines={2} ellipsizeMode="tail">{product.name}</Text>
-            <View style={[styles.statusBadge, { backgroundColor: stockStatus.color }]}>
-              <Text style={styles.statusText}>{stockStatus.label}</Text>
-            </View>
+          <Text style={styles.productName} numberOfLines={2} ellipsizeMode="tail">{product.name}</Text>
+          <View style={[styles.statusBadge, { backgroundColor: stockStatus.color }]}>
+            <Text style={styles.statusText}>{stockStatus.label}</Text>
           </View>
           
           <Text style={styles.productCategory} numberOfLines={1} ellipsizeMode="tail">{product.category}</Text>
@@ -996,34 +994,22 @@ const styles = StyleSheet.create({
     borderWidth: designSystem.interactive.border.width,
     borderColor: designSystem.interactive.border.color,
     alignSelf: 'flex-start',
-    maxWidth: '40%',
-    minWidth: 'auto',
+    marginBottom: 6,
   },
   statusText: {
     ...designSystem.componentStyles.textCaption,
     fontSize: 10,
     fontWeight: 'bold',
-    textAlign: 'center',
   },
   productName: {
     ...designSystem.componentStyles.textPrimary,
     fontWeight: 'bold',
-    flex: 1,
     marginBottom: 4,
-  },
-  productListHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 6,
-    width: '100%',
-    paddingRight: 0,
-    overflow: 'hidden',
   },
   productCategory: {
     ...designSystem.componentStyles.textSecondary,
     fontSize: 13,
-    marginBottom: 10,
+    marginBottom: 6,
     fontWeight: '500',
   },
   productListDetails: {
