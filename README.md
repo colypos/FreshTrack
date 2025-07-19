@@ -197,7 +197,6 @@ Sprache ändern: Einstellungen → Sprache → Gewünschte Sprache auswählen
 ### **Responsive Design**
 - **Mobile First** Ansatz
 - **Tablet-optimiert** mit Zwei-Spalten-Layout
-- **Desktop-Unterstützung** mit Drei-Spalten-Layout
 - **Automatische Anpassung** an Bildschirmgrösse
 
 ### **Performance**
@@ -242,7 +241,7 @@ Sprache ändern: Einstellungen → Sprache → Gewünschte Sprache auswählen
 ### **Support kontaktieren**
 
 Bei technischen Problemen:
-- **E-Mail**: support@freshtrack.app
+- **E-Mail**: supportfreshtrack@isobel.ch
 - **Dokumentation**: [Link zur Online-Dokumentation]
 - **FAQ**: [Link zu häufigen Fragen]
 
