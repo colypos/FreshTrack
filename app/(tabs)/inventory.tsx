@@ -995,11 +995,15 @@ const styles = StyleSheet.create({
     borderRadius: designSystem.interactive.border.radius,
     borderWidth: designSystem.interactive.border.width,
     borderColor: designSystem.interactive.border.color,
+    alignSelf: 'flex-start',
+    maxWidth: '40%',
+    minWidth: 'auto',
   },
   statusText: {
     ...designSystem.componentStyles.textCaption,
     fontSize: 10,
     fontWeight: 'bold',
+    textAlign: 'center',
   },
   productName: {
     ...designSystem.componentStyles.textPrimary,
@@ -1013,6 +1017,8 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: 6,
     width: '100%',
+    paddingRight: 0,
+    overflow: 'hidden',
   },
   productCategory: {
     ...designSystem.componentStyles.textSecondary,
