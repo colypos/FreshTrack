@@ -9,15 +9,8 @@ import * as DocumentPicker from 'expo-document-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import designSystem from '@/styles/designSystem';
 
-const languages = [
-  { code: 'de', name: 'Deutsch' },
-  { code: 'fr', name: 'Français' },
-  { code: 'it', name: 'Italiano' },
-  { code: 'en', name: 'English' },
-];
-
 export default function SettingsScreen() {
-  const { t, currentLanguage, changeLanguage } = useLanguage();
+  const { t, currentLanguage, changeLanguage, availableLanguages, languageMetadata } = useLanguage();
   const { products, movements, alerts, addProduct } = useStorage();
   const [isExporting, setIsExporting] = useState(false);
 
@@ -318,32 +311,38 @@ export default function SettingsScreen() {
           <SettingItem
             icon={<Globe size={22} color={designSystem.colors.text.secondary} />}
             title={t('language')}
-            subtitle={languages.find(l => l.code === currentLanguage)?.name}
+            subtitle={languageMetadata[currentLanguage as keyof typeof languageMetadata]?.name}
             rightElement={
               <View style={styles.languageSelector}>
-                {languages.map(lang => (
+                {availableLanguages.map(langCode => {
+                  const lang = languageMetadata[langCode as keyof typeof languageMetadata];
+                  return (
                   <TouchableOpacity
-                    key={lang.code}
+                    key={langCode}
                     style={[
                       styles.languageButton,
-                      currentLanguage === lang.code && styles.languageButtonActive
+                      currentLanguage === langCode && styles.languageButtonActive
                     ]}
-                    onPress={() => changeLanguage(lang.code)}
+                    onPress={() => changeLanguage(langCode)}
                     activeOpacity={designSystem.interactive.states.active.opacity}
                     accessibilityRole="button"
                     accessibilityLabel={`Sprache ändern zu ${lang.name}`}
-                    accessibilityState={{ selected: currentLanguage === lang.code }}
+                    accessibilityState={{ selected: currentLanguage === langCode }}
                   >
-                    <Text style={styles.languageText}>{lang.name}</Text>
+                    <View style={styles.languageContent}>
+                      <Text style={styles.languageFlag}>{lang.flag}</Text>
+                      <Text style={styles.languageText}>{lang.name}</Text>
+                    </View>
                   </TouchableOpacity>
-                ))}
+                  );
+                })}
               </View>
             }
           />
           <SettingItem
             icon={<Download size={22} color={designSystem.colors.text.secondary} />}
-            title="Daten exportieren"
-            subtitle={isExporting ? "Export läuft..." : "Alle Daten als JSON herunterladen"}
+            title={t('exportData')}
+            subtitle={isExporting ? t('loading') : "Alle Daten als JSON herunterladen"}
             onPress={handleExportData}
             rightElement={isExporting ? (
               <View style={styles.loadingIndicator}>
@@ -353,8 +352,8 @@ export default function SettingsScreen() {
           />
           <SettingItem
             icon={<Upload size={22} color={designSystem.colors.text.secondary} />}
-            title="Daten importieren"
-            subtitle="Produktdaten aus JSON-Datei importieren"
+            title={t('importData')}
+            subtitle="JSON-Datei mit Produktdaten auswählen"
             onPress={handleImportData}
           />
           <SettingItem
@@ -375,14 +374,14 @@ export default function SettingsScreen() {
           />
           <SettingItem
             icon={<HelpCircle size={22} color={designSystem.colors.text.secondary} />}
-            title="Hilfe & FAQ"
-            subtitle="Häufig gestellte Fragen"
+            title={t('help')}
+            subtitle="Häufig gestellte Fragen und Anleitungen"
             onPress={() => console.log('Help')}
           />
           <SettingItem
             icon={<HelpCircle size={22} color={designSystem.colors.text.secondary} />}
-            title="Kontakt"
-            subtitle="Support kontaktieren"
+            title={t('support')}
+            subtitle="Technischen Support kontaktieren"
             onPress={() => console.log('Contact')}
           />
         </View>
@@ -472,12 +471,12 @@ const styles = StyleSheet.create({
   },
   languageSelector: {
     flexDirection: 'column',
-    gap: designSystem.spacing.md,
-    minWidth: 120,
+    gap: designSystem.spacing.sm,
+    minWidth: designSystem.getResponsiveValue(140, 160, 180),
   },
   languageButton: {
     width: '100%',
-    height: 44,
+    height: designSystem.accessibility.minTouchTarget.minHeight,
     borderRadius: designSystem.interactive.border.radius,
     backgroundColor: designSystem.colors.background.primary,
     justifyContent: 'center',
@@ -493,11 +492,20 @@ const styles = StyleSheet.create({
     borderColor: designSystem.interactive.border.color,
     ...designSystem.shadows.medium,
   },
+  languageContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: designSystem.spacing.sm,
+  },
+  languageFlag: {
+    fontSize: designSystem.getResponsiveValue(16, 18, 20),
+  },
   languageText: {
     ...designSystem.componentStyles.textSecondary,
     fontWeight: '600',
     textAlign: 'center',
-    lineHeight: 16,
+    lineHeight: designSystem.getResponsiveValue(16, 18, 20),
+    fontSize: designSystem.getResponsiveValue(14, 15, 16),
   },
   footer: {
     padding: designSystem.spacing.xl,

@@ -3,23 +3,54 @@ import { StyleSheet, Dimensions } from 'react-native';
 
 const { width: screenWidth } = Dimensions.get('window');
 
-// Breakpoints
+// Enhanced Responsive Breakpoints for Multi-Platform Support
 export const breakpoints = {
+  mobile: 480,    // iPhone SE, small phones
+  mobileLarge: 568, // iPhone 8, standard phones
+  tablet: 768,    // iPad Mini (primary focus)
+  tabletLarge: 1024, // iPad Pro
+  desktop: 1200,  // Desktop browsers
+  desktopLarge: 1440, // Large desktop screens
+};
+
+// Legacy breakpoints (maintained for compatibility)
+export const legacyBreakpoints = {
   mobile: 768,
   tablet: 1024,
   desktop: 1200,
 };
 
-// Responsive utilities
+// Enhanced Responsive Utilities
 export const getResponsiveColumns = () => {
-  if (screenWidth < breakpoints.mobile) return 1; // Mobile: Full width
-  if (screenWidth < breakpoints.tablet) return 2; // Tablet: 2 columns
-  return 3; // Desktop: 3 columns
+  if (screenWidth < breakpoints.mobile) return 1;        // Small phones: 1 column
+  if (screenWidth < breakpoints.mobileLarge) return 1;   // Standard phones: 1 column
+  if (screenWidth < breakpoints.tablet) return 2;       // iPad Mini: 2 columns (primary focus)
+  if (screenWidth < breakpoints.tabletLarge) return 2;   // iPad Pro: 2 columns
+  if (screenWidth < breakpoints.desktop) return 3;      // Small desktop: 3 columns
+  return 4; // Large desktop: 4 columns
 };
 
-export const isDesktop = screenWidth > breakpoints.tablet;
-export const isTablet = screenWidth >= breakpoints.mobile && screenWidth <= breakpoints.tablet;
-export const isMobile = screenWidth < breakpoints.mobile;
+// Device Detection Utilities
+export const isSmallMobile = screenWidth < breakpoints.mobile;
+export const isMobile = screenWidth < breakpoints.mobileLarge;
+export const isTabletMini = screenWidth >= breakpoints.tablet && screenWidth < breakpoints.tabletLarge;
+export const isTablet = screenWidth >= breakpoints.tablet && screenWidth < breakpoints.desktop;
+export const isDesktop = screenWidth >= breakpoints.desktop;
+export const isLargeDesktop = screenWidth >= breakpoints.desktopLarge;
+
+// Platform-Specific Responsive Values
+export const getResponsiveValue = (mobile: any, tablet: any, desktop: any) => {
+  if (isMobile) return mobile;
+  if (isTablet) return tablet;
+  return desktop;
+};
+
+// Touch Target Sizes (iOS Guidelines Compliant)
+export const touchTargets = {
+  minimum: 44,    // iOS minimum touch target
+  comfortable: 48, // Comfortable touch target
+  large: 56,      // Large touch target for primary actions
+};
 
 // Color System - WCAG 2.1 AA Compliant
 export const colors = {
@@ -116,117 +147,140 @@ export const colors = {
 // Typography System
 export const typography = {
   fontFamily: {
-    primary: '-apple-system, BlinkMacSystemFont, sans-serif',
+    primary: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
     fallback: 'system-ui, sans-serif',
+    monospace: '"SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace',
   },
   
-  // Font Sizes and Line Heights
+  // Responsive Font Sizes and Line Heights
   sizes: {
-    // Primary text: 16px/1.4
+    // Base sizes (mobile-first)
     primary: {
-      fontSize: 16,
-      lineHeight: 22.4, // 16 * 1.4
+      fontSize: getResponsiveValue(16, 17, 18),
+      lineHeight: getResponsiveValue(22.4, 23.8, 25.2),
       fontWeight: '400',
     },
     
-    // Secondary text: 14px/1.4
     secondary: {
-      fontSize: 14,
-      lineHeight: 19.6, // 14 * 1.4
+      fontSize: getResponsiveValue(14, 15, 16),
+      lineHeight: getResponsiveValue(19.6, 21, 22.4),
       fontWeight: '300',
     },
     
-    // Header text: 20px/1.4
     header: {
-      fontSize: 20,
-      lineHeight: 28, // 20 * 1.4
+      fontSize: getResponsiveValue(20, 22, 24),
+      lineHeight: getResponsiveValue(28, 30.8, 33.6),
       fontWeight: 'bold',
     },
     
-    // Additional sizes
     title: {
-      fontSize: 28,
-      lineHeight: 34,
+      fontSize: getResponsiveValue(28, 32, 36),
+      lineHeight: getResponsiveValue(34, 38.4, 43.2),
       fontWeight: 'bold',
     },
     
     subtitle: {
-      fontSize: 18,
-      lineHeight: 25.2, // 18 * 1.4
+      fontSize: getResponsiveValue(18, 20, 22),
+      lineHeight: getResponsiveValue(25.2, 28, 30.8),
       fontWeight: '500',
     },
     
     caption: {
-      fontSize: 12,
-      lineHeight: 16.8, // 12 * 1.4
+      fontSize: getResponsiveValue(12, 13, 14),
+      lineHeight: getResponsiveValue(16.8, 18.2, 19.6),
       fontWeight: '400',
+    },
+    
+    // New responsive sizes
+    button: {
+      fontSize: getResponsiveValue(16, 17, 18),
+      lineHeight: getResponsiveValue(22.4, 23.8, 25.2),
+      fontWeight: '600',
+    },
+    
+    navigation: {
+      fontSize: getResponsiveValue(14, 15, 16),
+      lineHeight: getResponsiveValue(19.6, 21, 22.4),
+      fontWeight: '500',
     },
   },
 };
 
-// Spacing System (8px grid)
+// Enhanced Spacing System (8px grid with responsive scaling)
 export const spacing = {
-  xs: 4,
-  sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 20,
-  xxl: 24,
-  xxxl: 32,
+  xs: getResponsiveValue(4, 6, 8),
+  sm: getResponsiveValue(8, 10, 12),
+  md: getResponsiveValue(12, 14, 16),
+  lg: getResponsiveValue(16, 18, 20),
+  xl: getResponsiveValue(20, 24, 28),
+  xxl: getResponsiveValue(24, 28, 32),
+  xxxl: getResponsiveValue(32, 40, 48),
   
   // Specific spacing
-  listGap: 8,
-  containerPadding: 16,
-  sectionSpacing: 24,
-  filterGap: 12,
+  listGap: getResponsiveValue(8, 10, 12),
+  containerPadding: getResponsiveValue(16, 20, 24),
+  sectionSpacing: getResponsiveValue(24, 28, 32),
+  filterGap: getResponsiveValue(12, 14, 16),
+  
+  // Platform-specific spacing
+  tabBarHeight: getResponsiveValue(70, 80, 90),
+  headerHeight: getResponsiveValue(60, 70, 80),
+  cardPadding: getResponsiveValue(16, 20, 24),
 };
 
 // Interactive Elements Specifications
 export const interactive = {
   // Border specifications
   border: {
-    width: 2,
+    width: getResponsiveValue(2, 2, 3),
     color: colors.border.primary,
-    radius: 3,
+    radius: getResponsiveValue(3, 4, 6),
   },
   
   // Padding specifications
   padding: {
-    horizontal: 12,
-    vertical: 8,
+    horizontal: getResponsiveValue(12, 16, 20),
+    vertical: getResponsiveValue(8, 10, 12),
   },
   
   // Filter button specifications
   filterButton: {
     padding: {
-      horizontal: 16,
-      vertical: 8,
+      horizontal: getResponsiveValue(16, 18, 20),
+      vertical: getResponsiveValue(8, 10, 12),
     },
     border: {
       default: 2,
       active: 3,
     },
-    gap: Math.round(8 * 0.3), // 2px - rounded to prevent react-native-web issues
+    gap: getResponsiveValue(2, 3, 4),
   },
   
   // Animation specifications
   animation: {
     duration: 200,
     easing: 'ease-in-out',
-    hoverScale: 1.02,
+    hoverScale: getResponsiveValue(1.01, 1.02, 1.03),
   },
   
   // State specifications
   states: {
     hover: {
-      opacity: 0.8,
+      opacity: getResponsiveValue(0.9, 0.85, 0.8),
     },
     active: {
-      opacity: 0.9,
+      opacity: getResponsiveValue(0.95, 0.9, 0.85),
     },
     disabled: {
       opacity: 0.5,
     },
+  },
+  
+  // Touch target specifications (iOS Guidelines)
+  touchTarget: {
+    minimum: touchTargets.minimum,
+    comfortable: touchTargets.comfortable,
+    large: touchTargets.large,
   },
 };
 
@@ -405,23 +459,58 @@ export const getResponsiveStyle = (mobileStyle: any, tabletStyle?: any, desktopS
 
 // Accessibility Helpers
 export const accessibility = {
-  // Minimum touch target size (44x44 points)
+  // iOS Guidelines Compliant Touch Targets
   minTouchTarget: {
-    minWidth: 44,
-    minHeight: 44,
+    minWidth: touchTargets.minimum,
+    minHeight: touchTargets.minimum,
+  },
+  
+  comfortableTouchTarget: {
+    minWidth: touchTargets.comfortable,
+    minHeight: touchTargets.comfortable,
+  },
+  
+  largeTouchTarget: {
+    minWidth: touchTargets.large,
+    minHeight: touchTargets.large,
   },
   
   // Focus indicators
   focusIndicator: {
-    borderWidth: 2,
+    borderWidth: getResponsiveValue(2, 3, 4),
     borderColor: colors.border.focus,
-    borderRadius: interactive.border.radius,
+    borderRadius: getResponsiveValue(3, 4, 6),
   },
   
   // High contrast mode support
   highContrast: {
-    borderWidth: 2,
+    borderWidth: getResponsiveValue(2, 3, 4),
     borderColor: colors.border.primary,
+  },
+  
+  // Screen reader support
+  screenReader: {
+    fontSize: {
+      minimum: 16, // Never go below 16px for accessibility
+      comfortable: 18,
+      large: 20,
+    },
+  },
+};
+
+// Platform-Specific Styles
+export const platformStyles = {
+  ios: {
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  android: {
+    elevation: 4,
+  },
+  web: {
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+    cursor: 'pointer',
   },
 };
 
@@ -434,10 +523,17 @@ export default {
   shadows,
   componentStyles,
   breakpoints,
+  legacyBreakpoints,
   accessibility,
+  touchTargets,
+  platformStyles,
   getResponsiveColumns,
   getResponsiveStyle,
-  isDesktop,
-  isTablet,
+  getResponsiveValue,
+  isSmallMobile,
   isMobile,
+  isTabletMini,
+  isTablet,
+  isDesktop,
+  isLargeDesktop,
 };
