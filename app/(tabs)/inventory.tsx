@@ -390,9 +390,8 @@ export default function InventoryScreen() {
                 onPress={() => setSearchQuery('')}
                 activeOpacity={designSystem.interactive.states.active.opacity}
                 accessibilityLabel="Suche löschen"
-                accessibilityRole="button"
               >
-                <X size={20} color={designSystem.colors.text.secondary} />
+                <Text style={styles.clearFiltersText}>View All</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -868,23 +867,6 @@ const styles = StyleSheet.create({
     ...designSystem.componentStyles.textSecondary,
     fontWeight: '600',
     color: designSystem.colors.error[500],
-  },
-  viewAllButton: {
-    backgroundColor: designSystem.colors.secondary[500],
-    borderWidth: designSystem.interactive.border.width,
-    borderColor: designSystem.interactive.border.color,
-    paddingHorizontal: designSystem.spacing.md,
-    paddingVertical: designSystem.spacing.xs,
-    borderRadius: designSystem.interactive.border.radius,
-    minHeight: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...designSystem.shadows.low,
-  },
-  viewAllText: {
-    ...designSystem.componentStyles.textSecondary,
-    fontWeight: '600',
-    fontSize: 13,
   },
   categoryFilterButtons: {
     flexDirection: 'row',
