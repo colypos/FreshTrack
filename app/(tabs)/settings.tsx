@@ -330,7 +330,6 @@ export default function SettingsScreen() {
                     accessibilityState={{ selected: currentLanguage === langCode }}
                   >
                     <View style={styles.languageContent}>
-                      <Text style={styles.languageFlag}>{lang.flag}</Text>
                       <Text style={styles.languageText}>{lang.name}</Text>
                     </View>
                   </TouchableOpacity>
@@ -495,10 +494,7 @@ const styles = StyleSheet.create({
   languageContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: designSystem.spacing.sm,
-  },
-  languageFlag: {
-    fontSize: designSystem.getResponsiveValue(16, 18, 20),
+    justifyContent: 'center',
   },
   languageText: {
     ...designSystem.componentStyles.textSecondary,
