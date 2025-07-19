@@ -326,26 +326,26 @@ export default function InventoryScreen() {
         
         <View style={styles.productListContent}>
           <View style={styles.productListHeader}>
-            <Text style={styles.productName}>{product.name}</Text>
+            <Text style={styles.productName} numberOfLines={2} ellipsizeMode="tail">{product.name}</Text>
             <View style={[styles.statusBadge, { backgroundColor: stockStatus.color }]}>
               <Text style={styles.statusText}>{stockStatus.label}</Text>
             </View>
           </View>
           
-          <Text style={styles.productCategory}>{product.category}</Text>
+          <Text style={styles.productCategory} numberOfLines={1} ellipsizeMode="tail">{product.category}</Text>
           
           <View style={styles.productListDetails}>
-            <View style={styles.detailItem}>
+            <View style={[styles.detailItem, styles.detailItemStock]}>
               <Text style={styles.detailLabel}>Bestand:</Text>
-              <Text style={styles.detailValue}>{product.currentStock} {product.unit}</Text>
+              <Text style={styles.detailValue} numberOfLines={1}>{product.currentStock} {product.unit}</Text>
             </View>
-            <View style={styles.detailItem}>
+            <View style={[styles.detailItem, styles.detailItemDate]}>
               <Calendar size={14} color="#6B7280" />
-              <Text style={styles.detailValue}>{formatGermanDate(product.expiryDate)}</Text>
+              <Text style={styles.detailValue} numberOfLines={1}>{formatGermanDate(product.expiryDate)}</Text>
             </View>
-            <View style={styles.detailItem}>
+            <View style={[styles.detailItem, styles.detailItemLocation]}>
               <MapPin size={14} color="#6B7280" />
-              <Text style={styles.detailValue}>{product.location}</Text>
+              <Text style={styles.detailValue} numberOfLines={1} ellipsizeMode="tail">{product.location}</Text>
             </View>
           </View>
         </View>
@@ -1020,24 +1020,38 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   productListDetails: {
-    flexDirection: 'row',
-    gap: designSystem.spacing.lg,
+    flexDirection: 'column',
+    gap: designSystem.spacing.sm,
     marginTop: 6,
   },
   detailItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: designSystem.spacing.xs,
+    minHeight: 20,
+    flex: 1,
+  },
+  detailItemStock: {
+    minWidth: 120,
+  },
+  detailItemDate: {
+    minWidth: 140,
+  },
+  detailItemLocation: {
+    flex: 1,
+    minWidth: 0,
   },
   detailLabel: {
     ...designSystem.componentStyles.textCaption,
     fontSize: 11,
     fontWeight: '600',
+    minWidth: 50,
   },
   detailValue: {
     ...designSystem.componentStyles.textCaption,
     fontSize: 11,
     flex: 1,
+    minWidth: 0,
   },
   
   // Empty State

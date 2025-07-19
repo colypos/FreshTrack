@@ -243,7 +243,7 @@ export default function MovementsScreen() {
       <View style={styles.contentContainer}>
         <View style={styles.movementArea}>
           <View style={styles.movementHeader}>
-            <Text style={styles.resultCount}>
+            <Text style={styles.productName} numberOfLines={2} ellipsizeMode="tail">{movement.productName}</Text>
               {filteredMovements.length} {filteredMovements.length === 1 ? 'Bewegung' : 'Bewegungen'}
               {filterType !== 'all' && ` (1 Filter aktiv)`}
               {getFilterDisplayName() && (
@@ -261,25 +261,25 @@ export default function MovementsScreen() {
               {filteredMovements.map(movement => (
                 <MovementCard key={movement.id} movement={movement} />
               ))}
-            </View>
+          <Text style={styles.movementCategory} numberOfLines={1} ellipsizeMode="tail">{movement.reason}</Text>
             
             {filteredMovements.length === 0 && (
-              <View style={styles.emptyState}>
+            <View style={[styles.detailItem, styles.detailItemQuantity]}>
                 <Calendar size={64} color={designSystem.colors.neutral[300]} />
                 <Text style={styles.emptyTitle}>Keine Bewegungen gefunden</Text>
                 <Text style={styles.emptySubtitle}>
                   {filterType !== 'all' ? 
                     `Keine ${getMovementLabel(filterType)}-Bewegungen vorhanden` : 
                     'Verwenden Sie den Scanner, um Lagerbewegungen zu erfassen'
-                  }
+            <View style={[styles.detailItem, styles.detailItemDate]}>
                 </Text>
-                <TouchableOpacity 
+              <Text style={styles.detailValue} numberOfLines={1}>
                   style={styles.emptyAction}
                   onPress={handleCreateMovement}
                   activeOpacity={designSystem.interactive.states.active.opacity}
-                  accessibilityLabel="Neue Bewegung hinzufügen"
+            <View style={[styles.detailItem, styles.detailItemUser]}>
                   accessibilityRole="button"
-                >
+              <Text style={styles.detailValue} numberOfLines={1} ellipsizeMode="tail">{movement.user}</Text>
                   <Plus size={20} color={designSystem.colors.text.primary} />
                   <Text style={styles.emptyActionText}>Bewegung hinzufügen</Text>
                 </TouchableOpacity>
@@ -686,24 +686,38 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   movementDetails: {
-    flexDirection: 'row',
-    gap: designSystem.spacing.lg,
+    flexDirection: 'column',
+    gap: designSystem.spacing.sm,
     marginTop: 6,
   },
   detailItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: designSystem.spacing.xs,
+    minHeight: 20,
+    flex: 1,
+  },
+  detailItemQuantity: {
+    minWidth: 100,
+  },
+  detailItemDate: {
+    minWidth: 140,
+  },
+  detailItemUser: {
+    flex: 1,
+    minWidth: 0,
   },
   detailLabel: {
     ...designSystem.componentStyles.textCaption,
     fontSize: 11,
     fontWeight: '600',
+    minWidth: 45,
   },
   detailValue: {
     ...designSystem.componentStyles.textCaption,
     fontSize: 11,
     flex: 1,
+    minWidth: 0,
   },
   movementNotes: {
     ...designSystem.componentStyles.textCaption,
