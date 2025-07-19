@@ -417,8 +417,7 @@ export default function HelpModal({ visible, onClose }: HelpModalProps) {
             </Text>
             <Text style={styles.contactInfo}>
               📧 supportfreshtrack@isobel.ch{'\n'}
-              📱 +41 79 601 77 33{'\n'}
-              🌐 www.freshtrack.app/support
+              📱 +41 79 601 77 33
             </Text>
             <Text style={styles.versionInfo}>
               FreshTrack Version 0.3.7.3{'\n'}
