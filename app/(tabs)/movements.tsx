@@ -65,6 +65,11 @@ export default function MovementsScreen() {
     }
   };
 
+  const getFilterDisplayName = () => {
+    if (filterType === 'all') return '';
+    return getMovementLabel(filterType);
+  };
+
   const clearAllFilters = () => {
     setFilterType('all');
   };
