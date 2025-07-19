@@ -416,12 +416,12 @@ export default function HelpModal({ visible, onClose }: HelpModalProps) {
               Kontaktieren Sie unser Support-Team unter:
             </Text>
             <Text style={styles.contactInfo}>
-              📧 support@freshtrack.app{'\n'}
-              📱 +41 31 123 45 67{'\n'}
+              📧 supportfreshtrack@isobel.ch{'\n'}
+              📱 +41 79 601 77 33{'\n'}
               🌐 www.freshtrack.app/support
             </Text>
             <Text style={styles.versionInfo}>
-              FreshTrack Version 0.6.0{'\n'}
+              FreshTrack Version 0.3.7.3{'\n'}
               © 2025 FreshTrack Development Team
             </Text>
           </View>
