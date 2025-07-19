@@ -185,14 +185,20 @@ export default function SettingsScreen() {
     try {
       // Import products if present
       if (data.products && Array.isArray(data.products)) {
+        // Get current products first
+        const currentProducts = [...products];
+        let importedCount = 0;
+        
         for (const productData of data.products) {
           // Check if product already exists
-          const existingProduct = products.find(p => 
+          const existingProduct = currentProducts.find(p => 
             p.name === productData.name && p.category === productData.category
           );
           
           if (!existingProduct) {
-            await addProduct({
+            // Create product object without calling addProduct
+            const newProduct = {
+              id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
               name: productData.name,
               category: productData.category || '',
               currentStock: productData.currentStock || 0,
@@ -202,8 +208,24 @@ export default function SettingsScreen() {
               location: productData.location || '',
               supplier: productData.supplier || '',
               barcode: productData.barcode || '',
-            });
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            };
+            
+            currentProducts.push(newProduct);
+            importedCount++;
           }
+        }
+        
+        // Save all products at once using the storage hook's saveProducts method
+        if (importedCount > 0) {
+          // We need to access the saveProducts method from useStorage
+          // Since we can't access it directly, we'll use AsyncStorage directly
+          await AsyncStorage.setItem('products', JSON.stringify(currentProducts));
+          
+          // Trigger data reload by calling a dummy operation
+          // This will cause useStorage to reload the data
+          window.location.reload();
         }
       }
       
