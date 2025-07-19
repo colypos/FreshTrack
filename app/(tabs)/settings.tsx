@@ -379,12 +379,6 @@ export default function SettingsScreen() {
             subtitle="Häufig gestellte Fragen und Anleitungen"
             onPress={() => setShowHelpModal(true)}
           />
-          <SettingItem
-            icon={<HelpCircle size={22} color={designSystem.colors.text.secondary} />}
-            title={t('support')}
-            subtitle="Technischen Support kontaktieren"
-            onPress={() => console.log('Contact')}
-          />
         </View>
 
         <View style={styles.footer}>
