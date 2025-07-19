@@ -327,14 +327,12 @@ export default function InventoryScreen() {
         <View style={styles.productListContent}>
           <View style={styles.productListHeader}>
             <Text style={styles.productName} numberOfLines={2} ellipsizeMode="tail">{product.name}</Text>
-          </View>
-          
-          <View style={styles.productCategoryRow}>
-            <Text style={styles.productCategory} numberOfLines={1} ellipsizeMode="tail">{product.category}</Text>
             <View style={[styles.statusBadge, { backgroundColor: stockStatus.color }]}>
               <Text style={styles.statusText}>{stockStatus.label}</Text>
             </View>
           </View>
+          
+          <Text style={styles.productCategory} numberOfLines={1} ellipsizeMode="tail">{product.category}</Text>
           
           <View style={styles.productListDetails}>
             <View style={[styles.detailItem, styles.detailItemStock]}>
@@ -1010,23 +1008,16 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   productListHeader: {
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    marginBottom: 6,
-  },
-  productCategoryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
+    alignItems: 'flex-start',
+    marginBottom: 6,
   },
   productCategory: {
     ...designSystem.componentStyles.textSecondary,
     fontSize: 13,
     marginBottom: 10,
     fontWeight: '500',
-    flex: 1,
-    marginRight: designSystem.spacing.sm,
   },
   productListDetails: {
     flexDirection: 'column',
