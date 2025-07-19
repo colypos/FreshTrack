@@ -682,24 +682,38 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   movementDetails: {
-    flexDirection: 'row',
-    gap: designSystem.spacing.lg,
+    flexDirection: 'column',
+    gap: designSystem.spacing.sm,
     marginTop: 6,
   },
   detailItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: designSystem.spacing.xs,
+    minHeight: 20,
+    flex: 1,
+  },
+  detailItemQuantity: {
+    minWidth: 100,
+  },
+  detailItemDate: {
+    minWidth: 140,
+  },
+  detailItemUser: {
+    flex: 1,
+    minWidth: 0,
   },
   detailLabel: {
     ...designSystem.componentStyles.textCaption,
     fontSize: 11,
     fontWeight: '600',
+    minWidth: 45,
   },
   detailValue: {
     ...designSystem.componentStyles.textCaption,
     fontSize: 11,
     flex: 1,
+    minWidth: 0,
   },
   movementNotes: {
     ...designSystem.componentStyles.textCaption,
