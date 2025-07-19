@@ -3,9 +3,10 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert } f
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Globe, Bell, Download, Upload, Shield, CircleHelp as HelpCircle, ChevronRight, User, Building } from 'lucide-react-native';
 import { useLanguage } from '@/hooks/useLanguage';
-import { useStorage } from '@/hooks/useStorage';
+import { useStorage, dataEmitter } from '@/hooks/useStorage';
 import { handleDataExport, ExportError, getErrorMessage } from '@/utils/dataExport';
 import * as DocumentPicker from 'expo-document-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import designSystem from '@/styles/designSystem';
 
 const languages = [
@@ -219,13 +220,10 @@ export default function SettingsScreen() {
         
         // Save all products at once using the storage hook's saveProducts method
         if (importedCount > 0) {
-          // We need to access the saveProducts method from useStorage
-          // Since we can't access it directly, we'll use AsyncStorage directly
           await AsyncStorage.setItem('products', JSON.stringify(currentProducts));
           
-          // Trigger data reload by calling a dummy operation
-          // This will cause useStorage to reload the data
-          window.location.reload();
+          // Trigger data reload using the data emitter
+          dataEmitter.emit('dataChanged');
         }
       }
       
