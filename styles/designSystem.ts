@@ -87,6 +87,7 @@ export const colors = {
     default: '#FDD86E',
     active: '#FFB800',
     inactive: 'rgba(253, 216, 110, 0.5)',
+    activeBorder: '#000000',
   },
   
   // Neutral Colors
