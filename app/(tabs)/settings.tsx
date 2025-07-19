@@ -250,24 +250,13 @@ export default function SettingsScreen() {
       Alert.alert('Fehler', 'Datei konnte nicht gelesen werden.');
     }
   };
-  // Handle language selection with disabled language notification
+  // Handle language selection with disabled languages blocked
   const handleLanguageSelect = (langCode: string) => {
     // Check if language is disabled
     const disabledLanguages = ['en', 'fr', 'it'];
     
     if (disabledLanguages.includes(langCode)) {
-      // Show notification for disabled languages
-      if (Platform.OS === 'web') {
-        // For web, use a simple alert
-        alert('Diese Sprache wird in einer zukünftigen Version implementiert.');
-      } else {
-        // For mobile, use React Native Alert
-        Alert.alert(
-          'Sprache nicht verfügbar',
-          'Diese Sprache wird in einer zukünftigen Version implementiert.',
-          [{ text: 'OK', style: 'default' }]
-        );
-      }
+      // Simply return without any action for disabled languages
       return;
     }
     
