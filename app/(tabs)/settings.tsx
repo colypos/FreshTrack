@@ -382,7 +382,7 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.versionText}>FreshTrack v0.5.1</Text>
+          <Text style={styles.versionText}>FreshTrack v0.3.7.3</Text>
           <Text style={styles.copyrightText}>
             © 2025 FreshTrack. Entwickelt für nachhaltige Gastronomie.
           </Text>
