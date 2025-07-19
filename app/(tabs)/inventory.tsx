@@ -1008,9 +1008,12 @@ const styles = StyleSheet.create({
   },
   productCategory: {
     ...designSystem.componentStyles.textSecondary,
-    fontSize: 13,
+    fontSize: designSystem.getResponsiveValue(14, 15, 16),
     marginBottom: 6,
     fontWeight: '500',
+    color: designSystem.colors.text.primary,
+    minHeight: 18,
+    lineHeight: 18,
   },
   productListDetails: {
     flexDirection: 'column',
