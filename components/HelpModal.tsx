@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { X, ChevronRight, ChevronDown, Search, Package, Camera, BarChart3, Settings, AlertTriangle, Clock, TrendingDown } from 'lucide-react-native';
+import { X, ChevronRight, ChevronDown, Search, Package, Camera, ChartBar as BarChart3, Settings, TriangleAlert as AlertTriangle, Clock, TrendingDown } from 'lucide-react-native';
 import { useLanguage } from '@/hooks/useLanguage';
 import designSystem from '@/styles/designSystem';
 
