@@ -108,6 +108,15 @@ export default function InventoryScreen() {
     setSelectedCategories([]);
   };
 
+  const showAllProducts = () => {
+    setSelectedCategories([]);
+    setSearchQuery('');
+    // Clear any navigation-based filters by resetting params
+    if (params.filter) {
+      router.replace('/inventory');
+    }
+  };
+
   const getStockStatus = (product: Product) => {
     const now = new Date();
     
@@ -393,7 +402,895 @@ export default function InventoryScreen() {
         <View style={styles.categoryFilterContainer}>
           <View style={styles.categoryFilterHeader}>
             <Text style={styles.categoryFilterTitle}>Kategorien</Text>
-            {selectedCategories.length > 0 && (
+            <View style={styles.filterActions}>
+              {selectedCategories.length > 0 && (
+                <TouchableOpacity
+                  onPress={clearAllFilters}
+                  activeOpacity={designSystem.interactive.states.active.opacity}
+                  accessibilityLabel="Kategorie-Filter zurücksetzen"
+                  accessibilityRole="button"
+                >
+                  <Text style={styles.clearFiltersText}>Zurücksetzen</Text>
+                </TouchableOpacity>
+              )}
+              {(selectedCategories.length > 0 || searchQuery.length > 0 || params.filter) && (
+                <TouchableOpacity
+                  onPress={showAllProducts}
+                  activeOpacity={designSystem.interactive.states.active.opacity}
+                  accessibilityLabel="Alle Filter zurücksetzen und alle Produkte anzeigen"
+                  accessibilityRole="button"
+                  style={styles.showAllButton}
+                >
+                  <Text style={styles.showAllText}>Alle anzeigen</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+          
+          <View style={styles.categoryFilterButtons}>
+            {categories.map(category => {
+              const count = products.filter(p => p.category === category).length;
+              const isSelected = selectedCategories.includes(category);
+              return (
+                <TouchableOpacity
+                  key={category}
+                  style={[
+                    styles.categoryFilterButton,
+                    isSelected && styles.categoryFilterButtonActive
+                  ]}
+                  onPress={() => toggleCategory(category)}
+                  activeOpacity={designSystem.interactive.states.active.opacity}
+                  accessibilityLabel={`Filter ${category}, ${count} Produkte`}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: isSelected }}
+                >
+                  <Text style={[
+                    styles.categoryFilterButtonText,
+                    isSelected && styles.categoryFilterButtonTextActive
+                  ]}>
+                    {category} ({count})
+                  </Text>
+                  {isSelected && (
+                    <View style={styles.categoryFilterCheck}>
+                      <Text style={styles.categoryFilterCheckmark}>✓</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+      </View>
+
+      {/* Main Content Area */}
+      <View style={styles.contentContainer}>
+        <View style={styles.productArea}>
+          <View style={styles.productHeader}>
+            <Text style={styles.resultCount}>
+              {getFilteredCount()} {getFilteredCount() === 1 ? 'Produkt' : 'Produkte'}
+              {(selectedCategories.length > 0 || params.filter) && ` (${selectedCategories.length + (params.filter ? 1 : 0)} Filter aktiv)`}
+              {getFilterDisplayName() && (
+                <Text style={styles.filterIndicator}> • {getFilterDisplayName()}</Text>
+              )}
+            </Text>
+          </View>
+
+          <ScrollView 
+            style={styles.productList} 
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.productListContent}
+          >
+            <View style={styles.productListView}>
+              {filteredProducts.map(product => (
+                <ProductListCard key={product.id} product={product} />
+              ))}
+            </View>
+            
+            {filteredProducts.length === 0 && (
+              <View style={styles.emptyState}>
+                <Package size={64} color={designSystem.colors.neutral[300]} />
+                <Text style={styles.emptyTitle}>Keine Produkte gefunden</Text>
+                <Text style={styles.emptySubtitle}>
+                  {searchQuery ? 
+                    `Keine Ergebnisse für "${searchQuery}"` : 
+                    'Fügen Sie Ihr erstes Produkt hinzu'
+                  }
+                </Text>
+                <TouchableOpacity 
+                  style={styles.emptyAction}
+                  onPress={() => setShowAddModal(true)}
+                  activeOpacity={designSystem.interactive.states.active.opacity}
+                  accessibilityLabel="Erstes Produkt hinzufügen"
+                  accessibilityRole="button"
+                >
+                  <Plus size={20} color={designSystem.colors.text.primary} />
+                  <Text style={styles.emptyActionText}>Produkt hinzufügen</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </ScrollView>
+        </View>
+      </View>
+
+      {/* Add Product Modal */}
+      <Modal
+        visible={showAddModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowAddModal(false)}
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity 
+              onPress={() => setShowAddModal(false)}
+              accessibilityLabel="Abbrechen"
+              accessibilityRole="button"
+            >
+              <Text style={styles.cancelButton}>{t('cancel')}</Text>
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>{t('addProduct')}</Text>
+            <TouchableOpacity 
+              onPress={handleAddProduct}
+              accessibilityLabel="Produkt speichern"
+              accessibilityRole="button"
+            >
+              <Text style={styles.saveButton}>{t('save')}</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+            <View style={styles.fieldGroup}>
+              <Text style={styles.groupTitle}>Grundinformationen</Text>
+              
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>{t('productName')} *</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={newProduct.name}
+                  onChangeText={(text) => setNewProduct({...newProduct, name: text})}
+                  placeholder="z.B. Tomaten"
+                  placeholderTextColor="#6B7280"
+                  autoFocus
+                  returnKeyType="next"
+                  accessibilityLabel="Produktname eingeben"
+                  accessibilityHint="Pflichtfeld für den Namen des Produkts"
+                />
+              </View>
+              
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>{t('category')}</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={newProduct.category}
+                  onChangeText={(text) => setNewProduct({...newProduct, category: text})}
+                  placeholder="z.B. Gemüse"
+                  placeholderTextColor="#6B7280"
+                  returnKeyType="next"
+                  accessibilityLabel="Kategorie eingeben"
+                  accessibilityHint="Produktkategorie für bessere Organisation"
+                />
+              </View>
+            </View>
+
+            <View style={styles.fieldGroup}>
+              <Text style={styles.groupTitle}>Bestandsinformationen</Text>
+              
+              <View style={styles.inputRow}>
+                <View style={styles.inputGroupHalf}>
+                  <Text style={styles.inputLabel}>{t('quantity')}</Text>
+                  <TextInput
+                    style={styles.textInput}
+                    value={newProduct.currentStock.toString()}
+                    onChangeText={(text) => setNewProduct({...newProduct, currentStock: parseInt(text) || 0})}
+                    keyboardType="numeric"
+                    placeholder="0"
+                    placeholderTextColor="#6B7280"
+                    returnKeyType="next"
+                    accessibilityLabel="Aktuelle Menge eingeben"
+                    accessibilityHint="Anzahl der verfügbaren Einheiten"
+                  />
+                </View>
+                
+                <View style={styles.inputGroupHalf}>
+                  <Text style={styles.inputLabel}>{t('unit')}</Text>
+                  <TextInput
+                    style={styles.textInput}
+                    value={newProduct.unit}
+                    onChangeText={(text) => setNewProduct({...newProduct, unit: text})}
+                    placeholder="kg, Stück, L"
+                    placeholderTextColor="#6B7280"
+                    returnKeyType="next"
+                    accessibilityLabel="Einheit eingeben"
+                    accessibilityHint="Maßeinheit für das Produkt"
+                  />
+                </View>
+              </View>
+              
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Mindestbestand</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={newProduct.minStock.toString()}
+                  onChangeText={(text) => setNewProduct({...newProduct, minStock: parseInt(text) || 0})}
+                  keyboardType="numeric"
+                  placeholder="0"
+                  placeholderTextColor="#6B7280"
+                  returnKeyType="next"
+                  accessibilityLabel="Mindestbestand eingeben"
+                  accessibilityHint="Warnschwelle für niedrigen Bestand"
+                />
+              </View>
+            </View>
+
+            <View style={styles.fieldGroup}>
+              <Text style={styles.groupTitle}>Verfallsdatum</Text>
+              
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>{t('expiryDate')}</Text>
+                <View style={styles.dateInputContainer}>
+                  <TextInput
+                    style={[styles.textInput, styles.dateInput]}
+                    value={newProduct.expiryDate}
+                    onChangeText={(text) => setNewProduct({...newProduct, expiryDate: text})}
+                    placeholder="DD.MM.YYYY"
+                    placeholderTextColor="#6B7280"
+                    returnKeyType="next"
+                    accessibilityLabel="Verfallsdatum eingeben"
+                    accessibilityHint="Datum im Format Tag.Monat.Jahr"
+                  />
+                  <TouchableOpacity 
+                    style={styles.calendarButton}
+                    onPress={() => setShowDatePicker(true)}
+                    accessibilityLabel="Kalender öffnen"
+                    accessibilityHint="Datum aus Kalender auswählen"
+                    accessibilityRole="button"
+                  >
+                    <Calendar size={20} color="#6b7280" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.fieldGroup}>
+              <Text style={styles.groupTitle}>Zusätzliche Informationen</Text>
+              
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>{t('location')}</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={newProduct.location}
+                  onChangeText={(text) => setNewProduct({...newProduct, location: text})}
+                  placeholder="z.B. Kühlschrank A1"
+                  placeholderTextColor="#6B7280"
+                  returnKeyType="next"
+                  accessibilityLabel="Lagerort eingeben"
+                  accessibilityHint="Wo das Produkt gelagert wird"
+                />
+              </View>
+              
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Lieferant</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={newProduct.supplier}
+                  onChangeText={(text) => setNewProduct({...newProduct, supplier: text})}
+                  placeholder="z.B. Frische AG"
+                  placeholderTextColor="#6B7280"
+                  returnKeyType="done"
+                  accessibilityLabel="Lieferant eingeben"
+                  accessibilityHint="Name des Produktlieferanten"
+                />
+              </View>
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+
+      {/* Date Picker Modal */}
+      <Modal 
+        visible={showDatePicker} 
+        animationType="slide" 
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowDatePicker(false)}
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity 
+              onPress={() => setShowDatePicker(false)}
+              accessibilityLabel="Abbrechen"
+              accessibilityRole="button"
+            >
+              <Text style={styles.cancelButton}>{t('cancel')}</Text>
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>Datum auswählen</Text>
+            <TouchableOpacity 
+              onPress={() => setShowDatePicker(false)}
+              accessibilityLabel="Fertig"
+              accessibilityRole="button"
+            >
+              <Text style={styles.saveButton}>Fertig</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <ScrollView style={styles.datePickerContent} showsVerticalScrollIndicator={false}>
+            <View style={styles.dateGrid}>
+              {generateDateOptions().slice(0, 60).map((dateOption, index) => {
+                const isSelected = newProduct.expiryDate === dateOption.formatted;
+                const isToday = index === 0;
+                const isThisWeek = index < 7;
+                
+                return (
+                  <TouchableOpacity
+                    key={dateOption.formatted}
+                    style={[
+                      styles.dateOption,
+                      isSelected && styles.dateOptionSelected,
+                      isToday && styles.dateOptionToday,
+                      isThisWeek && !isToday && styles.dateOptionThisWeek
+                    ]}
+                    onPress={() => handleDateSelect(dateOption.formatted)}
+                    accessibilityLabel={`Datum ${dateOption.display} auswählen`}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: isSelected }}
+                  >
+                    <Text style={[
+                      styles.dateOptionText,
+                      isSelected && styles.dateOptionTextSelected,
+                      isToday && styles.dateOptionTextToday
+                    ]}>
+                      {dateOption.display}
+                    </Text>
+                    {isToday && (
+                      <Text style={styles.dateOptionLabel}>Heute</Text>
+                    )}
+                    {isThisWeek && !isToday && (
+                      <Text style={styles.dateOptionLabel}>
+                        {['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'][dateOption.date.getDay()]}
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+            
+            <View style={styles.quickDateSection}>
+              <Text style={styles.quickDateTitle}>Schnellauswahl</Text>
+              <View style={styles.quickDateButtons}>
+                {[
+                  { label: 'Heute', days: 0 },
+                  { label: 'Morgen', days: 1 },
+                  { label: 'In 1 Woche', days: 7 },
+                  { label: 'In 2 Wochen', days: 14 },
+                  { label: 'In 1 Monat', days: 30 },
+                  { label: 'In 3 Monaten', days: 90 },
+                ].map(option => {
+                  const date = new Date();
+                  date.setDate(date.getDate() + option.days);
+                  const formatted = `${date.getDate().toString().padStart(2, '0')}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getFullYear()}`;
+                  
+                  return (
+                    <TouchableOpacity
+                      key={option.label}
+                      style={styles.quickDateButton}
+                      onPress={() => handleDateSelect(formatted)}
+                      accessibilityLabel={`${option.label} auswählen: ${formatted}`}
+                      accessibilityRole="button"
+                    >
+                      <Text style={styles.quickDateButtonText}>{option.label}</Text>
+                      <Text style={styles.quickDateButtonDate}>{formatted}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: designSystem.colors.background.primary,
+  },
+  
+  // Header Styles
+  header: {
+    backgroundColor: designSystem.colors.background.primary,
+    padding: designSystem.spacing.xl,
+    paddingTop: 16,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: designSystem.colors.border.secondary,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: designSystem.spacing.lg,
+  },
+  title: {
+    ...designSystem.componentStyles.textTitle,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    gap: 0,
+  },
+  addButton: {
+    backgroundColor: designSystem.colors.secondary[500],
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+    width: 44,
+    height: 44,
+    borderRadius: designSystem.interactive.border.radius,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...designSystem.accessibility.minTouchTarget,
+    ...designSystem.shadows.low,
+  },
+  
+  // Search Styles
+  searchContainer: {
+    flexDirection: 'row',
+  },
+  searchBar: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: designSystem.colors.background.secondary,
+    borderRadius: designSystem.interactive.border.radius,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+    paddingHorizontal: designSystem.spacing.lg,
+    paddingVertical: designSystem.spacing.md,
+    gap: designSystem.spacing.md,
+    minHeight: 48,
+    ...designSystem.shadows.low,
+  },
+  searchInput: {
+    flex: 1,
+    ...designSystem.componentStyles.textPrimary,
+    lineHeight: 20,
+  },
+  
+  // Category Filter Styles
+  categoryFilterContainer: {
+    marginTop: designSystem.spacing.md,
+  },
+  categoryFilterHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: designSystem.spacing.md,
+  },
+  categoryFilterTitle: {
+    ...designSystem.componentStyles.textPrimary,
+    fontWeight: '600',
+  },
+  filterActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: designSystem.spacing.md,
+  },
+  clearFiltersText: {
+    ...designSystem.componentStyles.textSecondary,
+    fontWeight: '600',
+    color: designSystem.colors.error[500],
+  },
+  showAllButton: {
+    backgroundColor: designSystem.colors.secondary[500],
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+    paddingHorizontal: designSystem.spacing.md,
+    paddingVertical: designSystem.spacing.xs,
+    borderRadius: designSystem.interactive.border.radius,
+    minHeight: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...designSystem.shadows.low,
+  },
+  showAllText: {
+    ...designSystem.componentStyles.textSecondary,
+    fontWeight: '600',
+    fontSize: 13,
+  },
+  categoryFilterButtons: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: designSystem.spacing.sm * 0.3, // 30% of default spacing (8px * 0.3 = 2.4px)
+    maxHeight: 58, // Approximately 2 rows (26px height + 6px gap + 26px height)
+    overflow: 'hidden',
+  },
+  categoryFilterButton: {
+    backgroundColor: designSystem.colors.filter.default,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+    borderRadius: designSystem.interactive.border.radius,
+    paddingHorizontal: designSystem.spacing.md,
+    paddingVertical: 6,
+    flexDirection: 'row', 
+    alignItems: 'center',
+    gap: designSystem.spacing.xs,
+    height: 26, // 60% of original 44px height
+    paddingHorizontal: designSystem.spacing.md,
+    paddingVertical: 6,
+  },
+  categoryFilterButtonActive: {
+    gap: designSystem.spacing.xs,
+    height: 26,
+    maxWidth: '48%',
+    ...designSystem.shadows.medium,
+  },
+  categoryFilterButtonText: {
+    ...designSystem.componentStyles.textSecondary,
+    fontWeight: '500',
+    flex: 1,
+    numberOfLines: 1,
+    ellipsizeMode: 'tail',
+  },
+  categoryFilterButtonTextActive: {
+    ...designSystem.componentStyles.textPrimary,
+    fontWeight: '600',
+    numberOfLines: 1,
+    ellipsizeMode: 'tail',
+  },
+  categoryFilterCheck: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: designSystem.colors.success[500],
+    borderWidth: 1,
+    borderColor: designSystem.interactive.border.color,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  categoryFilterCheckmark: {
+    ...designSystem.componentStyles.textCaption,
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: designSystem.colors.text.inverse,
+  },
+  
+  // Product Area (now full width)
+  contentContainer: {
+    flex: 1,
+    backgroundColor: designSystem.colors.background.primary,
+    paddingHorizontal: designSystem.spacing.xl,
+  },
+  productArea: {
+    flex: 1,
+    maxWidth: 1200,
+    width: '100%',
+    alignSelf: 'center',
+    backgroundColor: designSystem.colors.background.primary,
+  },
+  productHeader: {
+    paddingHorizontal: 0,
+    paddingVertical: designSystem.spacing.md,
+    borderBottomColor: designSystem.colors.border.secondary,
+  },
+  resultCount: {
+    ...designSystem.componentStyles.textPrimary,
+    fontWeight: '600',
+  },
+  filterIndicator: {
+    ...designSystem.componentStyles.textSecondary,
+    fontWeight: '500',
+    color: designSystem.colors.secondary[600],
+  },
+  productList: {
+    flex: 1,
+  },
+  productListContent: {
+    padding: 0,
+    paddingTop: designSystem.spacing.sm,
+    paddingBottom: designSystem.spacing.xxl,
+  },
+  
+  // Product List View
+  productListView: {
+    gap: designSystem.spacing.md,
+  },
+  productListCard: {
+    ...designSystem.componentStyles.interactiveBase,
+    backgroundColor: designSystem.colors.background.secondary,
+    borderRadius: designSystem.interactive.border.radius,
+    padding: designSystem.spacing.lg,
+    paddingVertical: designSystem.spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: designSystem.spacing.md,
+    minHeight: 64,
+    marginBottom: 0,
+    ...designSystem.shadows.low,
+  },
+  productListContent: {
+    flex: 1,
+  },
+  productIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: designSystem.interactive.border.radius,
+    backgroundColor: designSystem.colors.background.primary,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  statusBadge: {
+    paddingHorizontal: designSystem.spacing.sm,
+    paddingVertical: designSystem.spacing.xs,
+    borderRadius: designSystem.interactive.border.radius,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+  },
+  statusText: {
+    ...designSystem.componentStyles.textCaption,
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  productName: {
+    ...designSystem.componentStyles.textPrimary,
+    fontWeight: 'bold',
+    flex: 1,
+    marginBottom: 4,
+  },
+  productListHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 6,
+  },
+  productCategory: {
+    ...designSystem.componentStyles.textSecondary,
+    fontSize: 13,
+    marginBottom: 10,
+    fontWeight: '500',
+  },
+  productListDetails: {
+    flexDirection: 'row',
+    gap: designSystem.spacing.lg,
+    marginTop: 6,
+  },
+  detailItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: designSystem.spacing.xs,
+  },
+  detailLabel: {
+    ...designSystem.componentStyles.textCaption,
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  detailValue: {
+    ...designSystem.componentStyles.textCaption,
+    fontSize: 11,
+    flex: 1,
+  },
+  
+  // Empty State
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: designSystem.spacing.xl,
+    paddingVertical: 48,
+    marginTop: 40,
+  },
+  emptyTitle: {
+    ...designSystem.componentStyles.textSubtitle,
+    marginTop: designSystem.spacing.lg,
+    marginBottom: designSystem.spacing.sm,
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    ...designSystem.componentStyles.textSecondary,
+    textAlign: 'center',
+    marginBottom: designSystem.spacing.xxl,
+    lineHeight: 20,
+    paddingHorizontal: designSystem.spacing.xl,
+  },
+  emptyAction: {
+    backgroundColor: designSystem.colors.secondary[500],
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+    paddingHorizontal: designSystem.spacing.xl,
+    paddingVertical: designSystem.spacing.md,
+    borderRadius: designSystem.interactive.border.radius,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: designSystem.spacing.sm,
+    minHeight: 44,
+    ...designSystem.accessibility.minTouchTarget,
+    ...designSystem.shadows.low,
+  },
+  emptyActionText: {
+    ...designSystem.componentStyles.textPrimary,
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  
+  // Modal Styles
+  modalContainer: {
+    flex: 1,
+    backgroundColor: designSystem.colors.background.primary,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: designSystem.spacing.xl,
+    borderBottomWidth: 1,
+    borderBottomColor: designSystem.interactive.border.color,
+    backgroundColor: designSystem.colors.background.secondary,
+  },
+  modalTitle: {
+    ...designSystem.componentStyles.textSubtitle,
+  },
+  cancelButton: {
+    ...designSystem.componentStyles.textPrimary,
+    fontWeight: '600',
+  },
+  saveButton: {
+    ...designSystem.componentStyles.textPrimary,
+    fontWeight: 'bold',
+  },
+  modalContent: {
+    flex: 1,
+    padding: designSystem.spacing.xl,
+  },
+  
+  // Form Styles
+  fieldGroup: {
+    marginBottom: designSystem.spacing.xxxl,
+    paddingBottom: designSystem.spacing.xxl,
+    borderBottomWidth: 1,
+    borderBottomColor: designSystem.colors.border.secondary,
+  },
+  groupTitle: {
+    ...designSystem.componentStyles.textSubtitle,
+    marginBottom: designSystem.spacing.xl,
+    paddingBottom: designSystem.spacing.sm,
+    borderBottomWidth: 2,
+    borderBottomColor: designSystem.colors.secondary[500],
+  },
+  inputGroup: {
+    marginBottom: designSystem.spacing.xl,
+  },
+  inputRow: {
+    flexDirection: 'row',
+    gap: designSystem.spacing.lg,
+    marginBottom: designSystem.spacing.xl,
+  },
+  inputGroupHalf: {
+    flex: 1,
+  },
+  inputLabel: {
+    ...designSystem.componentStyles.textPrimary,
+    fontWeight: '600',
+    marginBottom: designSystem.spacing.sm,
+    lineHeight: 20,
+  },
+  textInput: {
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+    borderRadius: designSystem.interactive.border.radius,
+    padding: 14,
+    ...designSystem.componentStyles.textPrimary,
+    backgroundColor: designSystem.colors.background.secondary,
+    minHeight: 48,
+    lineHeight: 20,
+    ...designSystem.shadows.low,
+  },
+  dateInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: designSystem.spacing.md,
+  },
+  dateInput: {
+    flex: 1,
+  },
+  calendarButton: {
+    backgroundColor: designSystem.colors.background.secondary,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+    width: 48,
+    height: 48,
+    borderRadius: designSystem.interactive.border.radius,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...designSystem.shadows.low,
+  },
+  
+  // Date Picker Styles
+  datePickerContent: {
+    flex: 1,
+    padding: designSystem.spacing.xl,
+  },
+  dateGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: designSystem.spacing.sm,
+    marginBottom: designSystem.spacing.xxxl,
+  },
+  dateOption: {
+    backgroundColor: designSystem.colors.background.secondary,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+    borderRadius: designSystem.interactive.border.radius,
+    padding: designSystem.spacing.md,
+    width: '31%',
+    alignItems: 'center',
+    minHeight: 60,
+    justifyContent: 'center',
+    ...designSystem.shadows.low,
+  },
+  dateOptionSelected: {
+    backgroundColor: designSystem.colors.secondary[500],
+    borderColor: designSystem.interactive.border.color,
+    ...designSystem.shadows.medium,
+  },
+  dateOptionToday: {
+    backgroundColor: designSystem.colors.success[500],
+    borderColor: designSystem.interactive.border.color,
+    ...designSystem.shadows.medium,
+  },
+  dateOptionThisWeek: {
+    backgroundColor: designSystem.colors.warning[500],
+    borderColor: designSystem.interactive.border.color,
+    ...designSystem.shadows.medium,
+  },
+  dateOptionText: {
+    ...designSystem.componentStyles.textSecondary,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  dateOptionTextSelected: {
+    color: designSystem.colors.text.primary,
+  },
+  dateOptionTextToday: {
+    color: designSystem.colors.text.primary,
+  },
+  dateOptionLabel: {
+    ...designSystem.componentStyles.textCaption,
+    fontSize: 10,
+    marginTop: 2,
+    fontWeight: '500',
+  },
+  quickDateSection: {
+    marginTop: designSystem.spacing.xl,
+  },
+  quickDateTitle: {
+    ...designSystem.componentStyles.textSubtitle,
+    marginBottom: designSystem.spacing.lg,
+  },
+  quickDateButtons: {
+    gap: designSystem.spacing.sm,
+  },
+  quickDateButton: {
+    backgroundColor: designSystem.colors.background.secondary,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+    borderRadius: designSystem.interactive.border.radius,
+    padding: designSystem.spacing.lg,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    minHeight: 56,
+    ...designSystem.shadows.low,
+  },
+  quickDateButtonText: {
+    ...designSystem.componentStyles.textPrimary,
+    fontWeight: '600',
+  },
+  quickDateButtonDate: {
+    ...designSystem.componentStyles.textSecondary,
+    fontWeight: '500',
+  },
+});
+
               <TouchableOpacity
                 onPress={clearAllFilters}
                 activeOpacity={designSystem.interactive.states.active.opacity}
