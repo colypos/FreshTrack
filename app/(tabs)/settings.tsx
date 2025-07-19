@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Globe, Bell, Download, Upload, Shield, CircleHelp as HelpCircle, ChevronRight, User, Building } from 'lucide-react-native';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useStorage, dataEmitter } from '@/hooks/useStorage';
+import HelpModal from '@/components/HelpModal';
 import { handleDataExport, ExportError, getErrorMessage } from '@/utils/dataExport';
 import * as DocumentPicker from 'expo-document-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -13,6 +14,7 @@ export default function SettingsScreen() {
   const { t, currentLanguage, changeLanguage, availableLanguages, languageMetadata } = useLanguage();
   const { products, movements, alerts, addProduct } = useStorage();
   const [isExporting, setIsExporting] = useState(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
 
   /**
    * Handles the data export process with comprehensive error handling
@@ -375,7 +377,7 @@ export default function SettingsScreen() {
             icon={<HelpCircle size={22} color={designSystem.colors.text.secondary} />}
             title={t('help')}
             subtitle="Häufig gestellte Fragen und Anleitungen"
-            onPress={() => console.log('Help')}
+            onPress={() => setShowHelpModal(true)}
           />
           <SettingItem
             icon={<HelpCircle size={22} color={designSystem.colors.text.secondary} />}
@@ -392,6 +394,11 @@ export default function SettingsScreen() {
           </Text>
         </View>
       </ScrollView>
+      
+      <HelpModal 
+        visible={showHelpModal} 
+        onClose={() => setShowHelpModal(false)} 
+      />
     </SafeAreaView>
   );
 }
