@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Package, TriangleAlert as AlertTriangle, TrendingDown, Clock } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useStorage } from '@/hooks/useStorage';
 import designSystem from '@/styles/designSystem';
@@ -9,6 +10,7 @@ import designSystem from '@/styles/designSystem';
 export default function DashboardScreen() {
   const { t } = useLanguage();
   const { products, movements, alerts } = useStorage();
+  const router = useRouter();
 
   const stats = {
     totalProducts: products.length,
@@ -24,12 +26,14 @@ export default function DashboardScreen() {
 
   const recentMovements = movements.slice(0, 5);
 
-  const StatCard = ({ icon, title, value, color }: any) => (
+  const StatCard = ({ icon, title, value, color, onPress }: any) => (
     <TouchableOpacity 
       style={[styles.statCard, { borderLeftColor: color }]}
       activeOpacity={designSystem.interactive.states.active.opacity}
       accessibilityRole="button"
       accessibilityLabel={`${title}: ${value}`}
+      accessibilityHint={`Tippen um ${title.toLowerCase()} anzuzeigen`}
+      onPress={onPress}
     >
       <View style={styles.statIcon}>
         {icon}
@@ -40,6 +44,35 @@ export default function DashboardScreen() {
       </View>
     </TouchableOpacity>
   );
+
+  // Navigation handlers for each stat card
+  const handleTotalProductsPress = () => {
+    router.push('/inventory');
+  };
+
+  const handleLowStockPress = () => {
+    // Navigate to inventory with low stock filter
+    router.push({
+      pathname: '/inventory',
+      params: { filter: 'lowStock' }
+    });
+  };
+
+  const handleExpiringSoonPress = () => {
+    // Navigate to inventory with expiring soon filter
+    router.push({
+      pathname: '/inventory',
+      params: { filter: 'expiringSoon' }
+    });
+  };
+
+  const handleCriticalAlertsPress = () => {
+    // Navigate to inventory with critical alerts filter
+    router.push({
+      pathname: '/inventory',
+      params: { filter: 'criticalAlerts' }
+    });
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -55,24 +88,28 @@ export default function DashboardScreen() {
             title={t('totalProducts')}
             value={stats.totalProducts}
             color={designSystem.colors.success[500]}
+            onPress={handleTotalProductsPress}
           />
           <StatCard
             icon={<TrendingDown size={24} color={designSystem.colors.warning[500]} />}
             title={t('lowStock')}
             value={stats.lowStockCount}
             color={designSystem.colors.warning[500]}
+            onPress={handleLowStockPress}
           />
           <StatCard
             icon={<Clock size={24} color={designSystem.colors.warning[700]} />}
             title={t('expiringSoon')}
             value={stats.expiringSoonCount}
             color={designSystem.colors.warning[700]}
+            onPress={handleExpiringSoonPress}
           />
           <StatCard
             icon={<AlertTriangle size={24} color={designSystem.colors.error[500]} />}
             title={t('criticalAlerts')}
             value={stats.criticalAlerts}
             color={designSystem.colors.error[500]}
+            onPress={handleCriticalAlertsPress}
           />
         </View>
 

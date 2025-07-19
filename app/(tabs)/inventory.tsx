@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocalSearchParams } from 'expo-router';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Modal, Alert, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, Plus, Filter, Package, Calendar, MapPin, Menu, X, Grid2x2 as Grid, List } from 'lucide-react-native';
@@ -12,6 +13,7 @@ const { width: screenWidth } = Dimensions.get('window');
 export default function InventoryScreen() {
   const { t } = useLanguage();
   const { products, addProduct } = useStorage();
+  const params = useLocalSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -32,12 +34,64 @@ export default function InventoryScreen() {
 
   const categories = Array.from(new Set(products.map(p => p.category))).filter(Boolean);
 
+  // Apply filter from navigation params
+  const getFilteredProductsByParam = () => {
+    const filter = params.filter as string;
+    
+    switch (filter) {
+      case 'lowStock':
+        return products.filter(p => p.currentStock <= p.minStock);
+      case 'expiringSoon':
+        return products.filter(p => {
+          const parseGermanDate = (dateString: string) => {
+            if (!dateString) return new Date();
+            const germanDateRegex = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/;
+            const match = dateString.match(germanDateRegex);
+            if (match) {
+              const [, day, month, year] = match;
+              return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+            }
+            return new Date(dateString);
+          };
+          const expiryDate = parseGermanDate(p.expiryDate);
+          const daysUntilExpiry = Math.ceil((expiryDate.getTime() - new Date().getTime()) / (1000 * 3600 * 24));
+          return daysUntilExpiry <= 7 && daysUntilExpiry >= 0;
+        });
+      case 'criticalAlerts':
+        return products.filter(p => {
+          const parseGermanDate = (dateString: string) => {
+            if (!dateString) return new Date();
+            const germanDateRegex = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/;
+            const match = dateString.match(germanDateRegex);
+            if (match) {
+              const [, day, month, year] = match;
+              return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+            }
+            return new Date(dateString);
+          };
+          const expiryDate = parseGermanDate(p.expiryDate);
+          const daysUntilExpiry = Math.ceil((expiryDate.getTime() - new Date().getTime()) / (1000 * 3600 * 24));
+          return daysUntilExpiry < 0 || p.currentStock <= p.minStock;
+        });
+      default:
+        return products;
+    }
+  };
+
+  const baseFilteredProducts = getFilteredProductsByParam();
+
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          product.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          product.location.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(product.category);
     return matchesSearch && matchesCategory;
+  }).filter(product => {
+    // Apply navigation filter if present
+    if (params.filter) {
+      return baseFilteredProducts.some(fp => fp.id === product.id);
+    }
+    return true;
   });
 
   const toggleCategory = (category: string) => {
@@ -183,6 +237,21 @@ export default function InventoryScreen() {
   // Get current category display info
   const getFilteredCount = () => {
     return filteredProducts.length;
+  };
+
+  // Get filter display name
+  const getFilterDisplayName = () => {
+    const filter = params.filter as string;
+    switch (filter) {
+      case 'lowStock':
+        return 'Niedriger Bestand';
+      case 'expiringSoon':
+        return 'Läuft bald ab';
+      case 'criticalAlerts':
+        return 'Kritische Warnungen';
+      default:
+        return null;
+    }
   };
 
   // Product Card Components
@@ -377,7 +446,10 @@ export default function InventoryScreen() {
           <View style={styles.productHeader}>
             <Text style={styles.resultCount}>
               {getFilteredCount()} {getFilteredCount() === 1 ? 'Produkt' : 'Produkte'}
-              {selectedCategories.length > 0 && ` (${selectedCategories.length} Filter aktiv)`}
+              {(selectedCategories.length > 0 || params.filter) && ` (${selectedCategories.length + (params.filter ? 1 : 0)} Filter aktiv)`}
+              {getFilterDisplayName() && (
+                <Text style={styles.filterIndicator}> • {getFilterDisplayName()}</Text>
+              )}
             </Text>
           </View>
 
