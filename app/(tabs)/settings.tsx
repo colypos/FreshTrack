@@ -358,6 +358,22 @@ export default function SettingsScreen() {
             onPress={handleImportData}
           />
           <SettingItem
+            icon={<Shield size={22} color={designSystem.colors.text.secondary} />}
+            title="Automatisches Backup"
+            subtitle="Tägliche Datensicherung"
+            rightElement={
+              <Switch 
+                value={false} 
+                onValueChange={() => {}}
+                trackColor={{ 
+                  false: designSystem.colors.neutral[300], 
+                  true: designSystem.colors.success[500] 
+                }}
+                thumbColor={designSystem.colors.background.surface}
+              />
+            }
+          />
+          <SettingItem
             icon={<HelpCircle size={22} color={designSystem.colors.text.secondary} />}
             title="Hilfe & FAQ"
             subtitle="Häufig gestellte Fragen"
@@ -372,7 +388,7 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.versionText}>FreshTrack v0.2.0</Text>
+          <Text style={styles.versionText}>FreshTrack v0.5.1</Text>
           <Text style={styles.copyrightText}>
             © 2025 FreshTrack. Entwickelt für nachhaltige Gastronomie.
           </Text>
