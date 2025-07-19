@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Globe, Bell, Download, Upload, Shield, CircleHelp as HelpCircle, ChevronRight, User, Building } from 'lucide-react-native';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -250,6 +250,30 @@ export default function SettingsScreen() {
       Alert.alert('Fehler', 'Datei konnte nicht gelesen werden.');
     }
   };
+  // Handle language selection with disabled language notification
+  const handleLanguageSelect = (langCode: string) => {
+    // Check if language is disabled
+    const disabledLanguages = ['en', 'fr', 'it'];
+    
+    if (disabledLanguages.includes(langCode)) {
+      // Show notification for disabled languages
+      if (Platform.OS === 'web') {
+        // For web, use a simple alert
+        alert('Diese Sprache wird in einer zukünftigen Version implementiert.');
+      } else {
+        // For mobile, use React Native Alert
+        Alert.alert(
+          'Sprache nicht verfügbar',
+          'Diese Sprache wird in einer zukünftigen Version implementiert.',
+          [{ text: 'OK', style: 'default' }]
+        );
+      }
+      return;
+    }
+    
+    // Only allow German language selection
+    changeLanguage(langCode);
+  };
 
   const SettingItem = ({ 
     icon, 
@@ -318,21 +342,43 @@ export default function SettingsScreen() {
               <View style={styles.languageSelector}>
                 {availableLanguages.map(langCode => {
                   const lang = languageMetadata[langCode as keyof typeof languageMetadata];
+                  const isDisabled = ['en', 'fr', 'it'].includes(langCode);
+                  const isActive = currentLanguage === langCode;
+                  
                   return (
                   <TouchableOpacity
                     key={langCode}
                     style={[
                       styles.languageButton,
-                      currentLanguage === langCode && styles.languageButtonActive
+                      isActive && styles.languageButtonActive,
+                      isDisabled && styles.languageButtonDisabled
                     ]}
-                    onPress={() => changeLanguage(langCode)}
+                    onPress={() => handleLanguageSelect(langCode)}
                     activeOpacity={designSystem.interactive.states.active.opacity}
                     accessibilityRole="button"
-                    accessibilityLabel={`Sprache ändern zu ${lang.name}`}
-                    accessibilityState={{ selected: currentLanguage === langCode }}
+                    accessibilityLabel={
+                      isDisabled 
+                        ? `${lang.name} - Nicht verfügbar` 
+                        : `Sprache ändern zu ${lang.name}`
+                    }
+                    accessibilityState={{ 
+                      selected: isActive,
+                      disabled: isDisabled 
+                    }}
+                    accessibilityHint={
+                      isDisabled 
+                        ? 'Diese Sprache wird in einer zukünftigen Version implementiert'
+                        : undefined
+                    }
                   >
                     <View style={styles.languageContent}>
-                      <Text style={styles.languageText}>{lang.name}</Text>
+                      <Text style={[
+                        styles.languageText,
+                        isDisabled && styles.languageTextDisabled
+                      ]}>
+                        {lang.name}
+                        {isDisabled && ' (Bald verfügbar)'}
+                      </Text>
                     </View>
                   </TouchableOpacity>
                   );
@@ -503,6 +549,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: designSystem.getResponsiveValue(16, 18, 20),
     fontSize: designSystem.getResponsiveValue(14, 15, 16),
+  },
+  languageButtonDisabled: {
+    backgroundColor: designSystem.colors.neutral[200],
+    borderColor: designSystem.colors.neutral[300],
+    opacity: 0.6,
+    ...designSystem.shadows.none,
+  },
+  languageTextDisabled: {
+    color: designSystem.colors.text.disabled,
+    fontWeight: '400',
   },
   footer: {
     padding: designSystem.spacing.xl,
