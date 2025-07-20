@@ -28,6 +28,9 @@ class DataEventEmitter {
 
 const dataEmitter = new DataEventEmitter();
 
+// Export the dataEmitter for external use
+export { dataEmitter };
+
 export const useStorage = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [movements, setMovements] = useState<Movement[]>([]);

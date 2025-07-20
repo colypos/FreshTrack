@@ -8,6 +8,9 @@
  */
 
 import { Product, Movement, Alert } from '@/types';
+import { Platform } from 'react-native';
+import * as Sharing from 'expo-sharing';
+import * as FileSystem from 'expo-file-system';
 
 /**
  * User settings interface for export
@@ -138,7 +141,12 @@ export class ExportError extends Error {
  */
 async function validateNetworkStatus(): Promise<boolean> {
   try {
-    // Check if we're online
+    // Skip network check on native platforms
+    if (Platform.OS !== 'web') {
+      return true;
+    }
+    
+    // Check if we're online (web only)
     if (typeof navigator !== 'undefined' && !navigator.onLine) {
       return false;
     }
@@ -445,25 +453,47 @@ function logExportActivity(success: boolean, recordCount: number, error?: Export
  * @param data - Export data
  * @param filename - Name of the file to download
  */
-function triggerDownload(data: ExportData, filename: string): void {
+async function triggerDownload(data: ExportData, filename: string): Promise<void> {
   try {
     const jsonString = JSON.stringify(data, null, 2);
-    const blob = new Blob([jsonString], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
     
-    // Create temporary download link
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    link.style.display = 'none';
-    
-    // Trigger download
-    document.body.appendChild(link);
-    link.click();
-    
-    // Cleanup
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    if (Platform.OS === 'web') {
+      // Web platform: use blob download
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      
+      // Create temporary download link
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      link.style.display = 'none';
+      
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } else {
+      // Native platform: use file system and sharing
+      const fileUri = `${FileSystem.documentDirectory}${filename}`;
+      
+      // Write file to device storage
+      await FileSystem.writeAsStringAsync(fileUri, jsonString, {
+        encoding: FileSystem.EncodingType.UTF8,
+      });
+      
+      // Share the file
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(fileUri, {
+          mimeType: 'application/json',
+          dialogTitle: 'Export Data',
+        });
+      } else {
+        throw new Error('Sharing is not available on this device');
+      }
+    }
   } catch (error) {
     throw new ExportError(
       ExportErrorType.UNKNOWN_ERROR,
@@ -584,7 +614,7 @@ export async function handleDataExport(
     
     // 6. Create and trigger download
     console.log('💾 Creating download file...');
-    triggerDownload(exportData, filename);
+    await triggerDownload(exportData, filename);
     
     // 7. Log successful export
     const totalRecords = Object.values(exportData.metadata.recordCounts)

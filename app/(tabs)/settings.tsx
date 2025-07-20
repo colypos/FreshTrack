@@ -1,24 +1,20 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Globe, Bell, Download, Upload, Shield, CircleHelp as HelpCircle, ChevronRight, User, Building } from 'lucide-react-native';
 import { useLanguage } from '@/hooks/useLanguage';
-import { useStorage } from '@/hooks/useStorage';
+import { useStorage, dataEmitter } from '@/hooks/useStorage';
+import HelpModal from '@/components/HelpModal';
 import { handleDataExport, ExportError, getErrorMessage } from '@/utils/dataExport';
 import * as DocumentPicker from 'expo-document-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import designSystem from '@/styles/designSystem';
 
-const languages = [
-  { code: 'de', name: 'Deutsch' },
-  { code: 'fr', name: 'Français' },
-  { code: 'it', name: 'Italiano' },
-  { code: 'en', name: 'English' },
-];
-
 export default function SettingsScreen() {
-  const { t, currentLanguage, changeLanguage } = useLanguage();
+  const { t, currentLanguage, changeLanguage, availableLanguages, languageMetadata } = useLanguage();
   const { products, movements, alerts, addProduct } = useStorage();
   const [isExporting, setIsExporting] = useState(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
 
   /**
    * Handles the data export process with comprehensive error handling
@@ -185,14 +181,20 @@ export default function SettingsScreen() {
     try {
       // Import products if present
       if (data.products && Array.isArray(data.products)) {
+        // Get current products first
+        const currentProducts = [...products];
+        let importedCount = 0;
+        
         for (const productData of data.products) {
           // Check if product already exists
-          const existingProduct = products.find(p => 
+          const existingProduct = currentProducts.find(p => 
             p.name === productData.name && p.category === productData.category
           );
           
           if (!existingProduct) {
-            await addProduct({
+            // Create product object without calling addProduct
+            const newProduct = {
+              id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
               name: productData.name,
               category: productData.category || '',
               currentStock: productData.currentStock || 0,
@@ -202,8 +204,21 @@ export default function SettingsScreen() {
               location: productData.location || '',
               supplier: productData.supplier || '',
               barcode: productData.barcode || '',
-            });
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            };
+            
+            currentProducts.push(newProduct);
+            importedCount++;
           }
+        }
+        
+        // Save all products at once using the storage hook's saveProducts method
+        if (importedCount > 0) {
+          await AsyncStorage.setItem('products', JSON.stringify(currentProducts));
+          
+          // Trigger data reload using the data emitter
+          dataEmitter.emit('dataChanged');
         }
       }
       
@@ -234,6 +249,19 @@ export default function SettingsScreen() {
     } catch (error) {
       Alert.alert('Fehler', 'Datei konnte nicht gelesen werden.');
     }
+  };
+  // Handle language selection with disabled languages blocked
+  const handleLanguageSelect = (langCode: string) => {
+    // Check if language is disabled
+    const disabledLanguages = ['en', 'fr', 'it'];
+    
+    if (disabledLanguages.includes(langCode)) {
+      // Simply return without any action for disabled languages
+      return;
+    }
+    
+    // Only allow German language selection
+    changeLanguage(langCode);
   };
 
   const SettingItem = ({ 
@@ -298,32 +326,59 @@ export default function SettingsScreen() {
           <SettingItem
             icon={<Globe size={22} color={designSystem.colors.text.secondary} />}
             title={t('language')}
-            subtitle={languages.find(l => l.code === currentLanguage)?.name}
+            subtitle={languageMetadata[currentLanguage as keyof typeof languageMetadata]?.name}
             rightElement={
               <View style={styles.languageSelector}>
-                {languages.map(lang => (
+                {availableLanguages.map(langCode => {
+                  const lang = languageMetadata[langCode as keyof typeof languageMetadata];
+                  const isDisabled = ['en', 'fr', 'it'].includes(langCode);
+                  const isActive = currentLanguage === langCode;
+                  
+                  return (
                   <TouchableOpacity
-                    key={lang.code}
+                    key={langCode}
                     style={[
                       styles.languageButton,
-                      currentLanguage === lang.code && styles.languageButtonActive
+                      isActive && styles.languageButtonActive,
+                      isDisabled && styles.languageButtonDisabled
                     ]}
-                    onPress={() => changeLanguage(lang.code)}
+                    onPress={() => handleLanguageSelect(langCode)}
                     activeOpacity={designSystem.interactive.states.active.opacity}
                     accessibilityRole="button"
-                    accessibilityLabel={`Sprache ändern zu ${lang.name}`}
-                    accessibilityState={{ selected: currentLanguage === lang.code }}
+                    accessibilityLabel={
+                      isDisabled 
+                        ? `${lang.name} - Nicht verfügbar` 
+                        : `Sprache ändern zu ${lang.name}`
+                    }
+                    accessibilityState={{ 
+                      selected: isActive,
+                      disabled: isDisabled 
+                    }}
+                    accessibilityHint={
+                      isDisabled 
+                        ? 'Diese Sprache wird in einer zukünftigen Version implementiert'
+                        : undefined
+                    }
                   >
-                    <Text style={styles.languageText}>{lang.name}</Text>
+                    <View style={styles.languageContent}>
+                      <Text style={[
+                        styles.languageText,
+                        isDisabled && styles.languageTextDisabled
+                      ]}>
+                        {lang.name}
+                        {isDisabled && ' (Bald verfügbar)'}
+                      </Text>
+                    </View>
                   </TouchableOpacity>
-                ))}
+                  );
+                })}
               </View>
             }
           />
           <SettingItem
             icon={<Download size={22} color={designSystem.colors.text.secondary} />}
-            title="Daten exportieren"
-            subtitle={isExporting ? "Export läuft..." : "Alle Daten als JSON herunterladen"}
+            title={t('exportData')}
+            subtitle={isExporting ? t('loading') : "Alle Daten als JSON herunterladen"}
             onPress={handleExportData}
             rightElement={isExporting ? (
               <View style={styles.loadingIndicator}>
@@ -333,8 +388,8 @@ export default function SettingsScreen() {
           />
           <SettingItem
             icon={<Upload size={22} color={designSystem.colors.text.secondary} />}
-            title="Daten importieren"
-            subtitle="Produktdaten aus JSON-Datei importieren"
+            title={t('importData')}
+            subtitle="JSON-Datei mit Produktdaten auswählen"
             onPress={handleImportData}
           />
           <SettingItem
@@ -355,25 +410,24 @@ export default function SettingsScreen() {
           />
           <SettingItem
             icon={<HelpCircle size={22} color={designSystem.colors.text.secondary} />}
-            title="Hilfe & FAQ"
-            subtitle="Häufig gestellte Fragen"
-            onPress={() => console.log('Help')}
-          />
-          <SettingItem
-            icon={<HelpCircle size={22} color={designSystem.colors.text.secondary} />}
-            title="Kontakt"
-            subtitle="Support kontaktieren"
-            onPress={() => console.log('Contact')}
+            title={t('help')}
+            subtitle="Häufig gestellte Fragen und Anleitungen"
+            onPress={() => setShowHelpModal(true)}
           />
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.versionText}>FreshTrack v0.2.0</Text>
+          <Text style={styles.versionText}>FreshTrack v0.3.7.3</Text>
           <Text style={styles.copyrightText}>
             © 2025 FreshTrack. Entwickelt für nachhaltige Gastronomie.
           </Text>
         </View>
       </ScrollView>
+      
+      <HelpModal 
+        visible={showHelpModal} 
+        onClose={() => setShowHelpModal(false)} 
+      />
     </SafeAreaView>
   );
 }
@@ -452,12 +506,12 @@ const styles = StyleSheet.create({
   },
   languageSelector: {
     flexDirection: 'column',
-    gap: designSystem.spacing.md,
-    minWidth: 120,
+    gap: designSystem.spacing.sm,
+    minWidth: designSystem.getResponsiveValue(140, 160, 180),
   },
   languageButton: {
     width: '100%',
-    height: 44,
+    height: designSystem.accessibility.minTouchTarget.minHeight,
     borderRadius: designSystem.interactive.border.radius,
     backgroundColor: designSystem.colors.background.primary,
     justifyContent: 'center',
@@ -473,11 +527,27 @@ const styles = StyleSheet.create({
     borderColor: designSystem.interactive.border.color,
     ...designSystem.shadows.medium,
   },
+  languageContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   languageText: {
     ...designSystem.componentStyles.textSecondary,
     fontWeight: '600',
     textAlign: 'center',
-    lineHeight: 16,
+    lineHeight: designSystem.getResponsiveValue(16, 18, 20),
+    fontSize: designSystem.getResponsiveValue(14, 15, 16),
+  },
+  languageButtonDisabled: {
+    backgroundColor: designSystem.colors.neutral[200],
+    borderColor: designSystem.colors.neutral[300],
+    opacity: 0.6,
+    ...designSystem.shadows.none,
+  },
+  languageTextDisabled: {
+    color: designSystem.colors.text.disabled,
+    fontWeight: '400',
   },
   footer: {
     padding: designSystem.spacing.xl,

@@ -273,11 +273,10 @@ export default function MovementsScreen() {
                     'Verwenden Sie den Scanner, um Lagerbewegungen zu erfassen'
                   }
                 </Text>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.emptyAction}
                   onPress={handleCreateMovement}
                   activeOpacity={designSystem.interactive.states.active.opacity}
-                  accessibilityLabel="Neue Bewegung hinzufügen"
                   accessibilityRole="button"
                 >
                   <Plus size={20} color={designSystem.colors.text.primary} />
@@ -614,6 +613,9 @@ const styles = StyleSheet.create({
     ...designSystem.componentStyles.textPrimary,
     fontWeight: '600',
   },
+  filterIndicator: {
+    ...designSystem.componentStyles.textSecondary,
+  },
   movementsList: {
     flex: 1,
   },
@@ -673,12 +675,6 @@ const styles = StyleSheet.create({
     flex: 1,
     marginBottom: 4,
   },
-  movementHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 6,
-  },
   movementCategory: {
     ...designSystem.componentStyles.textSecondary,
     fontSize: 13,
@@ -686,24 +682,38 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   movementDetails: {
-    flexDirection: 'row',
-    gap: designSystem.spacing.lg,
+    flexDirection: 'column',
+    gap: designSystem.spacing.sm,
     marginTop: 6,
   },
   detailItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: designSystem.spacing.xs,
+    minHeight: 20,
+    flex: 1,
+  },
+  detailItemQuantity: {
+    minWidth: 100,
+  },
+  detailItemDate: {
+    minWidth: 140,
+  },
+  detailItemUser: {
+    flex: 1,
+    minWidth: 0,
   },
   detailLabel: {
     ...designSystem.componentStyles.textCaption,
     fontSize: 11,
     fontWeight: '600',
+    minWidth: 45,
   },
   detailValue: {
     ...designSystem.componentStyles.textCaption,
     fontSize: 11,
     flex: 1,
+    minWidth: 0,
   },
   movementNotes: {
     ...designSystem.componentStyles.textCaption,
@@ -838,11 +848,6 @@ const styles = StyleSheet.create({
   },
   productInfo: {
     flex: 1,
-  },
-  productName: {
-    ...designSystem.componentStyles.textPrimary,
-    fontWeight: '600',
-    marginBottom: 4,
   },
   productDetails: {
     ...designSystem.componentStyles.textSecondary,

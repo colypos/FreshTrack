@@ -1,176 +1,289 @@
-# FreshTrack - Comprehensive Design System Documentation
+# FreshTrack - Intelligente Lagerverwaltung für die Gastronomie
 
-## 🎨 Design System Overview
+## 📱 Überblick
 
-FreshTrack implements a comprehensive Material Design-based system with WCAG 2.1 AA compliance, ensuring accessibility, consistency, and professional appearance across all platforms.
+FreshTrack ist eine moderne, benutzerfreundliche Mobile-App für die professionelle Lagerverwaltung in der Gastronomie. Die App hilft Restaurants, Cafés und anderen Gastronomiebetrieben dabei, ihre Lebensmittelbestände effizient zu verwalten, Verschwendung zu reduzieren und die Lebensmittelsicherheit zu gewährleisten.
 
-## 📐 Design Specifications
+## ✨ Hauptfunktionen
 
-### **Color System**
-- **Primary Colors**: Amber/Orange palette (#FFC107 - #FF6F00)
-- **Secondary Colors**: Deep Orange palette (#FF9800 - #E65100)
-- **Filter Colors**: 
-  - Default: #FDD86E
-  - Active: #FFB800
-  - Inactive: 50% opacity
-- **Semantic Colors**: Success (#4CAF50), Warning (#FF9800), Error (#F44336)
-- **Background**: Primary (#D0D0D0), Secondary (#F5C9A4), Surface (#FFFFFF)
-- **Text Colors**: WCAG AA compliant contrast ratios (21:1, 12.63:1, 4.54:1)
+### 🏠 **Dashboard**
+- **Echtzeit-Übersicht** über alle wichtigen Kennzahlen
+- **Produktanzahl gesamt** mit aktuellen Bestandszahlen
+- **Niedriger Bestand** - Warnung bei Unterschreitung der Mindestbestände
+- **Läuft bald ab** - Produkte, die in den nächsten 7 Tagen ablaufen
+- **Kritische Warnungen** - Abgelaufene Produkte und Produkte mit niedrigem Bestand
+- **Letzte Bewegungen** - Schneller Überblick über aktuelle Lagerbewegungen
 
-### **Typography System**
-- **Font Stack**: -apple-system, BlinkMacSystemFont, sans-serif
-- **Primary Text**: 16px/1.4 (Regular)
-- **Secondary Text**: 14px/1.4 (Light)
-- **Header Text**: 20px/1.4 (Bold)
-- **Title Text**: 28px/1.2 (Bold)
-- **Subtitle Text**: 18px/1.4 (Medium)
-- **Caption Text**: 12px/1.4 (Regular)
+### 📦 **Inventarverwaltung**
+- **Produktkatalog** mit detaillierten Informationen
+- **Kategoriefilter** für schnelle Navigation
+- **Suchfunktion** nach Name, Kategorie oder Standort
+- **Bestandsverfolgung** mit aktuellen und Mindestbeständen
+- **Verfallsdatumsverwaltung** im deutschen Format (DD.MM.YYYY)
+- **Standortverwaltung** für verschiedene Lagerorte
+- **Lieferantenverwaltung** für bessere Nachverfolgbarkeit
 
-### **Interactive Elements**
-- **Border**: 2px solid #000000
-- **Border Radius**: 3px
-- **Padding**: 12px horizontal, 8px vertical
-- **Hover State**: Background opacity 0.8
-- **Active State**: Background opacity 0.9
-- **Transition**: all 0.2s ease-in-out
-- **Hover Scale**: 1.02
+### 📱 **Barcode-Scanner**
+- **Kamera-Scanner** für schnelle Produkterfassung
+- **Manuelle Eingabe** als Alternative zum Scannen
+- **Automatische Produkterkennung** bei bekannten Barcodes
+- **Neue Produkte anlegen** direkt nach dem Scannen
+- **Lagerbewegungen erfassen** durch einfaches Scannen
 
-### **Spacing System (8px Grid)**
-- **XS**: 4px
-- **SM**: 8px
-- **MD**: 12px
-- **LG**: 16px
-- **XL**: 20px
-- **XXL**: 24px
-- **XXXL**: 32px
+### 📊 **Bewegungsverfolgung**
+- **Wareneingang** - Neue Lieferungen erfassen
+- **Warenausgang** - Verbrauch und Verkäufe dokumentieren
+- **Bestandsanpassungen** - Korrekturen und Inventuren
+- **Bewegungshistorie** mit vollständiger Nachverfolgbarkeit
+- **Benutzer-Tracking** für Verantwortlichkeit
+- **Grund-Dokumentation** für jede Bewegung
 
-### **List Elements**
-- **Vertical Gap**: 8px between items
-- **Container Padding**: 16px
-- **Card Internal Padding**: 16px
-- **Card Margins**: 12px bottom spacing
+### ⚙️ **Einstellungen & Verwaltung**
+- **Mehrsprachigkeit** (Deutsch, Englisch, Französisch, Italienisch)
+- **Datenexport** als JSON-Datei mit allen Informationen
+- **Datenimport** für Migration und Backup-Wiederherstellung
+- **Benutzerprofile** und Restaurantinformationen
 
-### **Category Filters**
-- **Container**: Horizontal scroll enabled
-- **Default State**: #FDD86E background, 2px solid #000000
-- **Active State**: #FFB800 background, 3px solid #000000
-- **Inactive State**: 50% opacity
-- **Padding**: 8px horizontal, 16px vertical
-- **Gap**: 12px between filters
-- **Border Radius**: 3px
+## 🛠️ Technische Spezifikationen
 
-### **Responsive Breakpoints**
-- **Mobile**: <768px (Full width, 1 column)
-- **Tablet**: 768px-1024px (2 columns)
-- **Desktop**: >1024px (3 columns, max-width 1200px)
+### **Plattform & Framework**
+- **React Native** mit Expo SDK 52.0.30
+- **Expo Router 4.0.17** für Navigation
+- **TypeScript** für Typsicherheit
+- **Cross-Platform** - iOS, Android und Web
 
-### **Settings Layout**
-- **Section Groups**: 24px vertical spacing
-- **Visual Dividers**: 1px solid rgba(0,0,0,0.1)
-- **Group Headers**: 18px/1.4 (Medium)
-- **Subsection Padding**: 16px
-- **Setting Items**: 64px minimum height
+### **Design System**
+- **Material Design** Prinzipien
+- **WCAG 2.1 AA** Barrierefreiheit
+- **Responsive Design** für alle Bildschirmgrössen
+- **8px Grid System** für konsistente Abstände
+- **Professionelle Farbpalette** mit hohem Kontrast
 
-### **Animation Specifications**
-- **Duration**: 200ms
-- **Easing**: ease-in-out
-- **State Transitions**: opacity, background-color, transform
-- **Hover Scale**: 1.02
-- **Touch Feedback**: activeOpacity 0.9
+### **Datenspeicherung**
+- **AsyncStorage** für lokale Datenpersistierung
+- **JSON-Export/Import** für Datensicherung
+- **Echtzeit-Synchronisation** zwischen App-Bereichen
+- **Sichere Datenverwaltung** mit Validierung
 
-### **Elevation System (Material Design)**
-- **None**: 0
-- **Low**: 2 (Cards, buttons)
-- **Medium**: 4 (Dropdowns, modals)
-- **High**: 8 (Navigation, overlays)
-- **Highest**: 16 (Tooltips, snackbars)
+### **Barcode-Unterstützung**
+- **QR-Codes** und Standard-Barcodes
+- **EAN-13, EAN-8** für Lebensmittel
+- **Code 128, Code 39** für interne Codes
+- **PDF417** für erweiterte Informationen
 
-### **Shadow System**
-- **Low**: shadowOpacity 0.2, shadowRadius 2
-- **Medium**: shadowOpacity 0.25, shadowRadius 4
-- **High**: shadowOpacity 0.3, shadowRadius 8
-- **Highest**: shadowOpacity 0.35, shadowRadius 16
+## 📋 Systemanforderungen
 
-## 🔧 Implementation Features
+### **Mobile Geräte**
+- **iOS**: Version 13.0 oder höher
+- **Android**: API Level 21 (Android 5.0) oder höher
+- **Kamera**: Für Barcode-Scanning erforderlich
+- **Speicher**: Mindestens 100 MB freier Speicherplatz
 
-### **WCAG 2.1 AA Compliance**
-- **Contrast Ratios**: All text meets minimum 4.5:1 ratio
-- **Touch Targets**: Minimum 44x44 points
-- **Focus Indicators**: 2px border with high contrast
-- **Screen Reader Support**: Comprehensive accessibility labels
-- **Keyboard Navigation**: Full keyboard support
+### **Web Browser** (Optional)
+- **Chrome**: Version 88 oder höher
+- **Safari**: Version 14 oder höher
+- **Firefox**: Version 85 oder höher
+- **Edge**: Version 88 oder höher
 
-### **Platform Optimization**
-- **iOS**: Native shadow properties
-- **Android**: Elevation system for Material Design
-- **Web**: Standard CSS z-index and transitions
-- **Cross-Platform**: Consistent appearance and behavior
+## 🚀 Installation & Setup
 
-### **Interactive States**
-- **Default**: Base styling with subtle shadows
-- **Hover**: 0.8 opacity with scale transform
-- **Active**: 0.9 opacity with enhanced shadows
-- **Focus**: High contrast border indicators
-- **Disabled**: 0.5 opacity with reduced interactivity
+### **Entwicklungsumgebung**
 
-### **Component Architecture**
-- **Modular Design**: Reusable component styles
-- **Consistent Spacing**: 8px grid system throughout
-- **Scalable Typography**: Responsive font sizing
-- **Flexible Layouts**: Adaptive to screen sizes
-- **Theme Support**: Centralized color management
+```bash
+# Repository klonen
+git clone [repository-url]
+cd freshtrack
 
-## 📱 Responsive Behavior
+# Abhängigkeiten installieren
+npm install
 
-### **Mobile (<768px)**
-- **Layout**: Single column, full width
-- **Touch Targets**: Optimized for finger interaction
-- **Spacing**: Increased padding for better usability
-- **Navigation**: Tab-based with large touch areas
+# Entwicklungsserver starten
+npm run dev
+```
 
-### **Tablet (768px-1024px)**
-- **Layout**: Two-column grid for lists
-- **Spacing**: Balanced padding and margins
-- **Content**: Optimized for landscape orientation
-- **Interaction**: Touch and mouse support
+### **Expo Go App** (Empfohlen für Tests)
 
-### **Desktop (>1024px)**
-- **Layout**: Three-column grid, centered content
-- **Max Width**: 1200px container
-- **Hover States**: Enhanced visual feedback
-- **Keyboard**: Full keyboard navigation support
+1. **Expo Go** aus dem App Store/Google Play Store installieren
+2. QR-Code scannen, der beim Start des Entwicklungsservers angezeigt wird
+3. App wird automatisch geladen und aktualisiert
 
-## 🎯 Design Principles
+### **Production Build**
 
-### **Material Design Compliance**
-- **Elevation**: Consistent shadow hierarchy
-- **Motion**: Meaningful transitions and animations
-- **Color**: Purposeful color application
-- **Typography**: Clear information hierarchy
+```bash
+# Web-Build erstellen
+npm run build:web
 
-### **Accessibility First**
-- **Inclusive Design**: Works for all users
-- **Screen Reader**: Comprehensive ARIA support
-- **High Contrast**: Meets WCAG standards
-- **Motor Accessibility**: Large touch targets
+# Native Builds (erfordert Expo EAS)
+eas build --platform ios
+eas build --platform android
+```
 
-### **Performance Optimized**
-- **Efficient Rendering**: Minimal re-renders
-- **Smooth Animations**: 60fps transitions
-- **Memory Management**: Optimized component lifecycle
-- **Bundle Size**: Minimal design system overhead
+## 📱 Benutzerhandbuch
 
-## 🔄 Maintenance & Updates
+### **Erste Schritte**
 
-### **Version Control**
-- **Semantic Versioning**: Clear update tracking
-- **Breaking Changes**: Documented migration paths
-- **Backward Compatibility**: Maintained when possible
+1. **App öffnen** - Das Dashboard zeigt eine Übersicht aller wichtigen Informationen
+2. **Erstes Produkt hinzufügen** - Über das "+" Symbol im Inventar-Tab
+3. **Barcode scannen** - Im Scanner-Tab für schnelle Produkterfassung
+4. **Bewegungen erfassen** - Wareneingänge und -ausgänge dokumentieren
 
-### **Documentation**
-- **Component Examples**: Live code samples
-- **Usage Guidelines**: Best practices
-- **Accessibility Notes**: Implementation requirements
-- **Platform Differences**: Specific considerations
+### **Produktverwaltung**
 
-This design system ensures FreshTrack maintains a professional, accessible, and consistent user experience across all platforms while following industry best practices and accessibility standards.
+**Neues Produkt anlegen:**
+- Name und Kategorie eingeben
+- Aktuellen Bestand und Mindestbestand festlegen
+- Verfallsdatum im Format DD.MM.YYYY
+- Lagerort und Lieferant (optional)
+
+**Bestand aktualisieren:**
+- Produkt im Inventar auswählen oder scannen
+- Bewegungstyp wählen (Ein-/Ausgang/Anpassung)
+- Menge und Grund eingeben
+- Speichern - Bestand wird automatisch aktualisiert
+
+### **Kategoriefilter verwenden**
+
+- **Alle Kategorien** anzeigen oder spezifische auswählen
+- **Mehrfachauswahl** durch Antippen mehrerer Kategorien
+- **Filter zurücksetzen** über "View All" Button
+- **Suchfunktion** kombiniert mit Kategoriefiltern
+
+### **Warnungen verstehen**
+
+- **🟡 Läuft bald ab**: Produkte, die in 7 Tagen oder weniger ablaufen
+- **🔴 Abgelaufen**: Produkte mit überschrittenem Verfallsdatum
+- **🟠 Niedriger Bestand**: Produkte unter dem Mindestbestand
+- **⚠️ Kritische Warnungen**: Kombination aus abgelaufenen und niedrigen Beständen
+
+## 🔧 Konfiguration
+
+### **Spracheinstellungen**
+
+Die App unterstützt vier Sprachen:
+- **Deutsch** (Standard)
+- **Englisch**
+- **Französisch** 
+- **Italienisch**
+
+Sprache ändern: Einstellungen → Sprache → Gewünschte Sprache auswählen
+
+### **Datenexport/-import**
+
+**Export:**
+- Einstellungen → "Daten exportieren"
+- JSON-Datei wird heruntergeladen
+- Enthält alle Produkte, Bewegungen und Einstellungen
+
+**Import:**
+- Einstellungen → "Daten importieren"
+- JSON-Datei auswählen
+- Daten werden validiert und importiert
+
+### **Benachrichtigungen**
+
+- **Verfallswarnungen**: 7, 3 und 1 Tag vor Ablauf
+- **Bestandswarnungen**: Bei Unterschreitung des Mindestbestands
+- **Tägliche Zusammenfassung**: Optional aktivierbar
+
+## 🎨 Design & Benutzerfreundlichkeit
+
+### **Barrierefreiheit**
+- **WCAG 2.1 AA** konform
+- **Hohe Kontraste** für bessere Lesbarkeit
+- **Grosse Touch-Targets** (mindestens 44x44 Punkte)
+- **Screen Reader** Unterstützung
+- **Tastaturnavigation** vollständig unterstützt
+
+### **Responsive Design**
+- **Mobile First** Ansatz
+- **Tablet-optimiert** mit Zwei-Spalten-Layout
+- **Automatische Anpassung** an Bildschirmgrösse
+
+### **Performance**
+- **Schnelle Ladezeiten** durch optimierte Komponenten
+- **Smooth Animationen** mit 60fps
+- **Effiziente Datenverwaltung** ohne Speicher-Leaks
+- **Offline-Funktionalität** für Kernfunktionen
+
+## 🔒 Datenschutz & Sicherheit
+
+### **Lokale Datenspeicherung**
+- Alle Daten werden **lokal auf dem Gerät** gespeichert
+- **Keine Cloud-Synchronisation** ohne explizite Zustimmung
+- **Verschlüsselte Speicherung** sensibler Informationen
+- **Automatische Backups** optional aktivierbar
+
+### **Datenexport**
+- **Rate Limiting**: Maximal 5 Exports pro Stunde
+- **Validierung**: Vollständige Datenprüfung vor Export
+- **Sichere Übertragung**: HTTPS für alle Netzwerkoperationen
+- **Audit-Log**: Vollständige Protokollierung aller Exports
+
+## 🐛 Fehlerbehebung
+
+### **Häufige Probleme**
+
+**Barcode-Scanner funktioniert nicht:**
+- Kamera-Berechtigung prüfen
+- Ausreichend Licht sicherstellen
+- Barcode vollständig im Rahmen positionieren
+
+**Daten werden nicht gespeichert:**
+- App-Berechtigungen prüfen
+- Ausreichend Speicherplatz sicherstellen
+- App neu starten
+
+**Performance-Probleme:**
+- App-Cache leeren
+- Gerät neu starten
+- Alte Bewegungsdaten archivieren
+
+### **Support kontaktieren**
+
+Bei technischen Problemen:
+- **E-Mail**: supportfreshtrack@isobel.ch
+- **Dokumentation**: [Link zur Online-Dokumentation]
+- **FAQ**: [Link zu häufigen Fragen]
+
+## 🚀 Roadmap & Zukünftige Features
+
+### **Version 1.0** (Q4 2025)
+- **Cloud-Synchronisation** zwischen Geräten
+- **Team-Funktionen** für mehrere Benutzer
+- **Erweiterte Berichte** und Analytics
+- **API-Integration** für Lieferanten
+
+### **Version 1.1** (Q1 2026)
+- **Automatische Bestellvorschläge** basierend auf Verbrauch
+- **Rezeptverwaltung** mit Zutatenverfolgung
+- **Kostenverfolgung** und Gewinnmargen-Analyse
+- **Mobile Etikettendruck** für Produkte
+
+### **Version 2.0** (Q3 2026)
+- **KI-gestützte Vorhersagen** für Bestellmengen
+- **Integration mit Kassensystemen**
+- **Erweiterte Compliance-Features** für Lebensmittelsicherheit
+- **Multi-Standort-Verwaltung** für Ketten
+
+## 📄 Lizenz & Copyright
+
+**FreshTrack v0.6.0**
+© 2025 FreshTrack Development Team
+
+Entwickelt für nachhaltige Gastronomie und effiziente Lagerverwaltung.
+
+**Technologie-Stack:**
+- React Native & Expo
+- TypeScript
+- Material Design
+- AsyncStorage
+- Expo Camera
+
+**Unterstützte Plattformen:**
+- iOS (iPhone & iPad)
+- Android (Smartphones & Tablets)
+- Web (Desktop & Mobile Browser)
+
+---
+
+*Für weitere Informationen besuchen Sie unsere Website oder kontaktieren Sie unser Support-Team.*
