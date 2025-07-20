@@ -157,16 +157,6 @@ eas build --platform android
 
 ## 🔧 Konfiguration
 
-### **Spracheinstellungen**
-
-Die App unterstützt vier Sprachen:
-- **Deutsch** (Standard)
-- **Englisch**
-- **Französisch** 
-- **Italienisch**
-
-Sprache ändern: Einstellungen → Sprache → Gewünschte Sprache auswählen
-
 ### **Datenexport/-import**
 
 **Export:**
@@ -211,7 +201,6 @@ Sprache ändern: Einstellungen → Sprache → Gewünschte Sprache auswählen
 - Alle Daten werden **lokal auf dem Gerät** gespeichert
 - **Keine Cloud-Synchronisation** ohne explizite Zustimmung
 - **Verschlüsselte Speicherung** sensibler Informationen
-- **Automatische Backups** optional aktivierbar
 
 ### **Datenexport**
 - **Rate Limiting**: Maximal 5 Exports pro Stunde
@@ -248,10 +237,15 @@ Bei technischen Problemen:
 ## 🚀 Roadmap & Zukünftige Features
 
 ### **Version 1.0** (Q4 2025)
+- ****
+  **Automatische Backups** optional aktivierbar
 - **Cloud-Synchronisation** zwischen Geräten
 - **Team-Funktionen** für mehrere Benutzer
 - **Erweiterte Berichte** und Analytics
 - **API-Integration** für Lieferanten
+- **Multisprachumgebung** auch Englisch, Französisch und Italienisch
+
+Sprache ändern: Einstellungen → Sprache → Gewünschte Sprache auswählen
 
 ### **Version 1.1** (Q1 2026)
 - **Automatische Bestellvorschläge** basierend auf Verbrauch
@@ -267,7 +261,7 @@ Bei technischen Problemen:
 
 ## 📄 Lizenz & Copyright
 
-**FreshTrack v0.6.0**
+**FreshTrack v0.3.7.3**
 © 2025 FreshTrack Development Team
 
 Entwickelt für nachhaltige Gastronomie und effiziente Lagerverwaltung.
