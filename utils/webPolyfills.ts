@@ -72,25 +72,25 @@ export const testCameraCapabilities = async () => {
   if (typeof window === 'undefined') return;
 
   try {
-    console.log('🎥 Testing camera capabilities...');
+    console.log('🚨 TESTING CAMERA CAPABILITIES...');
 
     // Teste MediaDevices API
     if (navigator.mediaDevices) {
       const devices = await navigator.mediaDevices.enumerateDevices();
       const cameras = devices.filter(device => device.kind === 'videoinput');
-      console.log(`📹 Found ${cameras.length} camera(s):`, cameras.map(c => c.label || 'Unknown Camera'));
+      console.log(`🚨 FOUND ${cameras.length} CAMERA(S):`, cameras.map(c => c.label || 'Unknown Camera'));
 
       // Teste Kamera-Zugriff
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: 'environment' }
         });
-        console.log('✅ Camera access successful');
+        console.log('🚨 CAMERA ACCESS SUCCESSFUL');
         
         // Stream sofort wieder stoppen
         stream.getTracks().forEach(track => track.stop());
       } catch (cameraError) {
-        console.error('❌ Camera access failed:', cameraError);
+        console.error('🚨 CAMERA ACCESS FAILED:', cameraError);
       }
     }
 
@@ -100,14 +100,19 @@ export const testCameraCapabilities = async () => {
         const detector = new (window as any).BarcodeDetector({
           formats: ['qr_code', 'ean_13', 'code_128']
         });
-        console.log('✅ BarcodeDetector instance created successfully');
+        console.log('🚨 BARCODEDETECTOR INSTANCE CREATED SUCCESSFULLY');
+        
+        // Teste unterstützte Formate
+        const formats = await (window as any).BarcodeDetector.getSupportedFormats();
+        console.log('🚨 SUPPORTED BARCODE FORMATS:', formats);
       } catch (detectorError) {
-        console.error('❌ BarcodeDetector creation failed:', detectorError);
+        console.error('🚨 BARCODEDETECTOR CREATION FAILED:', detectorError);
       }
     }
+      console.log('🚨 BARCODEDETECTOR NOT AVAILABLE - USING EXPO FALLBACK');
 
   } catch (error) {
-    console.error('❌ Camera capability test failed:', error);
+    console.error('🚨 CAMERA CAPABILITY TEST FAILED:', error);
   }
 };
 

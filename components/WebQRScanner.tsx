@@ -126,7 +126,7 @@ export default function WebQRScanner({ onScan, isActive, style }: WebQRScannerPr
           
           if (barcodes.length > 0) {
             const barcode = barcodes[0];
-            console.log('✅ QR Code detected via BarcodeDetector:', barcode.rawValue);
+            console.log('🚨 WEB SCANNER: QR Code detected via BarcodeDetector:', barcode.rawValue);
             onScan(barcode.rawValue);
             return; // Stoppe nach erstem erfolgreichen Scan
           }

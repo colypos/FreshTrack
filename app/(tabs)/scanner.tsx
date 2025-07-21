@@ -51,6 +51,16 @@ export default function ScannerScreen() {
         console.log('🔄 BarcodeDetector not available, enabling web scanner fallback');
         setUseWebScanner(true);
       }
+      
+      // Zusätzliche Debug-Informationen
+      console.log('🔧 Scanner Debug Info:', {
+        platform: Platform.OS,
+        userAgent: navigator.userAgent,
+        hasGetUserMedia: !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia),
+        hasBarcodeDetector: 'BarcodeDetector' in window,
+        isHTTPS: window.location.protocol === 'https:',
+        hostname: window.location.hostname
+      });
     }
   }, []);
   
@@ -82,6 +92,12 @@ export default function ScannerScreen() {
    */
   const handleBarcodeScanned = useCallback(async (data: string) => {
     const now = Date.now();
+    
+    console.log('🚨 HANDLE BARCODE SCANNED CALLED:', {
+      data,
+      timestamp: now,
+      scannerState
+    });
     
     // Log scan attempt für Web-Debugging
     if (Platform.OS === 'web') {
@@ -249,9 +265,21 @@ export default function ScannerScreen() {
    * Überwachter useEffect für scannedData
    */
   useEffect(() => {
+    console.log('🚨 SCANNED DATA EFFECT TRIGGERED:', {
+      scannedData,
+      isProcessing: scannerState.isProcessing,
+      dialogActive: scannerState.dialogActive
+    });
+    
     if (scannedData && !scannerState.isProcessing && !scannerState.dialogActive) {
-      console.log('📊 Processing scanned data:', scannedData);
+      console.log('🚨 PROCESSING SCANNED DATA:', scannedData);
       handleBarcodeScanned(scannedData);
+    } else if (scannedData) {
+      console.log('🚨 SCANNED DATA BLOCKED:', {
+        hasData: !!scannedData,
+        isProcessing: scannerState.isProcessing,
+        dialogActive: scannerState.dialogActive
+      });
     }
   }, [scannedData, handleBarcodeScanned, scannerState.isProcessing, scannerState.dialogActive]);
 
@@ -382,14 +410,21 @@ export default function ScannerScreen() {
    * Sicherer Camera Handler mit Debouncing
    */
   const handleCameraBarcodeScan = useCallback(({ data }: { data: string }) => {
-    // Debug-Logging für Web-Deployment
-    console.log('🔍 Camera scan detected:', {
+    // KRITISCHES Debug-Logging - IMMER ausgeben
+    console.log('🚨 CAMERA SCAN EVENT TRIGGERED:', {
       data,
       timestamp: new Date().toISOString(),
       userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown',
       isProcessing: scannerState.isProcessing,
-      dialogActive: scannerState.dialogActive
+      dialogActive: scannerState.dialogActive,
+      eventType: 'handleCameraBarcodeScan'
     });
+    
+    // Zusätzliche Validierung
+    if (!data || typeof data !== 'string') {
+      console.error('❌ Invalid barcode data received:', data);
+      return;
+    }
     
     // Zusätzlicher Schutz auf Camera-Level
     if (scannerState.isProcessing || scannerState.dialogActive) {
@@ -400,7 +435,7 @@ export default function ScannerScreen() {
       return;
     }
     
-    console.log('✅ Camera scan accepted, setting scanned data:', data);
+    console.log('✅ CAMERA SCAN ACCEPTED - Setting scanned data:', data);
     setScannedData(data);
   }, [scannerState.isProcessing, scannerState.dialogActive]);
 
@@ -530,16 +565,25 @@ export default function ScannerScreen() {
             facing="back"
             onBarcodeScanned={handleCameraBarcodeScan}
             barcodeScannerSettings={{
-              barcodeTypes: ['qr', 'pdf417', 'ean13', 'ean8', 'code128', 'code39'],
-              interval: 1000, // Scan-Intervall in Millisekunden für bessere Web-Performance
+              barcodeTypes: ['qr', 'pdf417', 'ean13', 'ean8', 'code128', 'code39', 'aztec', 'datamatrix'],
+              interval: 500, // Reduziertes Intervall für bessere Responsivität
             }}
             enableTorch={false}
+            // Zusätzliche Props für Web-Kompatibilität
+            {...(Platform.OS === 'web' && {
+              onCameraReady: () => {
+                console.log('📷 Camera ready for scanning');
+              },
+              onMountError: (error: any) => {
+                console.error('📷 Camera mount error:', error);
+              }
+            })}
           >
             {/* Web-Scanner Fallback für Browser ohne BarcodeDetector */}
             {Platform.OS === 'web' && useWebScanner && (
               <WebQRScanner
                 onScan={(data) => {
-                  console.log('🌐 Web scanner detected code:', data);
+                  console.log('🚨 WEB SCANNER CALLBACK: Code detected:', data);
                   handleCameraBarcodeScan({ data });
                 }}
                 isActive={showCamera}
@@ -550,6 +594,9 @@ export default function ScannerScreen() {
               <View style={styles.scanFrame} />
               <Text style={styles.scanInstructions}>
                 Richten Sie den Barcode im Rahmen aus
+              </Text>
+              <Text style={styles.debugInstructions}>
+                Debug: Prüfen Sie die Browser-Konsole für Scan-Events
               </Text>
               {scannerState.isProcessing && (
                 <Text style={styles.processingText}>
@@ -851,6 +898,13 @@ const styles = StyleSheet.create({
     ...designSystem.componentStyles.textCaption,
     color: designSystem.colors.warning[500],
     marginTop: 4,
+  },
+  debugInstructions: {
+    ...designSystem.componentStyles.textCaption,
+    color: designSystem.colors.warning[300],
+    textAlign: 'center',
+    marginTop: designSystem.spacing.sm,
+    fontSize: 12,
   },
   content: {
     flex: 1,
