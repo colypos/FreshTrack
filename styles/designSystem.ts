@@ -1,5 +1,5 @@
 // Design System - Material Design Implementation with WCAG 2.1 AA Compliance
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet, Dimensions, Platform } from 'react-native';
 
 const { width: screenWidth } = Dimensions.get('window');
 
