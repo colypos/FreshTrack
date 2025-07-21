@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Platform } from 'react-native';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Modal, Alert, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, Plus, Filter, Package, Calendar, MapPin, Menu, X, Grid2x2 as Grid, List } from 'lucide-react-native';
@@ -347,7 +348,9 @@ export default function InventoryScreen() {
             </View>
             <View style={[styles.detailItem, styles.detailItemDate]}>
               <Calendar size={14} color="#6B7280" />
-              <Text style={styles.detailValue} numberOfLines={1}>{formatGermanDate(product.expiryDate)}</Text>
+              <Text style={[styles.detailValue, styles.detailValueDate]} numberOfLines={1} ellipsizeMode="tail">
+                {formatGermanDate(product.expiryDate)}
+              </Text>
             </View>
             <View style={[styles.detailItem, styles.detailItemLocation]}>
               <MapPin size={14} color="#6B7280" />
@@ -945,6 +948,9 @@ const styles = StyleSheet.create({
     gap: designSystem.spacing.md,
     minHeight: 64,
     marginBottom: 0,
+    width: '100%',
+    maxWidth: '100%',
+    overflow: 'hidden',
     ...designSystem.shadows.low,
   },
   productIcon: {
@@ -961,6 +967,8 @@ const styles = StyleSheet.create({
   productListContent: {
     flex: 1,
     minWidth: 0,
+    maxWidth: '100%',
+    overflow: 'hidden',
   },
   statusBadge: {
     paddingHorizontal: designSystem.spacing.sm,
@@ -994,35 +1002,54 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     gap: designSystem.spacing.sm,
     marginTop: 6,
+    width: '100%',
+    overflow: 'hidden',
   },
   detailItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: designSystem.spacing.xs,
     minHeight: 20,
-    flex: 1,
+    width: '100%',
+    maxWidth: '100%',
+    overflow: 'hidden',
   },
   detailItemStock: {
-    minWidth: 120,
+    minWidth: 100,
+    maxWidth: '100%',
   },
   detailItemDate: {
-    minWidth: 140,
+    minWidth: 120,
+    maxWidth: '100%',
+    flexShrink: 1,
   },
   detailItemLocation: {
-    flex: 1,
-    minWidth: 0,
+    minWidth: 100,
+    maxWidth: '100%',
+    flexShrink: 1,
   },
   detailLabel: {
     ...designSystem.componentStyles.textCaption,
     fontSize: 11,
     fontWeight: '600',
-    minWidth: 50,
+    minWidth: 45,
+    maxWidth: 60,
+    flexShrink: 0,
   },
   detailValue: {
     ...designSystem.componentStyles.textCaption,
     fontSize: 11,
-    flex: 1,
-    minWidth: 0,
+    flexShrink: 1,
+    flexGrow: 1,
+    maxWidth: '100%',
+    overflow: 'hidden',
+  },
+  detailValueDate: {
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    letterSpacing: Platform.OS === 'ios' ? 0.5 : 0,
+    minWidth: 70,
+    maxWidth: 90,
+    textAlign: 'left',
   },
   
   // Empty State
