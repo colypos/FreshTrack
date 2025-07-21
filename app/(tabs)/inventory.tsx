@@ -472,10 +472,18 @@ export default function InventoryScreen() {
             </Text>
           </View>
 
-          <ScrollView 
-            style={styles.productList} 
+          <ScrollView
+            style={styles.productList}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.productListContent}
+            contentContainerStyle={[
+              styles.productListContent,
+              { minHeight: filteredProducts.length * 120 + 100 } // Ensure minimum height for all products
+            ]}
+            scrollEnabled={true}
+            bounces={true}
+            alwaysBounceVertical={false}
+            keyboardShouldPersistTaps="handled"
+            nestedScrollEnabled={true}
           >
             <View style={styles.productListView}>
               {filteredProducts.map(product => (
@@ -886,6 +894,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: designSystem.colors.background.primary,
     paddingHorizontal: designSystem.spacing.xl,
+    minHeight: 0, // Allow flex shrinking
   },
   productArea: {
     flex: 1,
@@ -893,11 +902,13 @@ const styles = StyleSheet.create({
     width: '100%',
     alignSelf: 'center',
     backgroundColor: designSystem.colors.background.primary,
+    minHeight: 0, // Allow flex shrinking
   },
   productHeader: {
     paddingHorizontal: 0,
     paddingVertical: designSystem.spacing.md,
     borderBottomColor: designSystem.colors.border.secondary,
+    flexShrink: 0, // Prevent header from shrinking
   },
   resultCount: {
     ...designSystem.componentStyles.textPrimary,
@@ -910,11 +921,13 @@ const styles = StyleSheet.create({
   },
   productList: {
     flex: 1,
+    minHeight: 0, // Critical for iOS scrolling
   },
   productListContent: {
-    padding: 0,
+    flexGrow: 1,
     paddingTop: designSystem.spacing.sm,
     paddingBottom: designSystem.spacing.xxl,
+    paddingHorizontal: 0,
   },
   
   // Product List View

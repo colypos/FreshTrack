@@ -66,7 +66,7 @@ export default function KeyboardAwareScrollView({
     if (enableAutomaticScroll && currentlyFocusedField) {
       setTimeout(() => {
         scrollToFocusedField();
-      }, 100);
+      }, 150); // Slightly longer delay for iOS
     }
   };
 
@@ -110,25 +110,37 @@ export default function KeyboardAwareScrollView({
   };
 
   // Calculate available height considering keyboard
-  const availableHeight = screenHeight - keyboardHeight - insets.top - insets.bottom;
+  const availableHeight = Math.max(
+    screenHeight - keyboardHeight - insets.top - insets.bottom,
+    200 // Minimum height to prevent layout collapse
+  );
   const needsScrolling = contentHeight > availableHeight;
 
   return (
     <KeyboardAvoidingView
       style={[styles.container, style]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top : 0}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0} // Remove offset that may interfere
     >
       <ScrollView
         ref={scrollViewRef}
-        style={[styles.scrollView, { maxHeight: availableHeight }]}
+        style={[
+          styles.scrollView, 
+          Platform.OS === 'ios' && keyboardHeight === 0 
+            ? { flex: 1 } // Use flex when keyboard is hidden
+            : { maxHeight: availableHeight }
+        ]}
         contentContainerStyle={[
           styles.contentContainer,
           contentContainerStyle,
-          needsScrolling && { paddingBottom: extraScrollHeight }
+          needsScrolling && { paddingBottom: extraScrollHeight },
+          Platform.OS === 'ios' && { flexGrow: 1 } // Ensure content can grow on iOS
         ]}
         keyboardShouldPersistTaps={keyboardShouldPersistTaps}
         showsVerticalScrollIndicator={needsScrolling}
+        scrollEnabled={true}
+        bounces={Platform.OS === 'ios'}
+        alwaysBounceVertical={false}
         onLayout={handleScrollViewLayout}
         onContentSizeChange={handleContentSizeChange}
         onScroll={handleScroll}
@@ -182,9 +194,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollView: {
-    flex: 1,
+    flexGrow: 1,
+    flexShrink: 1,
   },
   contentContainer: {
     flexGrow: 1,
+    ...(Platform.OS === 'ios' && {
+      minHeight: '100%', // Ensure full height utilization on iOS
+    }),
   },
 });
