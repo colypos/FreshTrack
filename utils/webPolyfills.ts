@@ -90,7 +90,20 @@ export const testCameraCapabilities = async () => {
         // Stream sofort wieder stoppen
         stream.getTracks().forEach(track => track.stop());
       } catch (cameraError) {
-        console.error('🚨 CAMERA ACCESS FAILED:', cameraError);
+        console.warn('🚨 REAR CAMERA ACCESS FAILED, trying front camera:', cameraError);
+        
+        // Fallback: Versuche Front-Kamera
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'user' }
+          });
+          console.log('🚨 FRONT CAMERA ACCESS SUCCESSFUL');
+          
+          // Stream sofort wieder stoppen
+          stream.getTracks().forEach(track => track.stop());
+        } catch (frontCameraError) {
+          console.error('🚨 CAMERA ACCESS FAILED:', frontCameraError);
+        }
       }
     }
 
