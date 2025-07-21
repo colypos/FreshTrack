@@ -381,6 +381,18 @@ export default function InventoryScreen() {
     );
   };
 
+  const viewAllButton = (
+    <TouchableOpacity
+      onPress={showAllProducts}
+      activeOpacity={designSystem.interactive.states.active.opacity}
+      accessibilityLabel="Alle Filter zurücksetzen und alle Produkte anzeigen"
+      accessibilityRole="button"
+      style={styles.viewAllButton}
+    >
+      <Text style={styles.viewAllText}>View All</Text>
+    </TouchableOpacity>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header with Search */}
@@ -430,17 +442,7 @@ export default function InventoryScreen() {
           <View style={styles.categoryFilterHeader}>
             <Text style={styles.categoryFilterTitle}>Kategorien</Text>
             <View style={styles.filterActions}>
-              {(selectedCategories.length > 0 || searchQuery.length > 0 || params.filter) && (
-                <TouchableOpacity
-                  onPress={showAllProducts}
-                  activeOpacity={designSystem.interactive.states.active.opacity}
-                  accessibilityLabel="Alle Filter zurücksetzen und alle Produkte anzeigen"
-                  accessibilityRole="button"
-                  style={styles.viewAllButton}
-                >
-                  <Text style={styles.viewAllText}>View All</Text>
-                </TouchableOpacity>
-              )}
+              {(selectedCategories.length > 0 || searchQuery.length > 0 || params.filter) && viewAllButton}
             </View>
           </View>
           
@@ -518,7 +520,6 @@ export default function InventoryScreen() {
                   onPress={() => setShowAddModal(true)}
                   activeOpacity={0.7}
                   hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                  activeOpacity={designSystem.interactive.states.active.opacity}
                   accessibilityLabel="Erstes Produkt hinzufügen"
                   accessibilityRole="button"
                   testID="calendar-button"
@@ -655,6 +656,7 @@ export default function InventoryScreen() {
                     placeholder="DD.MM.YYYY"
                     placeholderTextColor="#6B7280"
                     returnKeyType="next"
+                  />
                   <View style={styles.calendarButtonContainer}>
                     <TouchableOpacity 
                       style={[styles.calendarButton, showCalendarWidget && styles.calendarButtonActive]}
@@ -934,6 +936,21 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: designSystem.colors.error[500],
   },
+  viewAllButton: {
+    backgroundColor: designSystem.colors.background.secondary,
+    borderWidth: designSystem.interactive.border.width,
+    borderColor: designSystem.interactive.border.color,
+    borderRadius: designSystem.interactive.border.radius,
+    paddingHorizontal: designSystem.spacing.md,
+    paddingVertical: designSystem.spacing.xs,
+    ...designSystem.shadows.low,
+  },
+  viewAllText: {
+    ...designSystem.componentStyles.textSecondary,
+    fontWeight: '600',
+    color: designSystem.colors.error[500],
+    fontSize: 12,
+  },
   categoryFilterButtons: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -1057,6 +1074,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 2,
+  },
+  productListContent: {
+    flex: 1,
+    minWidth: 0,
   },
   statusBadge: {
     paddingHorizontal: designSystem.spacing.sm,
