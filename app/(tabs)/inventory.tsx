@@ -20,7 +20,6 @@ export default function InventoryScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showCalendarWidget, setShowCalendarWidget] = useState(false);
   
@@ -234,7 +233,6 @@ export default function InventoryScreen() {
   const handleDateSelect = (selectedDate: string) => {
     setNewProduct({...newProduct, expiryDate: selectedDate});
     setSelectedDate(selectedDate);
-    setShowDatePicker(false);
     setShowCalendarWidget(false);
     
     // Trigger haptic feedback on iOS
@@ -249,28 +247,6 @@ export default function InventoryScreen() {
     setShowCalendarWidget(!showCalendarWidget);
     // Trigger haptic feedback on iOS
     iOSCalendarUtils.triggerHapticFeedback();
-  };
-
-  const generateDateOptions = () => {
-    const dates = [];
-    const today = new Date();
-    
-    for (let i = 0; i < 730; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      
-      const day = date.getDate().toString().padStart(2, '0');
-      const month = (date.getMonth() + 1).toString().padStart(2, '0');
-      const year = date.getFullYear();
-      
-      dates.push({
-        formatted: `${day}.${month}.${year}`,
-        display: `${day}.${month}.${year}`,
-        date: date
-      });
-    }
-    
-    return dates;
   };
 
   // Get current category display info
@@ -658,33 +634,19 @@ export default function InventoryScreen() {
                     returnKeyType="next"
                   />
                   />
-                  <View style={styles.calendarButtonContainer}>
-                    <TouchableOpacity 
-                      style={[styles.calendarButton, showCalendarWidget && styles.calendarButtonActive]}
-                      onPress={toggleCalendarWidget}
-                      activeOpacity={0.7}
-                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                      accessibilityLabel={showCalendarWidget ? "Kalender schließen" : "Kalender öffnen"}
-                      accessibilityHint="Datum aus Kalender auswählen"
-                      accessibilityRole="button"
-                      accessibilityState={{ expanded: showCalendarWidget }}
-                      testID="calendar-toggle-button"
-                    >
-                      <Calendar size={20} color={showCalendarWidget ? designSystem.colors.secondary[600] : "#6b7280"} />
-                    </TouchableOpacity>
-                    <TouchableOpacity 
-                      style={styles.calendarButton}
-                      onPress={() => setShowDatePicker(true)}
-                      activeOpacity={0.7}
-                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                      accessibilityLabel="Erweiterten Kalender öffnen"
-                      accessibilityHint="Vollständigen Kalender mit mehr Optionen öffnen"
-                      accessibilityRole="button"
-                      testID="calendar-modal-button"
-                    >
-                      <Text style={styles.calendarButtonText}>📅</Text>
-                    </TouchableOpacity>
-                  </View>
+                  <TouchableOpacity 
+                    style={[styles.calendarButton, showCalendarWidget && styles.calendarButtonActive]}
+                    onPress={toggleCalendarWidget}
+                    activeOpacity={0.7}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    accessibilityLabel={showCalendarWidget ? "Kalender schließen" : "Kalender öffnen"}
+                    accessibilityHint="Datum aus Kalender auswählen"
+                    accessibilityRole="button"
+                    accessibilityState={{ expanded: showCalendarWidget }}
+                    testID="calendar-toggle-button"
+                  >
+                    <Calendar size={20} color={showCalendarWidget ? designSystem.colors.secondary[600] : "#6b7280"} />
+                  </TouchableOpacity>
                 </View>
                 
                 {/* Inline Calendar Widget */}
@@ -731,114 +693,6 @@ export default function InventoryScreen() {
                   accessibilityLabel="Lieferant eingeben"
                   accessibilityHint="Name des Produktlieferanten"
                 />
-              </View>
-            </View>
-          </ScrollView>
-        </SafeAreaView>
-      </Modal>
-
-      {/* Date Picker Modal */}
-      <Modal 
-        visible={showDatePicker} 
-        animationType="slide" 
-        presentationStyle="pageSheet"
-        onRequestClose={() => setShowDatePicker(false)}
-        supportedOrientations={['portrait', 'landscape']}
-      >
-        <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <TouchableOpacity 
-              onPress={() => setShowDatePicker(false)}
-              accessibilityLabel="Abbrechen"
-              accessibilityRole="button"
-            >
-              <Text style={styles.cancelButton}>{t('cancel')}</Text>
-            </TouchableOpacity>
-            <Text style={styles.modalTitle}>Datum auswählen</Text>
-            <TouchableOpacity 
-              onPress={() => setShowDatePicker(false)}
-              accessibilityLabel="Fertig"
-              accessibilityRole="button"
-            >
-              <Text style={styles.saveButton}>Fertig</Text>
-            </TouchableOpacity>
-          </View>
-          
-          <ScrollView style={styles.datePickerContent} showsVerticalScrollIndicator={false}>
-            <View style={styles.dateGrid}>
-              {generateDateOptions().slice(0, 60).map((dateOption, index) => {
-                const isSelected = newProduct.expiryDate === dateOption.formatted;
-                const isToday = index === 0;
-                const isThisWeek = index < 7;
-                
-                return (
-                  <TouchableOpacity
-                    key={dateOption.formatted}
-                    style={[
-                      styles.dateOption,
-                      isSelected && styles.dateOptionSelected,
-                      isToday && styles.dateOptionToday,
-                      isThisWeek && !isToday && styles.dateOptionThisWeek
-                    ]}
-                    onPress={() => handleDateSelect(dateOption.formatted)}
-                    activeOpacity={0.7}
-                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                    accessibilityLabel={`Datum ${dateOption.display} auswählen`}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: isSelected }}
-                    testID={`date-option-${dateOption.formatted}`}
-                  >
-                    <Text style={[
-                      styles.dateOptionText,
-                      isSelected && styles.dateOptionTextSelected,
-                      isToday && styles.dateOptionTextToday
-                    ]}>
-                      {dateOption.display}
-                    </Text>
-                    {isToday && (
-                      <Text style={styles.dateOptionLabel}>Heute</Text>
-                    )}
-                    {isThisWeek && !isToday && (
-                      <Text style={styles.dateOptionLabel}>
-                        {['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'][dateOption.date.getDay()]}
-                      </Text>
-                    )}
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-            
-            <View style={styles.quickDateSection}>
-              <Text style={styles.quickDateTitle}>Schnellauswahl</Text>
-              <View style={styles.quickDateButtons}>
-                {[
-                  { label: 'Heute', days: 0 },
-                  { label: 'Morgen', days: 1 },
-                  { label: 'In 1 Woche', days: 7 },
-                  { label: 'In 2 Wochen', days: 14 },
-                  { label: 'In 1 Monat', days: 30 },
-                  { label: 'In 3 Monaten', days: 90 },
-                ].map(option => {
-                  const date = new Date();
-                  date.setDate(date.getDate() + option.days);
-                  const formatted = `${date.getDate().toString().padStart(2, '0')}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getFullYear()}`;
-                  
-                  return (
-                    <TouchableOpacity
-                      key={option.label}
-                      style={styles.quickDateButton}
-                      onPress={() => handleDateSelect(formatted)}
-                      activeOpacity={0.7}
-                      hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}
-                      accessibilityLabel={`${option.label} auswählen: ${formatted}`}
-                      accessibilityRole="button"
-                      testID={`quick-date-${option.label.toLowerCase().replace(/\s+/g, '-')}`}
-                    >
-                      <Text style={styles.quickDateButtonText}>{option.label}</Text>
-                      <Text style={styles.quickDateButtonDate}>{formatted}</Text>
-                    </TouchableOpacity>
-                  );
-                })}
               </View>
             </View>
           </ScrollView>
@@ -1268,8 +1122,8 @@ const styles = StyleSheet.create({
     backgroundColor: designSystem.colors.background.secondary,
     borderWidth: designSystem.interactive.border.width,
     borderColor: designSystem.interactive.border.color,
-    width: iOSCalendarUtils.getMinimumTouchTarget(),
-    height: iOSCalendarUtils.getMinimumTouchTarget(),
+    width: 44,
+    height: 44,
     borderRadius: designSystem.interactive.border.radius,
     justifyContent: 'center',
     alignItems: 'center',
@@ -1281,113 +1135,9 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     ...designSystem.shadows.medium,
   },
-  calendarButtonContainer: {
-    flexDirection: 'row',
-    gap: designSystem.spacing.sm,
-  },
-  calendarButtonText: {
-    fontSize: 16,
-  },
   inlineCalendarContainer: {
     marginTop: designSystem.spacing.lg,
     borderRadius: designSystem.interactive.border.radius,
     overflow: 'hidden',
-  },
-  
-  // Date Picker Styles
-  datePickerContent: {
-    flex: 1,
-    padding: designSystem.spacing.xl,
-  },
-  dateGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: designSystem.spacing.sm,
-    marginBottom: designSystem.spacing.xxxl,
-  },
-  dateOption: {
-    backgroundColor: designSystem.colors.background.secondary,
-    borderWidth: designSystem.interactive.border.width,
-    borderColor: designSystem.interactive.border.color,
-    borderRadius: designSystem.interactive.border.radius,
-    padding: designSystem.spacing.md,
-    width: '31%',
-    alignItems: 'center',
-    minHeight: 64,
-    justifyContent: 'center',
-    minWidth: 44, // iOS minimum touch target
-    ...designSystem.shadows.low,
-  },
-  dateOptionSelected: {
-    backgroundColor: designSystem.colors.secondary[500],
-    borderColor: designSystem.interactive.border.color,
-    borderWidth: 2,
-    ...designSystem.shadows.medium,
-  },
-  dateOptionToday: {
-    backgroundColor: designSystem.colors.success[500],
-    borderColor: designSystem.interactive.border.color,
-    borderWidth: 2,
-    ...designSystem.shadows.medium,
-  },
-  dateOptionThisWeek: {
-    backgroundColor: designSystem.colors.warning[500],
-    borderColor: designSystem.interactive.border.color,
-    borderWidth: 2,
-    ...designSystem.shadows.medium,
-  },
-  dateOptionText: {
-    ...designSystem.componentStyles.textSecondary,
-    fontWeight: '600',
-    textAlign: 'center',
-    fontSize: 14,
-    lineHeight: 18,
-  },
-  dateOptionTextSelected: {
-    color: designSystem.colors.text.primary,
-    fontWeight: 'bold',
-  },
-  dateOptionTextToday: {
-    color: designSystem.colors.text.primary,
-    fontWeight: 'bold',
-  },
-  dateOptionLabel: {
-    ...designSystem.componentStyles.textCaption,
-    fontSize: 10,
-    marginTop: 2,
-    fontWeight: '500',
-    textAlign: 'center',
-  },
-  quickDateSection: {
-    marginTop: designSystem.spacing.xl,
-  },
-  quickDateTitle: {
-    ...designSystem.componentStyles.textSubtitle,
-    marginBottom: designSystem.spacing.lg,
-  },
-  quickDateButtons: {
-    gap: designSystem.spacing.sm,
-  },
-  quickDateButton: {
-    backgroundColor: designSystem.colors.background.secondary,
-    borderWidth: designSystem.interactive.border.width,
-    borderColor: designSystem.interactive.border.color,
-    borderRadius: designSystem.interactive.border.radius,
-    padding: designSystem.spacing.lg,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    minHeight: 64, // Increased for better iOS touch handling
-    ...designSystem.shadows.low,
-  },
-  quickDateButtonText: {
-    ...designSystem.componentStyles.textPrimary,
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  quickDateButtonDate: {
-    ...designSystem.componentStyles.textSecondary,
-    fontWeight: '500',
-    fontSize: 14,
   },
 });
