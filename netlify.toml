@@ -1,0 +1,68 @@
+# Netlify Konfiguration für FreshTrack App
+# Optimiert für Kamera-APIs und QR-Scanner Funktionalität
+
+[build]
+  command = "npm run build:web"
+  publish = "dist"
+
+# HTTP Headers für Kamera-APIs und Sicherheit
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Sicherheits-Headers
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    
+    # Permissions Policy für Kamera-Zugriff
+    Permissions-Policy = "camera=*, microphone=*, geolocation=self"
+    
+    # Feature Policy (Fallback für ältere Browser)
+    Feature-Policy = "camera 'self'; microphone 'self'; geolocation 'self'"
+    
+    # Content Security Policy für Kamera-APIs
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' https:; font-src 'self' data:;"
+
+# Cache-Optimierung für statische Assets
+[[headers]]
+  for = "/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# SPA Routing - alle Routen zu index.html weiterleiten
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Spezielle Weiterleitungen für API-ähnliche Pfade
+[[redirects]]
+  from = "/api/*"
+  to = "/index.html"
+  status = 200
+
+# Fehlerseiten
+[[redirects]]
+  from = "/404"
+  to = "/index.html"
+  status = 404
+
+# Build-Umgebungsvariablen
+[build.environment]
+  NODE_ENV = "production"
+  EXPO_NO_TELEMETRY = "1"
+
+# Funktionen (falls benötigt)
+[functions]
+  directory = "netlify/functions"

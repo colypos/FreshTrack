@@ -8,6 +8,8 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { useStorage } from '@/hooks/useStorage';
 import KeyboardAwareScrollView from '@/components/KeyboardAwareScrollView';
 import SmartTextInput from '@/components/SmartTextInput';
+import WebQRScanner from '@/components/WebQRScanner';
+import { initializeWebPolyfills, logScannerEvent, checkHTTPS } from '@/utils/webPolyfills';
 import designSystem from '@/styles/designSystem';
 
 export default function ScannerScreen() {
@@ -22,6 +24,7 @@ export default function ScannerScreen() {
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [pendingBarcode, setPendingBarcode] = useState<string>('');
+  const [useWebScanner, setUseWebScanner] = useState(false);
   
   // Scanner State Management - Lösung für Multiple Dialog Bug
   const [scannerState, setScannerState] = useState({
@@ -35,6 +38,21 @@ export default function ScannerScreen() {
   const scanProcessingRef = useRef(false);
   const dialogActiveRef = useRef(false);
   const scanCooldownRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Web-Polyfills initialisieren
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      initializeWebPolyfills();
+      checkHTTPS();
+      logScannerEvent('Scanner component mounted');
+      
+      // Prüfe ob BarcodeDetector verfügbar ist
+      if (!('BarcodeDetector' in window)) {
+        console.log('🔄 BarcodeDetector not available, enabling web scanner fallback');
+        setUseWebScanner(true);
+      }
+    }
+  }, []);
   
   const [movementData, setMovementData] = useState({
     type: 'in' as 'in' | 'out' | 'adjustment',
@@ -64,6 +82,11 @@ export default function ScannerScreen() {
    */
   const handleBarcodeScanned = useCallback(async (data: string) => {
     const now = Date.now();
+    
+    // Log scan attempt für Web-Debugging
+    if (Platform.OS === 'web') {
+      logScannerEvent('Barcode scan attempt', { data, timestamp: now });
+    }
     
     // Debug-Logging für Entwicklung
     if (__DEV__) {
@@ -359,12 +382,25 @@ export default function ScannerScreen() {
    * Sicherer Camera Handler mit Debouncing
    */
   const handleCameraBarcodeScan = useCallback(({ data }: { data: string }) => {
+    // Debug-Logging für Web-Deployment
+    console.log('🔍 Camera scan detected:', {
+      data,
+      timestamp: new Date().toISOString(),
+      userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown',
+      isProcessing: scannerState.isProcessing,
+      dialogActive: scannerState.dialogActive
+    });
+    
     // Zusätzlicher Schutz auf Camera-Level
     if (scannerState.isProcessing || scannerState.dialogActive) {
+      console.log('⚠️ Scan blocked on camera level:', {
+        isProcessing: scannerState.isProcessing,
+        dialogActive: scannerState.dialogActive
+      });
       return;
     }
     
-    console.log('📷 Camera scan detected:', data);
+    console.log('✅ Camera scan accepted, setting scanned data:', data);
     setScannedData(data);
   }, [scannerState.isProcessing, scannerState.dialogActive]);
 
@@ -495,8 +531,21 @@ export default function ScannerScreen() {
             onBarcodeScanned={handleCameraBarcodeScan}
             barcodeScannerSettings={{
               barcodeTypes: ['qr', 'pdf417', 'ean13', 'ean8', 'code128', 'code39'],
+              interval: 1000, // Scan-Intervall in Millisekunden für bessere Web-Performance
             }}
+            enableTorch={false}
           >
+            {/* Web-Scanner Fallback für Browser ohne BarcodeDetector */}
+            {Platform.OS === 'web' && useWebScanner && (
+              <WebQRScanner
+                onScan={(data) => {
+                  console.log('🌐 Web scanner detected code:', data);
+                  handleCameraBarcodeScan({ data });
+                }}
+                isActive={showCamera}
+                style={StyleSheet.absoluteFill}
+              />
+            )}
             <View style={styles.scanOverlay}>
               <View style={styles.scanFrame} />
               <Text style={styles.scanInstructions}>
