@@ -5,6 +5,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, Plus, Filter, Package, Calendar, MapPin, Menu, X, Grid2x2 as Grid, List } from 'lucide-react-native';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useStorage } from '@/hooks/useStorage';
+import { useCalendar, iOSCalendarUtils } from '@/hooks/useCalendar';
+import CalendarWidget from '@/components/CalendarWidget';
 import { Product } from '@/types';
 import designSystem from '@/styles/designSystem';
 
@@ -20,6 +22,7 @@ export default function InventoryScreen() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [showCalendarWidget, setShowCalendarWidget] = useState(false);
   
   const [newProduct, setNewProduct] = useState({
     name: '',
@@ -31,6 +34,18 @@ export default function InventoryScreen() {
     location: '',
     supplier: '',
     barcode: '',
+  });
+
+  const { 
+    selectedDate, 
+    setSelectedDate, 
+    isValidDate, 
+    formatDate, 
+    parseDate 
+  } = useCalendar({
+    initialDate: newProduct.expiryDate,
+    minDate: new Date(), // Don't allow past dates
+    maxDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000 * 3) // 3 years from now
   });
 
   const categories = Array.from(new Set(products.map(p => p.category))).filter(Boolean);
@@ -218,7 +233,22 @@ export default function InventoryScreen() {
 
   const handleDateSelect = (selectedDate: string) => {
     setNewProduct({...newProduct, expiryDate: selectedDate});
+    setSelectedDate(selectedDate);
     setShowDatePicker(false);
+    setShowCalendarWidget(false);
+    
+    // Trigger haptic feedback on iOS
+    iOSCalendarUtils.triggerHapticFeedback();
+  };
+
+  const handleCalendarWidgetSelect = (date: string) => {
+    handleDateSelect(date);
+  };
+
+  const toggleCalendarWidget = () => {
+    setShowCalendarWidget(!showCalendarWidget);
+    // Trigger haptic feedback on iOS
+    iOSCalendarUtils.triggerHapticFeedback();
   };
 
   const generateDateOptions = () => {
@@ -486,9 +516,12 @@ export default function InventoryScreen() {
                 <TouchableOpacity 
                   style={styles.emptyAction}
                   onPress={() => setShowAddModal(true)}
+                  activeOpacity={0.7}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                   activeOpacity={designSystem.interactive.states.active.opacity}
                   accessibilityLabel="Erstes Produkt hinzufügen"
                   accessibilityRole="button"
+                  testID="calendar-button"
                 >
                   <Plus size={20} color={designSystem.colors.text.primary} />
                   <Text style={styles.emptyActionText}>Produkt hinzufügen</Text>
@@ -622,19 +655,47 @@ export default function InventoryScreen() {
                     placeholder="DD.MM.YYYY"
                     placeholderTextColor="#6B7280"
                     returnKeyType="next"
-                    accessibilityLabel="Verfallsdatum eingeben"
-                    accessibilityHint="Datum im Format Tag.Monat.Jahr"
-                  />
-                  <TouchableOpacity 
-                    style={styles.calendarButton}
-                    onPress={() => setShowDatePicker(true)}
-                    accessibilityLabel="Kalender öffnen"
-                    accessibilityHint="Datum aus Kalender auswählen"
-                    accessibilityRole="button"
-                  >
-                    <Calendar size={20} color="#6b7280" />
-                  </TouchableOpacity>
+                  <View style={styles.calendarButtonContainer}>
+                    <TouchableOpacity 
+                      style={[styles.calendarButton, showCalendarWidget && styles.calendarButtonActive]}
+                      onPress={toggleCalendarWidget}
+                      activeOpacity={0.7}
+                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                      accessibilityLabel={showCalendarWidget ? "Kalender schließen" : "Kalender öffnen"}
+                      accessibilityHint="Datum aus Kalender auswählen"
+                      accessibilityRole="button"
+                      accessibilityState={{ expanded: showCalendarWidget }}
+                      testID="calendar-toggle-button"
+                    >
+                      <Calendar size={20} color={showCalendarWidget ? designSystem.colors.secondary[600] : "#6b7280"} />
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                      style={styles.calendarButton}
+                      onPress={() => setShowDatePicker(true)}
+                      activeOpacity={0.7}
+                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                      accessibilityLabel="Erweiterten Kalender öffnen"
+                      accessibilityHint="Vollständigen Kalender mit mehr Optionen öffnen"
+                      accessibilityRole="button"
+                      testID="calendar-modal-button"
+                    >
+                      <Text style={styles.calendarButtonText}>📅</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
+                
+                {/* Inline Calendar Widget */}
+                {showCalendarWidget && (
+                  <View style={styles.inlineCalendarContainer}>
+                    <CalendarWidget
+                      selectedDate={newProduct.expiryDate}
+                      onDateSelect={handleCalendarWidgetSelect}
+                      minDate={new Date()}
+                      maxDate={new Date(Date.now() + 365 * 24 * 60 * 60 * 1000 * 3)}
+                      locale="de"
+                    />
+                  </View>
+                )}
               </View>
             </View>
 
@@ -679,6 +740,7 @@ export default function InventoryScreen() {
         animationType="slide" 
         presentationStyle="pageSheet"
         onRequestClose={() => setShowDatePicker(false)}
+        supportedOrientations={['portrait', 'landscape']}
       >
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalHeader}>
@@ -716,9 +778,12 @@ export default function InventoryScreen() {
                       isThisWeek && !isToday && styles.dateOptionThisWeek
                     ]}
                     onPress={() => handleDateSelect(dateOption.formatted)}
+                    activeOpacity={0.7}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                     accessibilityLabel={`Datum ${dateOption.display} auswählen`}
                     accessibilityRole="button"
                     accessibilityState={{ selected: isSelected }}
+                    testID={`date-option-${dateOption.formatted}`}
                   >
                     <Text style={[
                       styles.dateOptionText,
@@ -760,8 +825,11 @@ export default function InventoryScreen() {
                       key={option.label}
                       style={styles.quickDateButton}
                       onPress={() => handleDateSelect(formatted)}
+                      activeOpacity={0.7}
+                      hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}
                       accessibilityLabel={`${option.label} auswählen: ${formatted}`}
                       accessibilityRole="button"
+                      testID={`quick-date-${option.label.toLowerCase().replace(/\s+/g, '-')}`}
                     >
                       <Text style={styles.quickDateButtonText}>{option.label}</Text>
                       <Text style={styles.quickDateButtonDate}>{formatted}</Text>
@@ -1178,12 +1246,30 @@ const styles = StyleSheet.create({
     backgroundColor: designSystem.colors.background.secondary,
     borderWidth: designSystem.interactive.border.width,
     borderColor: designSystem.interactive.border.color,
-    width: 48,
-    height: 48,
+    width: iOSCalendarUtils.getMinimumTouchTarget(),
+    height: iOSCalendarUtils.getMinimumTouchTarget(),
     borderRadius: designSystem.interactive.border.radius,
     justifyContent: 'center',
     alignItems: 'center',
     ...designSystem.shadows.low,
+  },
+  calendarButtonActive: {
+    backgroundColor: designSystem.colors.secondary[100],
+    borderColor: designSystem.colors.secondary[500],
+    borderWidth: 2,
+    ...designSystem.shadows.medium,
+  },
+  calendarButtonContainer: {
+    flexDirection: 'row',
+    gap: designSystem.spacing.sm,
+  },
+  calendarButtonText: {
+    fontSize: 16,
+  },
+  inlineCalendarContainer: {
+    marginTop: designSystem.spacing.lg,
+    borderRadius: designSystem.interactive.border.radius,
+    overflow: 'hidden',
   },
   
   // Date Picker Styles
@@ -1205,41 +1291,50 @@ const styles = StyleSheet.create({
     padding: designSystem.spacing.md,
     width: '31%',
     alignItems: 'center',
-    minHeight: 60,
+    minHeight: 64,
     justifyContent: 'center',
+    minWidth: 44, // iOS minimum touch target
     ...designSystem.shadows.low,
   },
   dateOptionSelected: {
     backgroundColor: designSystem.colors.secondary[500],
     borderColor: designSystem.interactive.border.color,
+    borderWidth: 2,
     ...designSystem.shadows.medium,
   },
   dateOptionToday: {
     backgroundColor: designSystem.colors.success[500],
     borderColor: designSystem.interactive.border.color,
+    borderWidth: 2,
     ...designSystem.shadows.medium,
   },
   dateOptionThisWeek: {
     backgroundColor: designSystem.colors.warning[500],
     borderColor: designSystem.interactive.border.color,
+    borderWidth: 2,
     ...designSystem.shadows.medium,
   },
   dateOptionText: {
     ...designSystem.componentStyles.textSecondary,
     fontWeight: '600',
     textAlign: 'center',
+    fontSize: 14,
+    lineHeight: 18,
   },
   dateOptionTextSelected: {
     color: designSystem.colors.text.primary,
+    fontWeight: 'bold',
   },
   dateOptionTextToday: {
     color: designSystem.colors.text.primary,
+    fontWeight: 'bold',
   },
   dateOptionLabel: {
     ...designSystem.componentStyles.textCaption,
     fontSize: 10,
     marginTop: 2,
     fontWeight: '500',
+    textAlign: 'center',
   },
   quickDateSection: {
     marginTop: designSystem.spacing.xl,
@@ -1260,15 +1355,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    minHeight: 56,
+    minHeight: 64, // Increased for better iOS touch handling
     ...designSystem.shadows.low,
   },
   quickDateButtonText: {
     ...designSystem.componentStyles.textPrimary,
     fontWeight: '600',
+    fontSize: 16,
   },
   quickDateButtonDate: {
     ...designSystem.componentStyles.textSecondary,
     fontWeight: '500',
+    fontSize: 14,
   },
 });
