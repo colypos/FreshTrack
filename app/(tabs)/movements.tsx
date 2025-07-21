@@ -4,6 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowUp, ArrowDown, RotateCcw, Filter, Calendar, Plus, Package, X, Search } from 'lucide-react-native';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useStorage } from '@/hooks/useStorage';
+import KeyboardAwareScrollView from '@/components/KeyboardAwareScrollView';
+import SmartTextInput from '@/components/SmartTextInput';
 import { Movement } from '@/types';
 import designSystem from '@/styles/designSystem';
 
@@ -379,7 +381,12 @@ export default function MovementsScreen() {
             </TouchableOpacity>
           </View>
           
-          <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+          <KeyboardAwareScrollView 
+            style={styles.modalContent}
+            extraScrollHeight={30}
+            enableAutomaticScroll={true}
+            keyboardShouldPersistTaps="handled"
+          >
             {selectedProduct && (
               <View style={styles.selectedProductInfo}>
                 <Package size={24} color={designSystem.colors.success[500]} />
@@ -425,7 +432,8 @@ export default function MovementsScreen() {
 
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>{t('quantity')} *</Text>
-              <TextInput
+              <SmartTextInput
+                fieldId="movementQuantity"
                 style={styles.textInput}
                 value={movementData.quantity.toString()}
                 onChangeText={(text) => setMovementData({...movementData, quantity: parseInt(text) || 0})}
@@ -440,7 +448,8 @@ export default function MovementsScreen() {
 
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>{t('reason')} *</Text>
-              <TextInput
+              <SmartTextInput
+                fieldId="movementReason"
                 style={styles.textInput}
                 value={movementData.reason}
                 onChangeText={(text) => setMovementData({...movementData, reason: text})}
@@ -454,7 +463,8 @@ export default function MovementsScreen() {
 
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>{t('notes')}</Text>
-              <TextInput
+              <SmartTextInput
+                fieldId="movementNotes"
                 style={[styles.textInput, styles.textArea]}
                 value={movementData.notes}
                 onChangeText={(text) => setMovementData({...movementData, notes: text})}
@@ -467,7 +477,7 @@ export default function MovementsScreen() {
                 returnKeyType="done"
               />
             </View>
-          </ScrollView>
+          </KeyboardAwareScrollView>
         </SafeAreaView>
       </Modal>
     </SafeAreaView>

@@ -6,6 +6,8 @@ import { Search, Plus, Filter, Package, Calendar, MapPin, Menu, X, Grid2x2 as Gr
 import { useLanguage } from '@/hooks/useLanguage';
 import { useStorage } from '@/hooks/useStorage';
 import { useCalendar, iOSCalendarUtils } from '@/hooks/useCalendar';
+import KeyboardAwareScrollView from '@/components/KeyboardAwareScrollView';
+import SmartTextInput from '@/components/SmartTextInput';
 import CalendarWidget from '@/components/CalendarWidget';
 import { Product } from '@/types';
 import designSystem from '@/styles/designSystem';
@@ -535,13 +537,19 @@ export default function InventoryScreen() {
             </TouchableOpacity>
           </View>
           
-          <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+          <KeyboardAwareScrollView 
+            style={styles.modalContent}
+            extraScrollHeight={30}
+            enableAutomaticScroll={true}
+            keyboardShouldPersistTaps="handled"
+          >
             <View style={styles.fieldGroup}>
               <Text style={styles.groupTitle}>Grundinformationen</Text>
               
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>{t('productName')} *</Text>
-                <TextInput
+                <SmartTextInput
+                  fieldId="productName"
                   style={styles.textInput}
                   value={newProduct.name}
                   onChangeText={(text) => setNewProduct({...newProduct, name: text})}
@@ -556,7 +564,8 @@ export default function InventoryScreen() {
               
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>{t('category')}</Text>
-                <TextInput
+                <SmartTextInput
+                  fieldId="category"
                   style={styles.textInput}
                   value={newProduct.category}
                   onChangeText={(text) => setNewProduct({...newProduct, category: text})}
@@ -575,7 +584,8 @@ export default function InventoryScreen() {
               <View style={styles.inputRow}>
                 <View style={styles.inputGroupHalf}>
                   <Text style={styles.inputLabel}>{t('quantity')}</Text>
-                  <TextInput
+                  <SmartTextInput
+                    fieldId="currentStock"
                     style={styles.textInput}
                     value={newProduct.currentStock.toString()}
                     onChangeText={(text) => setNewProduct({...newProduct, currentStock: parseInt(text) || 0})}
@@ -590,7 +600,8 @@ export default function InventoryScreen() {
                 
                 <View style={styles.inputGroupHalf}>
                   <Text style={styles.inputLabel}>{t('unit')}</Text>
-                  <TextInput
+                  <SmartTextInput
+                    fieldId="unit"
                     style={styles.textInput}
                     value={newProduct.unit}
                     onChangeText={(text) => setNewProduct({...newProduct, unit: text})}
@@ -605,7 +616,8 @@ export default function InventoryScreen() {
               
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Mindestbestand</Text>
-                <TextInput
+                <SmartTextInput
+                  fieldId="minStock"
                   style={styles.textInput}
                   value={newProduct.minStock.toString()}
                   onChangeText={(text) => setNewProduct({...newProduct, minStock: parseInt(text) || 0})}
@@ -625,7 +637,8 @@ export default function InventoryScreen() {
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>{t('expiryDate')}</Text>
                 <View style={styles.dateInputContainer}>
-                  <TextInput
+                  <SmartTextInput
+                    fieldId="expiryDate"
                     style={[styles.textInput, styles.dateInput]}
                     value={newProduct.expiryDate}
                     onChangeText={(text) => setNewProduct({...newProduct, expiryDate: text})}
@@ -669,7 +682,8 @@ export default function InventoryScreen() {
               
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>{t('location')}</Text>
-                <TextInput
+                <SmartTextInput
+                  fieldId="location"
                   style={styles.textInput}
                   value={newProduct.location}
                   onChangeText={(text) => setNewProduct({...newProduct, location: text})}
@@ -683,7 +697,8 @@ export default function InventoryScreen() {
               
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Lieferant</Text>
-                <TextInput
+                <SmartTextInput
+                  fieldId="supplier"
                   style={styles.textInput}
                   value={newProduct.supplier}
                   onChangeText={(text) => setNewProduct({...newProduct, supplier: text})}
@@ -695,7 +710,7 @@ export default function InventoryScreen() {
                 />
               </View>
             </View>
-          </ScrollView>
+          </KeyboardAwareScrollView>
         </SafeAreaView>
       </Modal>
     </SafeAreaView>

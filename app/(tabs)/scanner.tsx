@@ -6,6 +6,8 @@ import { Camera, QrCode, Plus, Package, Calendar } from 'lucide-react-native';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useStorage } from '@/hooks/useStorage';
+import KeyboardAwareScrollView from '@/components/KeyboardAwareScrollView';
+import SmartTextInput from '@/components/SmartTextInput';
 import designSystem from '@/styles/designSystem';
 
 export default function ScannerScreen() {
@@ -562,7 +564,12 @@ export default function ScannerScreen() {
             </TouchableOpacity>
           </View>
           
-          <ScrollView style={styles.modalContent}>
+          <KeyboardAwareScrollView 
+            style={styles.modalContent}
+            extraScrollHeight={30}
+            enableAutomaticScroll={true}
+            keyboardShouldPersistTaps="handled"
+          >
             {pendingBarcode && (
               <View style={styles.barcodeInfo}>
                 <Text style={styles.barcodeLabel}>Gescannter Barcode:</Text>
@@ -572,7 +579,8 @@ export default function ScannerScreen() {
             
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>{t('productName')} *</Text>
-              <TextInput
+              <SmartTextInput
+                fieldId="newProductName"
                 style={styles.textInput}
                 value={newProduct.name}
                 onChangeText={(text) => setNewProduct({...newProduct, name: text})}
@@ -584,7 +592,8 @@ export default function ScannerScreen() {
             
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>{t('category')}</Text>
-              <TextInput
+              <SmartTextInput
+                fieldId="newProductCategory"
                 style={styles.textInput}
                 value={newProduct.category}
                 onChangeText={(text) => setNewProduct({...newProduct, category: text})}
@@ -596,7 +605,8 @@ export default function ScannerScreen() {
             <View style={styles.inputRow}>
               <View style={styles.inputGroupHalf}>
                 <Text style={styles.inputLabel}>{t('quantity')}</Text>
-                <TextInput
+                <SmartTextInput
+                  fieldId="newProductStock"
                   style={styles.textInput}
                   value={newProduct.currentStock.toString()}
                   onChangeText={(text) => setNewProduct({...newProduct, currentStock: parseInt(text) || 0})}
@@ -608,7 +618,8 @@ export default function ScannerScreen() {
               
               <View style={styles.inputGroupHalf}>
                 <Text style={styles.inputLabel}>{t('unit')}</Text>
-                <TextInput
+                <SmartTextInput
+                  fieldId="newProductUnit"
                   style={styles.textInput}
                   value={newProduct.unit}
                   onChangeText={(text) => setNewProduct({...newProduct, unit: text})}
@@ -620,7 +631,8 @@ export default function ScannerScreen() {
             
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Mindestbestand</Text>
-              <TextInput
+              <SmartTextInput
+                fieldId="newProductMinStock"
                 style={styles.textInput}
                 value={newProduct.minStock.toString()}
                 onChangeText={(text) => setNewProduct({...newProduct, minStock: parseInt(text) || 0})}
@@ -633,7 +645,8 @@ export default function ScannerScreen() {
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>{t('expiryDate')}</Text>
               <View style={styles.dateInputContainer}>
-                <TextInput
+                <SmartTextInput
+                  fieldId="newProductExpiryDate"
                   style={[styles.textInput, styles.dateInput]}
                   value={newProduct.expiryDate}
                   onChangeText={(text) => setNewProduct({...newProduct, expiryDate: text})}
@@ -648,7 +661,8 @@ export default function ScannerScreen() {
             
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>{t('location')}</Text>
-              <TextInput
+              <SmartTextInput
+                fieldId="newProductLocation"
                 style={styles.textInput}
                 value={newProduct.location}
                 onChangeText={(text) => setNewProduct({...newProduct, location: text})}
@@ -659,7 +673,8 @@ export default function ScannerScreen() {
             
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Lieferant</Text>
-              <TextInput
+              <SmartTextInput
+                fieldId="newProductSupplier"
                 style={styles.textInput}
                 value={newProduct.supplier}
                 onChangeText={(text) => setNewProduct({...newProduct, supplier: text})}
@@ -667,7 +682,7 @@ export default function ScannerScreen() {
                 placeholderTextColor="#6B7280"
               />
             </View>
-          </ScrollView>
+          </KeyboardAwareScrollView>
         </SafeAreaView>
       </Modal>
 
@@ -684,7 +699,12 @@ export default function ScannerScreen() {
             </TouchableOpacity>
           </View>
           
-          <View style={styles.modalContent}>
+          <KeyboardAwareScrollView 
+            style={styles.modalContent}
+            extraScrollHeight={30}
+            enableAutomaticScroll={true}
+            keyboardShouldPersistTaps="handled"
+          >
             {selectedProduct && (
               <View style={styles.productInfo}>
                 <Package size={24} color="#22C55E" />
@@ -726,7 +746,8 @@ export default function ScannerScreen() {
 
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>{t('quantity')}</Text>
-              <TextInput
+              <SmartTextInput
+                fieldId="movementQuantity"
                 style={styles.textInput}
                 value={movementData.quantity.toString()}
                 onChangeText={(text) => setMovementData({...movementData, quantity: parseInt(text) || 0})}
@@ -737,7 +758,8 @@ export default function ScannerScreen() {
 
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>{t('reason')}</Text>
-              <TextInput
+              <SmartTextInput
+                fieldId="movementReason"
                 style={styles.textInput}
                 value={movementData.reason}
                 onChangeText={(text) => setMovementData({...movementData, reason: text})}
@@ -747,7 +769,8 @@ export default function ScannerScreen() {
 
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>{t('notes')}</Text>
-              <TextInput
+              <SmartTextInput
+                fieldId="movementNotes"
                 style={[styles.textInput, styles.textArea]}
                 value={movementData.notes}
                 onChangeText={(text) => setMovementData({...movementData, notes: text})}
@@ -756,7 +779,7 @@ export default function ScannerScreen() {
                 numberOfLines={3}
               />
             </View>
-          </View>
+          </KeyboardAwareScrollView>
         </SafeAreaView>
       </Modal>
     </SafeAreaView>
