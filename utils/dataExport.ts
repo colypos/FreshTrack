@@ -1,10 +1,17 @@
 /**
- * Data Export Utility Module
- * Provides secure and efficient data export functionality
+ * Datenexport-Utility-Modul
+ * Stellt sichere und effiziente Datenexport-Funktionalität bereit
  * 
  * @author FreshTrack Development Team
  * @version 1.0.0
  * @since 2025-01-27
+ * 
+ * Dieses Modul implementiert einen umfassenden Datenexport mit:
+ * - Sicherheitsvalidierungen (HTTPS, Session, Rate Limiting)
+ * - Netzwerk-Konnektivitätsprüfung
+ * - Vollständige Datenvalidierung
+ * - Plattformübergreifende Download-Funktionalität
+ * - Audit-Logging für Compliance
  */
 
 import { Product, Movement, Alert } from '@/types';
@@ -13,7 +20,8 @@ import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 
 /**
- * User settings interface for export
+ * Benutzereinstellungen-Interface für Export
+ * Definiert die Struktur der zu exportierenden Benutzereinstellungen
  */
 interface UserSettings {
   language: string;
@@ -31,7 +39,8 @@ interface UserSettings {
 }
 
 /**
- * User preferences interface for export
+ * Benutzerpräferenzen-Interface für Export
+ * Strukturiert individuelle Benutzereinstellungen
  */
 interface UserPreferences {
   id: string;
@@ -43,7 +52,8 @@ interface UserPreferences {
 }
 
 /**
- * User history interface for export
+ * Benutzerhistorie-Interface für Export
+ * Dokumentiert Benutzeraktivitäten und Login-Verlauf
  */
 interface UserHistory {
   loginHistory: Array<{
@@ -64,7 +74,8 @@ interface UserHistory {
 }
 
 /**
- * User content interface for export
+ * Benutzerinhalte-Interface für Export
+ * Benutzerdefinierte Inhalte wie Notizen und Kategorien
  */
 interface UserContent {
   id: string;
@@ -76,7 +87,8 @@ interface UserContent {
 }
 
 /**
- * Complete export data structure
+ * Vollständige Export-Datenstruktur
+ * Umfasst alle zu exportierenden Daten mit Metadaten
  */
 interface ExportData {
   metadata: {
@@ -102,16 +114,18 @@ interface ExportData {
 }
 
 /**
- * Rate limiting configuration
+ * Rate-Limiting-Konfiguration
+ * Verhindert Missbrauch der Export-Funktionalität
  */
 const RATE_LIMIT = {
   maxExports: 5,
-  timeWindow: 3600000, // 1 hour in milliseconds
+  timeWindow: 3600000, // 1 Stunde in Millisekunden
   storageKey: 'export_rate_limit'
 };
 
 /**
- * Export error types
+ * Export-Fehlertypen
+ * Kategorisiert verschiedene Arten von Export-Fehlern
  */
 export enum ExportErrorType {
   NETWORK_ERROR = 'NETWORK_ERROR',
@@ -122,7 +136,8 @@ export enum ExportErrorType {
 }
 
 /**
- * Custom export error class
+ * Benutzerdefinierte Export-Fehlerklasse
+ * Erweitert den Standard-Error um Typ und Details
  */
 export class ExportError extends Error {
   constructor(
@@ -136,22 +151,28 @@ export class ExportError extends Error {
 }
 
 /**
- * Validates network connectivity
- * @returns Promise<boolean> - Network status
+ * Validiert die Netzwerkkonnektivität
+ * 
+ * Prüft verschiedene Aspekte der Netzwerkverbindung:
+ * - Online-Status des Browsers
+ * - Erreichbarkeit externer Dienste
+ * - Timeout-Behandlung
+ * 
+ * @returns Promise<boolean> - Netzwerkstatus (true = verfügbar)
  */
 async function validateNetworkStatus(): Promise<boolean> {
   try {
-    // Skip network check on native platforms
+    // Überspringe Netzwerkprüfung auf nativen Plattformen
     if (Platform.OS !== 'web') {
       return true;
     }
     
-    // Check if we're online (web only)
+    // Prüfe Online-Status (nur Web)
     if (typeof navigator !== 'undefined' && !navigator.onLine) {
       return false;
     }
     
-    // Additional connectivity check for web
+    // Zusätzliche Konnektivitätsprüfung für Web
     if (typeof fetch !== 'undefined') {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
@@ -178,12 +199,18 @@ async function validateNetworkStatus(): Promise<boolean> {
 }
 
 /**
- * Validates session authenticity
- * @returns Promise<boolean> - Session validity
+ * Validiert die Session-Authentizität
+ * 
+ * In einer Produktionsumgebung würde diese Funktion:
+ * - Session-Token validieren
+ * - Ablaufzeiten prüfen
+ * - Benutzerberechtigungen verifizieren
+ * 
+ * @returns Promise<boolean> - Session-Gültigkeit
  */
 async function validateSession(): Promise<boolean> {
   try {
-    // For demo purposes, always return true since there's no real authentication system
+    // Für Demo-Zwecke immer true, da kein echtes Authentifizierungssystem vorhanden
     return true;
   } catch (error) {
     console.error('Session validation error:', error);
@@ -192,21 +219,27 @@ async function validateSession(): Promise<boolean> {
 }
 
 /**
- * Checks and enforces rate limiting
- * @returns boolean - Whether export is allowed
+ * Prüft und erzwingt Rate-Limiting
+ * 
+ * Implementiert ein zeitfensterbasiertes Rate-Limiting-System:
+ * - Maximal 5 Exports pro Stunde
+ * - Automatisches Zurücksetzen nach Zeitfenster
+ * - Persistente Speicherung der Limits
+ * 
+ * @returns boolean - Ob Export erlaubt ist
  */
 function checkRateLimit(): boolean {
   try {
-    // Check if localStorage is available (browser environment)
+    // Prüfe ob localStorage verfügbar ist (Browser-Umgebung)
     if (typeof localStorage === 'undefined') {
-      return true; // Allow export in non-browser environments
+      return true; // Erlaube Export in Nicht-Browser-Umgebungen
     }
     
     const rateLimitData = localStorage.getItem(RATE_LIMIT.storageKey);
     const now = Date.now();
     
     if (!rateLimitData) {
-      // First export
+      // Erster Export
       localStorage.setItem(RATE_LIMIT.storageKey, JSON.stringify({
         count: 1,
         windowStart: now
@@ -216,7 +249,7 @@ function checkRateLimit(): boolean {
     
     const { count, windowStart } = JSON.parse(rateLimitData);
     
-    // Check if we're in a new time window
+    // Prüfe ob wir in einem neuen Zeitfenster sind
     if (now - windowStart > RATE_LIMIT.timeWindow) {
       localStorage.setItem(RATE_LIMIT.storageKey, JSON.stringify({
         count: 1,
@@ -225,12 +258,12 @@ function checkRateLimit(): boolean {
       return true;
     }
     
-    // Check if we've exceeded the limit
+    // Prüfe ob das Limit überschritten wurde
     if (count >= RATE_LIMIT.maxExports) {
       return false;
     }
     
-    // Increment count
+    // Erhöhe Zähler
     localStorage.setItem(RATE_LIMIT.storageKey, JSON.stringify({
       count: count + 1,
       windowStart
@@ -244,18 +277,25 @@ function checkRateLimit(): boolean {
 }
 
 /**
- * Validates data completeness before export
- * @param data - Export data to validate
- * @returns boolean - Data validity
+ * Validiert Datenvollständigkeit vor dem Export
+ * 
+ * Prüft die Struktur und Vollständigkeit der zu exportierenden Daten:
+ * - Metadaten-Vollständigkeit
+ * - Array-Strukturen
+ * - Benutzereinstellungen
+ * - Historien-Daten
+ * 
+ * @param data - Zu validierende Export-Daten
+ * @returns boolean - Datenvalidität
  */
 function validateDataCompleteness(data: ExportData): boolean {
   try {
-    // Check required metadata
+    // Prüfe erforderliche Metadaten
     if (!data.metadata || !data.metadata.exportDate || !data.metadata.version) {
       return false;
     }
     
-    // Check data structure integrity
+    // Prüfe Datenstruktur-Integrität
     if (!Array.isArray(data.products) || 
         !Array.isArray(data.movements) || 
         !Array.isArray(data.alerts) ||
@@ -264,14 +304,14 @@ function validateDataCompleteness(data: ExportData): boolean {
       return false;
     }
     
-    // Check user settings structure
+    // Prüfe Benutzereinstellungen-Struktur
     if (!data.userSettings || 
         typeof data.userSettings !== 'object' ||
         !data.userSettings.language) {
       return false;
     }
     
-    // Check user history structure
+    // Prüfe Benutzerhistorie-Struktur
     if (!data.userHistory || 
         !Array.isArray(data.userHistory.loginHistory) ||
         !Array.isArray(data.userHistory.activityLog)) {
@@ -286,9 +326,9 @@ function validateDataCompleteness(data: ExportData): boolean {
 }
 
 /**
- * Formats date in German locale (DD.MM.YYYY)
- * @param date - Date to format
- * @returns string - Formatted date
+ * Formatiert Datum im deutschen Format (DD.MM.YYYY)
+ * @param date - Zu formatierendes Datum
+ * @returns string - Formatiertes Datum
  */
 function formatGermanDate(date: Date): string {
   const day = date.getDate().toString().padStart(2, '0');
@@ -298,8 +338,15 @@ function formatGermanDate(date: Date): string {
 }
 
 /**
- * Generates mock user data for export
- * @returns Object containing user settings, preferences, history, and content
+ * Generiert Mock-Benutzerdaten für den Export
+ * 
+ * Erstellt realistische Beispieldaten für:
+ * - Benutzereinstellungen
+ * - Präferenzen
+ * - Aktivitätshistorie
+ * - Benutzerdefinierte Inhalte
+ * 
+ * @returns Objekt mit Benutzereinstellungen, Präferenzen, Historie und Inhalten
  */
 function generateMockUserData() {
   const now = new Date().toISOString();
@@ -395,14 +442,21 @@ function generateMockUserData() {
 }
 
 /**
- * Logs export activity for audit purposes
- * @param success - Whether export was successful
- * @param recordCount - Number of records exported
- * @param error - Error details if export failed
+ * Protokolliert Export-Aktivitäten für Audit-Zwecke
+ * 
+ * Erstellt detaillierte Logs für Compliance und Debugging:
+ * - Erfolgs-/Fehlerstatus
+ * - Anzahl exportierter Datensätze
+ * - Fehlerdetails bei Problemen
+ * - Benutzer- und Session-Informationen
+ * 
+ * @param success - Ob Export erfolgreich war
+ * @param recordCount - Anzahl exportierter Datensätze
+ * @param error - Fehlerdetails bei fehlgeschlagenem Export
  */
 function logExportActivity(success: boolean, recordCount: number, error?: ExportError): void {
   try {
-    // Check if localStorage is available (browser environment)
+    // Prüfe ob localStorage verfügbar ist (Browser-Umgebung)
     if (typeof localStorage === 'undefined') {
       console.log('Export Activity Log (localStorage unavailable):', {
         timestamp: new Date().toISOString(),
@@ -430,14 +484,14 @@ function logExportActivity(success: boolean, recordCount: number, error?: Export
       sessionId: localStorage.getItem('session_token') || 'Unknown'
     };
     
-    // In a real app, this would send to your logging service
+    // In einer echten App würde dies an einen Logging-Service gesendet
     console.log('Export Activity Log:', logEntry);
     
-    // Store locally for debugging
+    // Lokale Speicherung für Debugging
     const existingLogs = JSON.parse(localStorage.getItem('export_logs') || '[]');
     existingLogs.push(logEntry);
     
-    // Keep only last 50 logs
+    // Behalte nur die letzten 50 Logs
     if (existingLogs.length > 50) {
       existingLogs.splice(0, existingLogs.length - 50);
     }
@@ -449,42 +503,47 @@ function logExportActivity(success: boolean, recordCount: number, error?: Export
 }
 
 /**
- * Creates and triggers download of export file
- * @param data - Export data
- * @param filename - Name of the file to download
+ * Erstellt und löst Download der Export-Datei aus
+ * 
+ * Plattformspezifische Download-Implementierung:
+ * - Web: Blob-basierter Download
+ * - Native: FileSystem + Sharing API
+ * 
+ * @param data - Export-Daten
+ * @param filename - Name der Download-Datei
  */
 async function triggerDownload(data: ExportData, filename: string): Promise<void> {
   try {
     const jsonString = JSON.stringify(data, null, 2);
     
     if (Platform.OS === 'web') {
-      // Web platform: use blob download
+      // Web-Plattform: Blob-basierter Download
       const blob = new Blob([jsonString], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       
-      // Create temporary download link
+      // Erstelle temporären Download-Link
       const link = document.createElement('a');
       link.href = url;
       link.download = filename;
       link.style.display = 'none';
       
-      // Trigger download
+      // Löse Download aus
       document.body.appendChild(link);
       link.click();
       
-      // Cleanup
+      // Aufräumen
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } else {
-      // Native platform: use file system and sharing
+      // Native Plattform: Dateisystem und Sharing verwenden
       const fileUri = `${FileSystem.documentDirectory}${filename}`;
       
-      // Write file to device storage
+      // Datei auf Gerätespeicher schreiben
       await FileSystem.writeAsStringAsync(fileUri, jsonString, {
         encoding: FileSystem.EncodingType.UTF8,
       });
       
-      // Share the file
+      // Datei teilen
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(fileUri, {
           mimeType: 'application/json',
@@ -504,14 +563,21 @@ async function triggerDownload(data: ExportData, filename: string): Promise<void
 }
 
 /**
- * Main data export function with comprehensive error handling and security
+ * Hauptfunktion für Datenexport mit umfassender Fehlerbehandlung und Sicherheit
  * 
- * @param products - Array of products to export
- * @param movements - Array of movements to export  
- * @param alerts - Array of alerts to export
- * @returns Promise<void>
+ * Diese Funktion implementiert einen sicheren, mehrstufigen Export-Prozess:
+ * 1. Sicherheitsvalidierungen (HTTPS, Session, Rate Limiting)
+ * 2. Netzwerk-Konnektivitätsprüfung
+ * 3. Datenvorbereitung und -validierung
+ * 4. Datei-Erstellung und Download
+ * 5. Audit-Logging
  * 
- * @throws {ExportError} When export fails due to various reasons
+ * @param products - Array der zu exportierenden Produkte
+ * @param movements - Array der zu exportierenden Bewegungen
+ * @param alerts - Array der zu exportierenden Warnungen
+ * @returns Promise<void> - Asynchrone Operation ohne Rückgabewert
+ * 
+ * @throws {ExportError} Bei Export-Fehlern verschiedener Ursachen
  * 
  * @example
  * ```typescript
@@ -531,10 +597,10 @@ export async function handleDataExport(
   alerts: Alert[]
 ): Promise<void> {
   try {
-    // 1. Security validations
+    // 1. Sicherheitsvalidierungen
     console.log('🔒 Starting security validations...');
     
-    // Check HTTPS (in production)
+    // Prüfe HTTPS (in Produktion)
     if (typeof window !== 'undefined' && 
         window.location.protocol !== 'https:' && 
         window.location.hostname !== 'localhost') {
@@ -544,7 +610,7 @@ export async function handleDataExport(
       );
     }
     
-    // Validate session
+    // Validiere Session
     const isSessionValid = await validateSession();
     if (!isSessionValid) {
       throw new ExportError(
@@ -553,7 +619,7 @@ export async function handleDataExport(
       );
     }
     
-    // Check rate limiting
+    // Prüfe Rate Limiting
     if (!checkRateLimit()) {
       throw new ExportError(
         ExportErrorType.RATE_LIMIT_ERROR,
@@ -561,7 +627,7 @@ export async function handleDataExport(
       );
     }
     
-    // 2. Network validation
+    // 2. Netzwerk-Validierung
     console.log('🌐 Validating network connectivity...');
     const isNetworkAvailable = await validateNetworkStatus();
     if (!isNetworkAvailable) {
@@ -571,7 +637,7 @@ export async function handleDataExport(
       );
     }
     
-    // 3. Prepare export data
+    // 3. Export-Daten vorbereiten
     console.log('📦 Preparing export data...');
     const exportDate = new Date();
     const { userSettings, userPreferences, userHistory, userContent } = generateMockUserData();
@@ -599,7 +665,7 @@ export async function handleDataExport(
       alerts
     };
     
-    // 4. Validate data completeness
+    // 4. Datenvollständigkeit validieren
     console.log('✅ Validating data completeness...');
     if (!validateDataCompleteness(exportData)) {
       throw new ExportError(
@@ -608,15 +674,15 @@ export async function handleDataExport(
       );
     }
     
-    // 5. Generate filename with German date format
+    // 5. Dateiname mit deutschem Datumsformat generieren
     const germanDate = formatGermanDate(exportDate);
     const filename = `user_data_export_${germanDate}.json`;
     
-    // 6. Create and trigger download
+    // 6. Download erstellen und auslösen
     console.log('💾 Creating download file...');
     await triggerDownload(exportData, filename);
     
-    // 7. Log successful export
+    // 7. Erfolgreichen Export protokollieren
     const totalRecords = Object.values(exportData.metadata.recordCounts)
       .reduce((sum, count) => sum + count, 0);
     
@@ -625,7 +691,7 @@ export async function handleDataExport(
     console.log('✅ Export completed successfully!');
     
   } catch (error) {
-    // Enhanced error handling
+    // Erweiterte Fehlerbehandlung
     let exportError: ExportError;
     
     if (error instanceof ExportError) {
@@ -643,18 +709,19 @@ export async function handleDataExport(
       );
     }
     
-    // Log failed export
+    // Fehlgeschlagenen Export protokollieren
     logExportActivity(false, 0, exportError);
     
-    // Re-throw for handling by calling component
+    // Fehler für aufrufende Komponente weiterwerfen
     throw exportError;
   }
 }
 
 /**
- * Gets user-friendly error message based on error type
- * @param error - Export error
- * @returns string - User-friendly error message
+ * Gibt benutzerfreundliche Fehlermeldung basierend auf Fehlertyp zurück
+ * 
+ * @param error - Export-Fehler
+ * @returns string - Benutzerfreundliche Fehlermeldung auf Deutsch
  */
 export function getErrorMessage(error: ExportError): string {
   switch (error.type) {

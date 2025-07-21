@@ -1,16 +1,42 @@
+/**
+ * Mehrsprachigkeits-Hook für die FreshTrack Anwendung
+ * 
+ * Verwaltet die Spracheinstellungen und stellt Übersetzungsfunktionen bereit.
+ * Unterstützt Deutsch, Englisch, Französisch und Italienisch mit vollständigen
+ * Übersetzungen für alle UI-Elemente.
+ * 
+ * Features:
+ * - Persistente Sprachspeicherung mit AsyncStorage
+ * - Fallback-Mechanismus (Deutsch -> Englisch -> Schlüssel)
+ * - Sprachmetadaten mit Flaggen und RTL-Unterstützung
+ * - Vollständige Übersetzungen für alle App-Bereiche
+ */
+
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+/**
+ * Interface für Übersetzungsstruktur
+ * Organisiert Übersetzungen nach Sprachcodes und Schlüsseln
+ */
 export interface Translations {
   [key: string]: {
     [key: string]: string;
   };
 }
 
-// Comprehensive Multi-Language Support
+/**
+ * Umfassende Mehrsprachigkeits-Unterstützung
+ * 
+ * Vollständige Übersetzungen für alle UI-Elemente in vier Sprachen:
+ * - Deutsch (de) - Hauptsprache
+ * - Englisch (en) - Internationale Sprache
+ * - Französisch (fr) - Schweizer Markt
+ * - Italienisch (it) - Schweizer Markt
+ */
 const translations: Translations = {
   de: {
-    // Dashboard
+    // Dashboard-Bereich
     dashboard: 'Dashboard',
     overview: 'Übersicht',
     summary: 'Zusammenfassung',
@@ -702,7 +728,12 @@ const translations: Translations = {
   },
 };
 
-// Language metadata for UI display
+/**
+ * Sprachmetadaten für UI-Anzeige
+ * 
+ * Enthält Anzeigenamen, Flaggen-Emojis und RTL-Informationen
+ * für jede unterstützte Sprache.
+ */
 export const languageMetadata = {
   de: { name: 'Deutsch', flag: '🇩🇪', rtl: false },
   en: { name: 'English', flag: '🇺🇸', rtl: false },
@@ -710,9 +741,14 @@ export const languageMetadata = {
   it: { name: 'Italiano', flag: '🇮🇹', rtl: false },
 };
 
-// Available languages list
+// Liste der verfügbaren Sprachen
 export const availableLanguages = Object.keys(languageMetadata);
 
+/**
+ * Haupthook für Sprachverwaltung
+ * 
+ * @returns Objekt mit aktueller Sprache, Änderungsfunktion und Hilfsmethoden
+ */
 export const useLanguage = () => {
   const [currentLanguage, setCurrentLanguage] = useState('de');
 
@@ -720,6 +756,9 @@ export const useLanguage = () => {
     loadLanguage();
   }, []);
 
+  /**
+   * Lädt die gespeicherte Spracheinstellung aus AsyncStorage
+   */
   const loadLanguage = async () => {
     try {
       const saved = await AsyncStorage.getItem('language');
@@ -731,6 +770,10 @@ export const useLanguage = () => {
     }
   };
 
+  /**
+   * Ändert die aktuelle Sprache und speichert sie persistent
+   * @param lang - Sprachcode (z.B. 'de', 'en', 'fr', 'it')
+   */
   const changeLanguage = async (lang: string) => {
     try {
       await AsyncStorage.setItem('language', lang);
@@ -740,14 +783,34 @@ export const useLanguage = () => {
     }
   };
 
+  /**
+   * Übersetzungsfunktion mit Fallback-Mechanismus
+   * 
+   * @param key - Übersetzungsschlüssel
+   * @returns Übersetzter Text oder Fallback
+   * 
+   * Fallback-Reihenfolge:
+   * 1. Aktuelle Sprache
+   * 2. Englisch als Fallback
+   * 3. Schlüssel selbst als letzter Fallback
+   */
   const t = (key: string): string => {
     return translations[currentLanguage]?.[key] || translations['en']?.[key] || key;
   };
 
+  /**
+   * Gibt Metadaten für eine bestimmte Sprache zurück
+   * @param langCode - Sprachcode
+   * @returns Sprachmetadaten (Name, Flagge, RTL-Status)
+   */
   const getLanguageMetadata = (langCode: string) => {
     return languageMetadata[langCode as keyof typeof languageMetadata];
   };
 
+  /**
+   * Prüft ob die aktuelle Sprache RTL (Right-to-Left) ist
+   * @returns true wenn RTL, false wenn LTR
+   */
   const isRTL = () => {
     return languageMetadata[currentLanguage as keyof typeof languageMetadata]?.rtl || false;
   };

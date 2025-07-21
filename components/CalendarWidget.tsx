@@ -1,26 +1,68 @@
+/**
+ * Kalender-Widget-Komponente für Datumsauswahl
+ * 
+ * Eine vollständig funktionale Kalender-Komponente mit:
+ * - Deutschem Datumsformat (DD.MM.YYYY)
+ * - Monatsnavigation
+ * - Datumsbereichs-Validierung
+ * - iOS-optimierten Touch-Targets
+ * - Barrierefreiheits-Unterstützung
+ * - Responsive Design
+ * 
+ * Speziell entwickelt für die FreshTrack Anwendung mit Fokus auf
+ * Benutzerfreundlichkeit und plattformübergreifende Kompatibilität.
+ */
+
 import React, { useState, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react-native';
 import designSystem from '@/styles/designSystem';
 
+/**
+ * Props für die CalendarWidget-Komponente
+ */
 interface CalendarWidgetProps {
+  /** Aktuell ausgewähltes Datum im Format DD.MM.YYYY */
   selectedDate?: string;
+  /** Callback wenn ein Datum ausgewählt wird */
   onDateSelect: (date: string) => void;
+  /** Frühestes auswählbares Datum */
   minDate?: Date;
+  /** Spätestes auswählbares Datum */
   maxDate?: Date;
+  /** Sprachcode für Lokalisierung */
   locale?: string;
 }
 
+/**
+ * Interface für einen Kalendertag
+ */
 interface CalendarDay {
+  /** Date-Objekt für den Tag */
   date: Date;
+  /** Formatiertes Datum (DD.MM.YYYY) */
   formatted: string;
+  /** Anzeige-Text (Tagesnummer) */
   display: string;
+  /** Ist heute */
   isToday: boolean;
+  /** Ist ausgewählt */
   isSelected: boolean;
+  /** Gehört zum aktuellen Monat */
   isCurrentMonth: boolean;
+  /** Ist deaktiviert (außerhalb erlaubter Bereiche) */
   isDisabled: boolean;
 }
 
+/**
+ * CalendarWidget Hauptkomponente
+ * 
+ * Vollständige Kalender-Implementierung mit Monatsnavigation,
+ * Datumsauswahl und Validierung.
+ * 
+ * @param props - Kalender-Konfiguration und Event-Callbacks
+ * @returns JSX.Element - Interaktive Kalender-Komponente
+ */
 export default function CalendarWidget({
   selectedDate,
   onDateSelect,
@@ -30,6 +72,9 @@ export default function CalendarWidget({
 }: CalendarWidgetProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   
+  /**
+   * Monatsnamen in verschiedenen Sprachen
+   */
   const monthNames = {
     de: ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
          'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'],
@@ -37,11 +82,20 @@ export default function CalendarWidget({
          'July', 'August', 'September', 'October', 'November', 'December']
   };
   
+  /**
+   * Tagesnamen in verschiedenen Sprachen (abgekürzt)
+   */
   const dayNames = {
     de: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
     en: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
   };
 
+  /**
+   * Formatiert ein Date-Objekt ins deutsche Format DD.MM.YYYY
+   * 
+   * @param date - Zu formatierendes Date-Objekt
+   * @returns string - Formatiertes Datum
+   */
   const formatGermanDate = useCallback((date: Date): string => {
     const day = date.getDate().toString().padStart(2, '0');
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -49,6 +103,12 @@ export default function CalendarWidget({
     return `${day}.${month}.${year}`;
   }, []);
 
+  /**
+   * Parst einen deutschen Datumsstring zu einem Date-Objekt
+   * 
+   * @param dateString - Datumsstring im Format DD.MM.YYYY
+   * @returns Date | null - Geparste Datum oder null bei Fehlern
+   */
   const parseGermanDate = useCallback((dateString: string): Date | null => {
     if (!dateString) return null;
     
@@ -63,28 +123,44 @@ export default function CalendarWidget({
     return null;
   }, []);
 
+  /**
+   * Prüft ob ein Datum deaktiviert werden soll
+   * 
+   * @param date - Zu prüfendes Datum
+   * @returns boolean - true wenn deaktiviert
+   */
   const isDateDisabled = useCallback((date: Date): boolean => {
     if (minDate && date < minDate) return true;
     if (maxDate && date > maxDate) return true;
     return false;
   }, [minDate, maxDate]);
 
+  /**
+   * Generiert alle Kalendertage für den aktuellen Monat
+   * 
+   * Erstellt ein vollständiges Kalender-Grid mit:
+   * - Tagen des aktuellen Monats
+   * - Tagen der vorherigen/nächsten Monate für vollständige Wochen
+   * - Status-Informationen für jeden Tag
+   * 
+   * @returns Array von CalendarDay-Objekten
+   */
   const generateCalendarDays = useMemo((): CalendarDay[] => {
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
     const today = new Date();
     const selectedDateObj = selectedDate ? parseGermanDate(selectedDate) : null;
     
-    // First day of the month
+    // Erster Tag des Monats
     const firstDay = new Date(year, month, 1);
-    // Last day of the month
+    // Letzter Tag des Monats
     const lastDay = new Date(year, month + 1, 0);
     
-    // Start from the first day of the week containing the first day of the month
+    // Starte vom ersten Tag der Woche die den ersten Monatstag enthält
     const startDate = new Date(firstDay);
     startDate.setDate(startDate.getDate() - firstDay.getDay());
     
-    // End at the last day of the week containing the last day of the month
+    // Ende am letzten Tag der Woche die den letzten Monatstag enthält
     const endDate = new Date(lastDay);
     endDate.setDate(endDate.getDate() + (6 - lastDay.getDay()));
     
@@ -114,11 +190,21 @@ export default function CalendarWidget({
     return days;
   }, [currentMonth, selectedDate, parseGermanDate, formatGermanDate, isDateDisabled]);
 
+  /**
+   * Behandelt Klicks auf Kalendertage
+   * 
+   * @param day - Angeklickter Kalendertag
+   */
   const handleDatePress = useCallback((day: CalendarDay) => {
     if (day.isDisabled) return;
     onDateSelect(day.formatted);
   }, [onDateSelect]);
 
+  /**
+   * Navigiert zwischen Monaten
+   * 
+   * @param direction - Navigationsrichtung ('prev' oder 'next')
+   */
   const navigateMonth = useCallback((direction: 'prev' | 'next') => {
     setCurrentMonth(prev => {
       const newMonth = new Date(prev);
@@ -131,6 +217,9 @@ export default function CalendarWidget({
     });
   }, []);
 
+  /**
+   * Springt zum heutigen Datum und wählt es aus
+   */
   const goToToday = useCallback(() => {
     const today = new Date();
     setCurrentMonth(today);
@@ -139,7 +228,7 @@ export default function CalendarWidget({
 
   return (
     <View style={styles.container}>
-      {/* Calendar Header */}
+      {/* Kalender-Header mit Monatsnavigation */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.navButton}
@@ -179,7 +268,7 @@ export default function CalendarWidget({
         </TouchableOpacity>
       </View>
 
-      {/* Day Names Header */}
+      {/* Tagesnamen-Header */}
       <View style={styles.dayNamesContainer}>
         {dayNames[locale as keyof typeof dayNames].map((dayName, index) => (
           <View key={index} style={styles.dayNameCell}>
@@ -188,7 +277,7 @@ export default function CalendarWidget({
         ))}
       </View>
 
-      {/* Calendar Grid */}
+      {/* Kalender-Grid mit allen Tagen */}
       <View style={styles.calendarGrid}>
         {generateCalendarDays.map((day, index) => (
           <TouchableOpacity
@@ -225,7 +314,7 @@ export default function CalendarWidget({
         ))}
       </View>
 
-      {/* Quick Actions */}
+      {/* Schnellaktionen */}
       <View style={styles.quickActions}>
         <TouchableOpacity
           style={styles.quickActionButton}
@@ -243,6 +332,9 @@ export default function CalendarWidget({
   );
 }
 
+/**
+ * Styling für CalendarWidget nach Design-System
+ */
 const styles = StyleSheet.create({
   container: {
     backgroundColor: designSystem.colors.background.secondary,
@@ -299,13 +391,13 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   dayCell: {
-    width: '14.28%', // 7 days per week
+    width: '14.28%', // 7 Tage pro Woche
     aspectRatio: 1,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: designSystem.interactive.border.radius,
     marginBottom: 2,
-    minHeight: Platform.OS === 'ios' ? 44 : 40, // iOS minimum touch target
+    minHeight: Platform.OS === 'ios' ? 44 : 40, // iOS minimales Touch-Target
     backgroundColor: 'transparent',
   },
   dayCellSelected: {

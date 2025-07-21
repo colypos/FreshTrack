@@ -1,11 +1,34 @@
+/**
+ * Zentraler Storage-Hook für die FreshTrack Anwendung
+ * 
+ * Verwaltet alle Daten (Produkte, Bewegungen, Warnungen) mit AsyncStorage
+ * und stellt eine einheitliche API für Datenzugriff und -manipulation bereit.
+ * 
+ * Features:
+ * - Automatische Datensynchronisation zwischen Komponenten
+ * - Event-basierte Datenaktualisierung
+ * - Automatische Warnungsgenerierung
+ * - Vollständige CRUD-Operationen für alle Datentypen
+ */
+
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Product, Movement, Alert } from '@/types';
 
-// Event emitter for data changes
+/**
+ * Event-Emitter für Datenänderungen
+ * 
+ * Ermöglicht die Kommunikation zwischen verschiedenen Komponenten
+ * bei Datenänderungen ohne direkte Abhängigkeiten.
+ */
 class DataEventEmitter {
   private listeners: { [key: string]: Function[] } = {};
 
+  /**
+   * Registriert einen Event-Listener
+   * @param event - Name des Events
+   * @param callback - Callback-Funktion
+   */
   on(event: string, callback: Function) {
     if (!this.listeners[event]) {
       this.listeners[event] = [];
@@ -13,12 +36,22 @@ class DataEventEmitter {
     this.listeners[event].push(callback);
   }
 
+  /**
+   * Entfernt einen Event-Listener
+   * @param event - Name des Events
+   * @param callback - Zu entfernende Callback-Funktion
+   */
   off(event: string, callback: Function) {
     if (this.listeners[event]) {
       this.listeners[event] = this.listeners[event].filter(cb => cb !== callback);
     }
   }
 
+  /**
+   * Löst ein Event aus und benachrichtigt alle Listener
+   * @param event - Name des Events
+   * @param data - Optionale Daten für das Event
+   */
   emit(event: string, data?: any) {
     if (this.listeners[event]) {
       this.listeners[event].forEach(callback => callback(data));
@@ -28,9 +61,14 @@ class DataEventEmitter {
 
 const dataEmitter = new DataEventEmitter();
 
-// Export the dataEmitter for external use
+// Export für externe Nutzung
 export { dataEmitter };
 
+/**
+ * Haupthook für Datenverwaltung
+ * 
+ * @returns Objekt mit allen Daten und Manipulationsfunktionen
+ */
 export const useStorage = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [movements, setMovements] = useState<Movement[]>([]);
@@ -40,7 +78,7 @@ export const useStorage = () => {
   useEffect(() => {
     loadData();
 
-    // Listen for data changes
+    // Event-Listener für Datenänderungen registrieren
     const handleDataChange = () => {
       loadData();
     };
@@ -52,6 +90,12 @@ export const useStorage = () => {
     };
   }, []);
 
+  /**
+   * Lädt alle Daten aus dem AsyncStorage
+   * 
+   * Lädt Produkte, Bewegungen und Warnungen parallel und
+   * aktualisiert den Ladezustand entsprechend.
+   */
   const loadData = async () => {
     try {
       setLoading(true);
@@ -71,6 +115,10 @@ export const useStorage = () => {
     }
   };
 
+  /**
+   * Speichert Produkte im AsyncStorage und löst Datenänderungs-Event aus
+   * @param newProducts - Array der zu speichernden Produkte
+   */
   const saveProducts = async (newProducts: Product[]) => {
     try {
       await AsyncStorage.setItem('products', JSON.stringify(newProducts));
@@ -81,6 +129,10 @@ export const useStorage = () => {
     }
   };
 
+  /**
+   * Speichert Bewegungen im AsyncStorage und löst Datenänderungs-Event aus
+   * @param newMovements - Array der zu speichernden Bewegungen
+   */
   const saveMovements = async (newMovements: Movement[]) => {
     try {
       await AsyncStorage.setItem('movements', JSON.stringify(newMovements));
@@ -91,6 +143,10 @@ export const useStorage = () => {
     }
   };
 
+  /**
+   * Speichert Warnungen im AsyncStorage und löst Datenänderungs-Event aus
+   * @param newAlerts - Array der zu speichernden Warnungen
+   */
   const saveAlerts = async (newAlerts: Alert[]) => {
     try {
       await AsyncStorage.setItem('alerts', JSON.stringify(newAlerts));
@@ -101,6 +157,14 @@ export const useStorage = () => {
     }
   };
 
+  /**
+   * Fügt ein neues Produkt zum Inventar hinzu
+   * 
+   * Generiert automatisch ID und Zeitstempel, erstellt eine Anfangsbewegung
+   * falls Bestand vorhanden ist, und generiert entsprechende Warnungen.
+   * 
+   * @param product - Produktdaten ohne ID, createdAt und updatedAt
+   */
   const addProduct = async (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) => {
     const newProduct: Product = {
       ...product,
@@ -112,7 +176,7 @@ export const useStorage = () => {
     const updatedProducts = [...products, newProduct];
     await saveProducts(updatedProducts);
     
-    // Create initial movement if product has stock
+    // Erstelle Anfangsbewegung falls Bestand vorhanden
     if (newProduct.currentStock > 0) {
       const initialMovement: Movement = {
         id: `${newProduct.id}-initial`,
@@ -130,10 +194,16 @@ export const useStorage = () => {
       await saveMovements(updatedMovements);
     }
     
-    // Check for alerts
+    // Prüfe und generiere Warnungen für das neue Produkt
     generateAlertsForProduct(newProduct);
   };
 
+  /**
+   * Aktualisiert ein bestehendes Produkt
+   * 
+   * @param id - ID des zu aktualisierenden Produkts
+   * @param updates - Teilweise Produktdaten für die Aktualisierung
+   */
   const updateProduct = async (id: string, updates: Partial<Product>) => {
     const updatedProducts = products.map(product =>
       product.id === id
@@ -142,22 +212,32 @@ export const useStorage = () => {
     );
     await saveProducts(updatedProducts);
     
-    // Check for alerts for updated product
+    // Prüfe Warnungen für das aktualisierte Produkt
     const updatedProduct = updatedProducts.find(p => p.id === id);
     if (updatedProduct) {
       generateAlertsForProduct(updatedProduct);
     }
   };
 
+  /**
+   * Löscht ein Produkt und alle zugehörigen Daten
+   * 
+   * @param id - ID des zu löschenden Produkts
+   */
   const deleteProduct = async (id: string) => {
     const updatedProducts = products.filter(product => product.id !== id);
     await saveProducts(updatedProducts);
     
-    // Remove related alerts
+    // Entferne zugehörige Warnungen
     const updatedAlerts = alerts.filter(alert => alert.productId !== id);
     await saveAlerts(updatedAlerts);
   };
 
+  /**
+   * Fügt eine neue Lagerbewegung hinzu und aktualisiert den Produktbestand
+   * 
+   * @param movement - Bewegungsdaten ohne ID und Zeitstempel
+   */
   const addMovement = async (movement: Omit<Movement, 'id' | 'timestamp'>) => {
     const newMovement: Movement = {
       ...movement,
@@ -168,7 +248,7 @@ export const useStorage = () => {
     const updatedMovements = [newMovement, ...movements];
     await saveMovements(updatedMovements);
     
-    // Update product stock
+    // Aktualisiere Produktbestand basierend auf Bewegungstyp
     if (movement.type === 'in') {
       await updateProduct(movement.productId, {
         currentStock: products.find(p => p.id === movement.productId)!.currentStock + movement.quantity
@@ -184,32 +264,44 @@ export const useStorage = () => {
     }
   };
 
+  /**
+   * Generiert automatische Warnungen für ein Produkt
+   * 
+   * Prüft Verfallsdatum und Bestandslevel und erstellt entsprechende
+   * Warnungen für abgelaufene Produkte und niedrige Bestände.
+   * 
+   * @param product - Produkt für das Warnungen generiert werden sollen
+   */
   const generateAlertsForProduct = async (product: Product) => {
     const newAlerts: Alert[] = [];
     const now = new Date();
     
-    // Parse German date format DD.MM.YYYY
+    /**
+     * Hilfsfunktion zum Parsen des deutschen Datumsformats DD.MM.YYYY
+     * @param dateString - Datumsstring im deutschen Format
+     * @returns Date-Objekt oder aktuelles Datum bei Fehlern
+     */
     const parseGermanDate = (dateString: string) => {
       if (!dateString) return new Date();
       
-      // Check if it's already in DD.MM.YYYY format
+      // Prüfe ob bereits im DD.MM.YYYY Format
       const germanDateRegex = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/;
       const match = dateString.match(germanDateRegex);
       
       if (match) {
         const [, day, month, year] = match;
-        // Create date with month-1 because JavaScript months are 0-indexed
+        // Erstelle Datum mit month-1 da JavaScript-Monate 0-indexiert sind
         return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
       }
       
-      // Fallback to standard Date parsing
+      // Fallback auf Standard-Datums-Parsing
       return new Date(dateString);
     };
     
     const expiryDate = parseGermanDate(product.expiryDate);
     const daysUntilExpiry = Math.ceil((expiryDate.getTime() - now.getTime()) / (1000 * 3600 * 24));
 
-    // Expiry alerts
+    // Verfallsdatum-Warnungen
     if (daysUntilExpiry < 0) {
       newAlerts.push({
         id: `${product.id}-expired`,
@@ -245,7 +337,7 @@ export const useStorage = () => {
       });
     }
 
-    // Low stock alerts
+    // Niedrigbestand-Warnungen
     if (product.currentStock <= product.minStock) {
       newAlerts.push({
         id: `${product.id}-low-stock`,
@@ -259,7 +351,7 @@ export const useStorage = () => {
       });
     }
 
-    // Remove old alerts for this product and add new ones
+    // Entferne alte Warnungen für dieses Produkt und füge neue hinzu
     const filteredAlerts = alerts.filter(alert => 
       !alert.productId || alert.productId !== product.id
     );
@@ -268,6 +360,10 @@ export const useStorage = () => {
     await saveAlerts(updatedAlerts);
   };
 
+  /**
+   * Markiert eine Warnung als bestätigt
+   * @param alertId - ID der zu bestätigenden Warnung
+   */
   const acknowledgeAlert = async (alertId: string) => {
     const updatedAlerts = alerts.map(alert =>
       alert.id === alertId ? { ...alert, acknowledged: true } : alert

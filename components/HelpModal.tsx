@@ -1,3 +1,16 @@
+/**
+ * Hilfe-Modal-Komponente für umfassende Benutzerunterstützung
+ * 
+ * Diese Komponente stellt eine vollständige Hilfe-Sektion bereit mit:
+ * - FAQ (Häufig gestellte Fragen)
+ * - Schritt-für-Schritt-Anleitungen
+ * - Problembehebungs-Leitfäden
+ * - Support-Kontaktinformationen
+ * 
+ * Organisiert in übersichtliche Tabs für bessere Navigation und
+ * optimiert für mobile Geräte mit Touch-freundlichen Elementen.
+ */
+
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -5,31 +18,65 @@ import { X, ChevronRight, ChevronDown, Search, Package, Camera, ChartBar as BarC
 import { useLanguage } from '@/hooks/useLanguage';
 import designSystem from '@/styles/designSystem';
 
+/**
+ * Props für die HelpModal-Komponente
+ */
 interface HelpModalProps {
+  /** Sichtbarkeitsstatus des Modals */
   visible: boolean;
+  /** Callback zum Schließen des Modals */
   onClose: () => void;
 }
 
+/**
+ * Interface für FAQ-Einträge
+ */
 interface FAQItem {
+  /** Eindeutige ID */
   id: string;
+  /** Frage-Text */
   question: string;
+  /** Antwort-Text */
   answer: string;
+  /** Kategorie für Gruppierung */
   category: string;
 }
 
+/**
+ * Interface für Anleitungs-Abschnitte
+ */
 interface GuideSection {
+  /** Eindeutige ID */
   id: string;
+  /** Titel der Anleitung */
   title: string;
+  /** Icon für visuelle Darstellung */
   icon: React.ReactNode;
+  /** Array von Anleitungsschritten */
   content: string[];
 }
 
+/**
+ * HelpModal Hauptkomponente
+ * 
+ * Vollständiges Hilfe-System mit drei Hauptbereichen:
+ * 1. FAQ - Häufig gestellte Fragen
+ * 2. Anleitungen - Schritt-für-Schritt-Guides
+ * 3. Problembehebung - Lösungen für häufige Probleme
+ * 
+ * @param props - Modal-Konfiguration
+ * @returns JSX.Element - Interaktives Hilfe-Modal
+ */
 export default function HelpModal({ visible, onClose }: HelpModalProps) {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'faq' | 'guide' | 'troubleshooting'>('faq');
   const [expandedFAQ, setExpandedFAQ] = useState<string | null>(null);
   const [expandedGuide, setExpandedGuide] = useState<string | null>(null);
 
+  /**
+   * FAQ-Daten mit umfassenden Fragen und Antworten
+   * Kategorisiert nach Funktionsbereichen der App
+   */
   const faqData: FAQItem[] = [
     {
       id: 'faq1',
@@ -123,6 +170,10 @@ export default function HelpModal({ visible, onClose }: HelpModalProps) {
     }
   ];
 
+  /**
+   * Anleitungs-Daten mit detaillierten Schritt-für-Schritt-Guides
+   * Für alle Hauptfunktionen der Anwendung
+   */
   const guideData: GuideSection[] = [
     {
       id: 'dashboard',
@@ -192,6 +243,9 @@ export default function HelpModal({ visible, onClose }: HelpModalProps) {
     }
   ];
 
+  /**
+   * Problembehebungs-Daten mit Lösungen für häufige technische Probleme
+   */
   const troubleshootingData = [
     {
       problem: 'Barcode wird nicht erkannt',
@@ -245,16 +299,30 @@ export default function HelpModal({ visible, onClose }: HelpModalProps) {
     }
   ];
 
+  /**
+   * Extrahiert eindeutige Kategorien aus FAQ-Daten
+   */
   const categories = Array.from(new Set(faqData.map(item => item.category)));
 
+  /**
+   * Schaltet die Sichtbarkeit eines FAQ-Eintrags um
+   * @param id - ID des FAQ-Eintrags
+   */
   const toggleFAQ = (id: string) => {
     setExpandedFAQ(expandedFAQ === id ? null : id);
   };
 
+  /**
+   * Schaltet die Sichtbarkeit einer Anleitung um
+   * @param id - ID der Anleitung
+   */
   const toggleGuide = (id: string) => {
     setExpandedGuide(expandedGuide === id ? null : id);
   };
 
+  /**
+   * Tab-Button-Komponente für Navigation zwischen Hilfe-Bereichen
+   */
   const TabButton = ({ tab, title, isActive, onPress }: any) => (
     <TouchableOpacity
       style={[styles.tabButton, isActive && styles.tabButtonActive]}
@@ -267,6 +335,9 @@ export default function HelpModal({ visible, onClose }: HelpModalProps) {
     </TouchableOpacity>
   );
 
+  /**
+   * FAQ-Eintrag-Komponente mit erweiterbarem Inhalt
+   */
   const FAQItem = ({ item }: { item: FAQItem }) => {
     const isExpanded = expandedFAQ === item.id;
     return (
@@ -292,6 +363,9 @@ export default function HelpModal({ visible, onClose }: HelpModalProps) {
     );
   };
 
+  /**
+   * Anleitungs-Eintrag-Komponente mit erweiterbarem Inhalt
+   */
   const GuideItem = ({ item }: { item: GuideSection }) => {
     const isExpanded = expandedGuide === item.id;
     return (
@@ -430,6 +504,10 @@ export default function HelpModal({ visible, onClose }: HelpModalProps) {
   );
 }
 
+/**
+ * Styling für HelpModal nach Design-System
+ * Organisiert in logische Gruppen für bessere Wartbarkeit
+ */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -501,7 +579,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   
-  // FAQ Styles
+  // FAQ-Styling
   faqContainer: {
     flex: 1,
   },
@@ -549,7 +627,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   
-  // Guide Styles
+  // Anleitungs-Styling
   guideContainer: {
     flex: 1,
   },
@@ -591,7 +669,7 @@ const styles = StyleSheet.create({
     marginBottom: designSystem.spacing.sm,
   },
   
-  // Troubleshooting Styles
+  // Problembehebungs-Styling
   troubleshootingContainer: {
     flex: 1,
   },
@@ -623,7 +701,7 @@ const styles = StyleSheet.create({
     marginBottom: designSystem.spacing.sm,
   },
   
-  // Footer Styles
+  // Footer-Styling
   footer: {
     marginTop: designSystem.spacing.xxxl,
     padding: designSystem.spacing.xl,
