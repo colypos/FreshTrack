@@ -657,6 +657,7 @@ export default function InventoryScreen() {
                     placeholderTextColor="#6B7280"
                     returnKeyType="next"
                   />
+                  />
                   <View style={styles.calendarButtonContainer}>
                     <TouchableOpacity 
                       style={[styles.calendarButton, showCalendarWidget && styles.calendarButtonActive]}
