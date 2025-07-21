@@ -1003,51 +1003,28 @@ const styles = StyleSheet.create({
     gap: designSystem.spacing.sm,
     marginTop: 6,
     width: '100%',
-    overflow: 'hidden',
   },
   detailItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: designSystem.spacing.xs,
     minHeight: 20,
-    width: '100%',
-    maxWidth: '100%',
-    overflow: 'hidden',
-  },
-  detailItemStock: {
     flex: 1,
-    minWidth: 120,
-    maxWidth: 150,
-  },
-  detailItemDate: {
-    flex: 1,
-    minWidth: 100,
-    maxWidth: 120,
-  },
-  detailItemLocation: {
-    flex: 1,
-    minWidth: 80,
-    maxWidth: 100,
   },
   detailLabel: {
     ...designSystem.componentStyles.textCaption,
     fontSize: 11,
     fontWeight: '600',
-    minWidth: 50,
-    width: 50,
+    minWidth: 55,
   },
   detailValue: {
     ...designSystem.componentStyles.textCaption,
     fontSize: 11,
     flex: 1,
-    textAlign: 'left',
   },
   detailValueDate: {
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
     letterSpacing: Platform.OS === 'ios' ? 0.5 : 0,
-    minWidth: 80,
-    width: 80,
-    textAlign: 'left',
   },
   
   // Empty State
