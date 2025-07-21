@@ -348,7 +348,7 @@ export default function InventoryScreen() {
             </View>
             <View style={[styles.detailItem, styles.detailItemDate]}>
               <Calendar size={14} color="#6B7280" />
-              <Text style={[styles.detailValue, styles.detailValueDate]} numberOfLines={1} ellipsizeMode="tail">
+              <Text style={[styles.detailValue, styles.detailValueDate]}>
                 {formatGermanDate(product.expiryDate)}
               </Text>
             </View>
@@ -1015,40 +1015,38 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   detailItemStock: {
-    minWidth: 100,
-    maxWidth: '100%',
+    flex: 1,
+    minWidth: 120,
+    maxWidth: 150,
   },
   detailItemDate: {
-    minWidth: 120,
-    maxWidth: '100%',
-    flexShrink: 1,
+    flex: 1,
+    minWidth: 100,
+    maxWidth: 120,
   },
   detailItemLocation: {
-    minWidth: 100,
-    maxWidth: '100%',
-    flexShrink: 1,
+    flex: 1,
+    minWidth: 80,
+    maxWidth: 100,
   },
   detailLabel: {
     ...designSystem.componentStyles.textCaption,
     fontSize: 11,
     fontWeight: '600',
-    minWidth: 45,
-    maxWidth: 60,
-    flexShrink: 0,
+    minWidth: 50,
+    width: 50,
   },
   detailValue: {
     ...designSystem.componentStyles.textCaption,
     fontSize: 11,
-    flexShrink: 1,
-    flexGrow: 1,
-    maxWidth: '100%',
-    overflow: 'hidden',
+    flex: 1,
+    textAlign: 'left',
   },
   detailValueDate: {
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
     letterSpacing: Platform.OS === 'ios' ? 0.5 : 0,
-    minWidth: 70,
-    maxWidth: 90,
+    minWidth: 80,
+    width: 80,
     textAlign: 'left',
   },
   
