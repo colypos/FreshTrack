@@ -259,11 +259,6 @@ Sprache ändern: Einstellungen → Sprache → Gewünschte Sprache auswählen
 - **Erweiterte Compliance-Features** für Lebensmittelsicherheit
 - **Multi-Standort-Verwaltung** für Ketten
 
-## 📄 Lizenz & Copyright
-
-**FreshTrack v0.3.7.3**
-© 2025 FreshTrack Development Team
-
 Entwickelt für nachhaltige Gastronomie und effiziente Lagerverwaltung.
 
 **Technologie-Stack:**
