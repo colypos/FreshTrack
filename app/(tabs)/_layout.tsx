@@ -1,11 +1,16 @@
 import { Tabs } from 'expo-router';
-import { View, Platform } from 'react-native';
+import { View, Platform, Dimensions } from 'react-native';
 import { Package, Menu, Camera, ScrollText, Settings } from 'lucide-react-native';
 import { useLanguage } from '@/hooks/useLanguage';
 import designSystem from '@/styles/designSystem';
 
+const { width: screenWidth } = Dimensions.get('window');
+
 export default function TabLayout() {
   const { t } = useLanguage();
+  
+  // Hide labels when screen width is too narrow for comfortable display
+  const shouldHideLabels = screenWidth < 400; // Threshold for hiding labels
   
   return (
     <Tabs
@@ -14,9 +19,9 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: designSystem.colors.background.primary,
           borderTopWidth: 0,
-          paddingBottom: designSystem.getResponsiveValue(12, 16, 20),
-          paddingTop: designSystem.getResponsiveValue(12, 16, 20),
-          height: designSystem.spacing.tabBarHeight,
+          paddingBottom: shouldHideLabels ? 8 : designSystem.getResponsiveValue(12, 16, 20),
+          paddingTop: shouldHideLabels ? 8 : designSystem.getResponsiveValue(12, 16, 20),
+          height: shouldHideLabels ? 60 : designSystem.spacing.tabBarHeight,
           ...Platform.select({
             ios: designSystem.platformStyles.ios,
             android: designSystem.platformStyles.android,
@@ -25,36 +30,38 @@ export default function TabLayout() {
         },
         tabBarActiveTintColor: designSystem.colors.secondary[600],
         tabBarInactiveTintColor: designSystem.colors.text.secondary,
+        tabBarShowLabel: !shouldHideLabels,
         tabBarLabelStyle: {
           ...designSystem.componentStyles.textCaption,
           fontSize: designSystem.typography.sizes.navigation.fontSize,
           fontWeight: designSystem.typography.sizes.navigation.fontWeight,
-          marginTop: designSystem.spacing.xs,
+          marginTop: shouldHideLabels ? 0 : designSystem.spacing.xs,
+          display: shouldHideLabels ? 'none' : 'flex',
         },
         tabBarIconStyle: {
-          marginTop: 0,
+          marginTop: shouldHideLabels ? 8 : 0,
         },
         tabBarItemStyle: {
           borderRadius: 0,
-          minHeight: designSystem.accessibility.minTouchTarget.minHeight,
+          minHeight: shouldHideLabels ? 44 : designSystem.accessibility.minTouchTarget.minHeight,
         },
         tabBarAccessibilityLabel: t('navigation'),
       }}>
       <Tabs.Screen
         name="index"
         options={{
-          title: t('dashboard'),
+          title: shouldHideLabels ? '' : t('dashboard'),
           tabBarIcon: ({ size, color, focused }) => (
             <View style={{
               backgroundColor: 'transparent',
-              padding: designSystem.spacing.sm,
+              padding: shouldHideLabels ? 4 : designSystem.spacing.sm,
               width: designSystem.accessibility.minTouchTarget.minWidth,
-              height: designSystem.accessibility.minTouchTarget.minHeight,
+              height: shouldHideLabels ? 44 : designSystem.accessibility.minTouchTarget.minHeight,
               alignItems: 'center',
               justifyContent: 'center',
             }}>
               <Menu 
-                size={designSystem.getResponsiveValue(22, 24, 26)} 
+                size={shouldHideLabels ? 28 : designSystem.getResponsiveValue(22, 24, 26)} 
                 color={focused ? designSystem.colors.secondary[600] : designSystem.colors.text.secondary} 
               />
             </View>
@@ -66,18 +73,18 @@ export default function TabLayout() {
       <Tabs.Screen
         name="inventory"
         options={{
-          title: t('inventory'),
+          title: shouldHideLabels ? '' : t('inventory'),
           tabBarIcon: ({ size, color, focused }) => (
             <View style={{
               backgroundColor: 'transparent',
-              padding: designSystem.spacing.sm,
+              padding: shouldHideLabels ? 4 : designSystem.spacing.sm,
               width: designSystem.accessibility.minTouchTarget.minWidth,
-              height: designSystem.accessibility.minTouchTarget.minHeight,
+              height: shouldHideLabels ? 44 : designSystem.accessibility.minTouchTarget.minHeight,
               alignItems: 'center',
               justifyContent: 'center',
             }}>
               <Package 
-                size={designSystem.getResponsiveValue(22, 24, 26)} 
+                size={shouldHideLabels ? 28 : designSystem.getResponsiveValue(22, 24, 26)} 
                 color={focused ? designSystem.colors.secondary[600] : designSystem.colors.text.secondary} 
               />
             </View>
@@ -89,18 +96,18 @@ export default function TabLayout() {
       <Tabs.Screen
         name="scanner"
         options={{
-          title: t('scanner'),
+          title: shouldHideLabels ? '' : t('scanner'),
           tabBarIcon: ({ size, color, focused }) => (
             <View style={{
               backgroundColor: 'transparent',
-              padding: designSystem.spacing.sm,
+              padding: shouldHideLabels ? 4 : designSystem.spacing.sm,
               width: designSystem.accessibility.minTouchTarget.minWidth,
-              height: designSystem.accessibility.minTouchTarget.minHeight,
+              height: shouldHideLabels ? 44 : designSystem.accessibility.minTouchTarget.minHeight,
               alignItems: 'center',
               justifyContent: 'center',
             }}>
               <Camera 
-                size={designSystem.getResponsiveValue(22, 24, 26)} 
+                size={shouldHideLabels ? 28 : designSystem.getResponsiveValue(22, 24, 26)} 
                 color={focused ? designSystem.colors.secondary[600] : designSystem.colors.text.secondary} 
               />
             </View>
@@ -112,18 +119,18 @@ export default function TabLayout() {
       <Tabs.Screen
         name="movements"
         options={{
-          title: t('movements'),
+          title: shouldHideLabels ? '' : t('movements'),
           tabBarIcon: ({ size, color, focused }) => (
             <View style={{
               backgroundColor: 'transparent',
-              padding: designSystem.spacing.sm,
+              padding: shouldHideLabels ? 4 : designSystem.spacing.sm,
               width: designSystem.accessibility.minTouchTarget.minWidth,
               height: designSystem.accessibility.minTouchTarget.minHeight,
               alignItems: 'center',
               justifyContent: 'center',
             }}>
               <ScrollText 
-                size={designSystem.getResponsiveValue(22, 24, 26)} 
+                size={shouldHideLabels ? 28 : designSystem.getResponsiveValue(22, 24, 26)} 
                 color={focused ? designSystem.colors.secondary[600] : designSystem.colors.text.secondary} 
               />
             </View>
@@ -135,18 +142,18 @@ export default function TabLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: t('settings'),
+          title: shouldHideLabels ? '' : t('settings'),
           tabBarIcon: ({ size, color, focused }) => (
             <View style={{
               backgroundColor: 'transparent',
-              padding: designSystem.spacing.sm,
+              padding: shouldHideLabels ? 4 : designSystem.spacing.sm,
               width: designSystem.accessibility.minTouchTarget.minWidth,
-              height: designSystem.accessibility.minTouchTarget.minHeight,
+              height: shouldHideLabels ? 44 : designSystem.accessibility.minTouchTarget.minHeight,
               alignItems: 'center',
               justifyContent: 'center',
             }}>
               <Settings 
-                size={designSystem.getResponsiveValue(22, 24, 26)} 
+                size={shouldHideLabels ? 28 : designSystem.getResponsiveValue(22, 24, 26)} 
                 color={focused ? designSystem.colors.secondary[600] : designSystem.colors.text.secondary} 
               />
             </View>
