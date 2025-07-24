@@ -169,4 +169,3 @@ export default function TabLayout() {
     </Tabs>
   );
 }
-          title: isMobile ? '' : t('settings'),
