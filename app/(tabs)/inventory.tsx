@@ -897,7 +897,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: designSystem.colors.background.primary,
     paddingHorizontal: designSystem.spacing.xl,
-    minHeight: 0, // Allow flex shrinking
   },
   productArea: {
     flex: 1,
@@ -905,13 +904,11 @@ const styles = StyleSheet.create({
     width: '100%',
     alignSelf: 'center',
     backgroundColor: designSystem.colors.background.primary,
-    minHeight: 0, // Allow flex shrinking
   },
   productHeader: {
     paddingHorizontal: 0,
     paddingVertical: designSystem.spacing.md,
     borderBottomColor: designSystem.colors.border.secondary,
-    flexShrink: 0, // Prevent header from shrinking
   },
   resultCount: {
     ...designSystem.componentStyles.textPrimary,
@@ -924,12 +921,10 @@ const styles = StyleSheet.create({
   },
   productList: {
     flex: 1,
-    minHeight: 0, // Critical for iOS scrolling
   },
   productListContent: {
-    flexGrow: 1,
     paddingTop: designSystem.spacing.sm,
-    paddingBottom: designSystem.spacing.xxl,
+    paddingBottom: 100, // Ensure enough bottom padding
     paddingHorizontal: 0,
   },
   
